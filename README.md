@@ -1,4 +1,4 @@
-rx-java-jdbc
+rxjava-jdbc
 ============
 
 Efficient execution, concise code, and functional composition of database calls
@@ -13,12 +13,12 @@ Features
 * Functionally compose database queries run sequentially or in parallel 
 * Queries may be only partially run or indeed never run due to subscription cancellations thus improving efficiency
 * Concise code
-* Method chaining just leads the way (once you are on top of the rx-java api of course!)
+* Method chaining just leads the way (once you are on top of the RxJava api of course!)
 * All the RxJava goodness!
 * Automatically maps query result rows into typed tuples or your own classes
 * CLOB and BLOB handling is simplified greatly
 
-The only runtime dependencies are [rx-java-core](https://github.com/Netflix/RxJava/tree/master/rxjava-core) and apache commons-io.
+The only runtime dependencies are [rxjava-core](https://github.com/Netflix/RxJava/tree/master/rxjava-core) and apache commons-io.
 
 Continuous integration with Jenkins for this project is [here](https://xuml-tools.ci.cloudbees.com/). <a href="https://xuml-tools.ci.cloudbees.com/"><img  src="http://web-static-cloudfront.s3.amazonaws.com/images/badges/BuiltOnDEV.png"/></a>
 
@@ -41,7 +41,7 @@ output:
 ```
 [FRED, JOSEPH, MARMADUKE]
 ```
-Without using rx-java-jdbc the code is ugly mainly because of the pain of closing jdbc resources:
+Without using rxjava-jdbc the code is ugly mainly because of the pain of closing jdbc resources:
 ```java
 Connection con = null;
 PreparedStatement ps = null;
@@ -170,7 +170,7 @@ static class Person {
 				Long registered) {
 				...
 ```
-We can get *rx-java-jdbc* to use reflection to auto map the fields in a result set to create an instance of Person:
+We can get *rxjava-jdbc* to use reflection to auto map the fields in a result set to create an instance of Person:
 ```java
 Observable<Person> persons = db
 				.select("select name,score,dob,registered from person order by name")
