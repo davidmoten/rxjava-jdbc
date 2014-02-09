@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.github.davidmoten</groupId>
-	<artifactId>rx-java-jdbc</artifactId>
+	<artifactId>rxjava-jdbc</artifactId>
 	<version>0.1-SNAPSHOT</version>
 
 	<name>${project.artifactId}</name>
@@ -37,7 +37,7 @@
 
 	<issueManagement>
 		<system>GitHub</system>
-		<url>https://github.com/davidmoten/rx-java-jdbc/issues</url>
+		<url>https://github.com/davidmoten/rxjava-jdbc/issues</url>
 	</issueManagement>
 
 	<inceptionYear>2013</inceptionYear>
@@ -55,9 +55,9 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:git@github.com:davidmoten/rx-java-jdbc.git</connection>
-		<developerConnection>scm:git:git@github.com:davidmoten/rx-java-jdbc.git</developerConnection>
-		<url>scm:git:git@github.com:davidmoten/rx-java-jdbc.git</url>
+		<connection>scm:git:git@github.com:davidmoten/rxjava-jdbc.git</connection>
+		<developerConnection>scm:git:git@github.com:davidmoten/rxjava-jdbc.git</developerConnection>
+		<url>scm:git:git@github.com:davidmoten/rxjava-jdbc.git</url>
 	</scm>
 
 	<dependencies>
