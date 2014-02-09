@@ -259,7 +259,7 @@ public final class Util {
 		}
 	}
 
-	public static <T> Object getObject(ResultSet rs, Class<T> cls, int i) {
+	public static <T> Object getObject(final ResultSet rs, Class<T> cls, int i) {
 		try {
 			final int type = rs.getMetaData().getColumnType(i);
 			// TODO java.util.Calendar support
@@ -275,18 +275,24 @@ public final class Util {
 				Reader reader = c.getCharacterStream();
 				String result = IOUtils.toString(reader);
 				reader.close();
+				c.free();
 				return result;
 			} else if (type == Types.CLOB && Reader.class.isAssignableFrom(cls)) {
-				return rs.getClob(i).getCharacterStream();
+				Clob c = rs.getClob(i);
+				Reader r = c.getCharacterStream();
+				return createFreeOnCloseReader(c, r);
 			} else if (type == Types.BLOB && cls.equals(byte[].class)) {
-				Blob c = rs.getBlob(i);
-				InputStream is = c.getBinaryStream();
+				Blob b = rs.getBlob(i);
+				InputStream is = b.getBinaryStream();
 				byte[] result = IOUtils.toByteArray(is);
 				is.close();
+				b.free();
 				return result;
 			} else if (type == Types.BLOB
 					&& InputStream.class.isAssignableFrom(cls)) {
-				return rs.getBlob(i).getBinaryStream();
+				final Blob b = rs.getBlob(i);
+				final InputStream is = rs.getBlob(i).getBinaryStream();
+				return createFreeOnCloseInputStream(b, is);
 			} else
 				return rs.getObject(i);
 		} catch (SQLException e) {
@@ -294,6 +300,53 @@ public final class Util {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private static InputStream createFreeOnCloseInputStream(final Blob b,
+			final InputStream is) {
+		return new InputStream() {
+
+			@Override
+			public int read() throws IOException {
+				return is.read();
+			}
+
+			@Override
+			public void close() throws IOException {
+				try {
+					is.close();
+				} finally {
+					try {
+						b.free();
+					} catch (SQLException e) {
+						log.debug(e.getMessage());
+					}
+				}
+			}
+		};
+	}
+
+	private static Reader createFreeOnCloseReader(final Clob b, final Reader r) {
+		return new Reader() {
+
+			@Override
+			public void close() throws IOException {
+				try {
+					r.close();
+				} finally {
+					try {
+						b.free();
+					} catch (SQLException e) {
+						log.debug(e.getMessage());
+					}
+				}
+			}
+
+			@Override
+			public int read(char[] cbuf, int off, int len) throws IOException {
+				return r.read(cbuf, off, len);
+			}
+		};
 	}
 
 	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
