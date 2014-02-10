@@ -248,12 +248,10 @@ public final class Util {
 					return t.getTime();
 				else
 					return o;
-			} else if (o instanceof Blob) {
-				// TODO
-				return o;
-			} else if (o instanceof Clob) {
-				// TODO
-				return o;
+			} else if (o instanceof Blob && cls.isAssignableFrom(byte[].class)) {
+				return toBytes((Blob) o);
+			} else if (o instanceof Clob && cls.isAssignableFrom(String.class)) {
+				return toString((Clob) o);
 			} else
 				return o;
 		}
@@ -271,23 +269,13 @@ public final class Util {
 			else if (type == Types.TIMESTAMP)
 				return rs.getTimestamp(i, Calendar.getInstance(UTC));
 			else if (type == Types.CLOB && cls.equals(String.class)) {
-				Clob c = rs.getClob(i);
-				Reader reader = c.getCharacterStream();
-				String result = IOUtils.toString(reader);
-				reader.close();
-				c.free();
-				return result;
+				return toString(rs.getClob(i));
 			} else if (type == Types.CLOB && Reader.class.isAssignableFrom(cls)) {
 				Clob c = rs.getClob(i);
 				Reader r = c.getCharacterStream();
 				return createFreeOnCloseReader(c, r);
 			} else if (type == Types.BLOB && cls.equals(byte[].class)) {
-				Blob b = rs.getBlob(i);
-				InputStream is = b.getBinaryStream();
-				byte[] result = IOUtils.toByteArray(is);
-				is.close();
-				b.free();
-				return result;
+				return toBytes(rs.getBlob(i));
 			} else if (type == Types.BLOB
 					&& InputStream.class.isAssignableFrom(cls)) {
 				final Blob b = rs.getBlob(i);
@@ -297,7 +285,34 @@ public final class Util {
 				return rs.getObject(i);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	private static byte[] toBytes(Blob b) {
+		try {
+			InputStream is = b.getBinaryStream();
+			byte[] result = IOUtils.toByteArray(is);
+			is.close();
+			b.free();
+			return result;
 		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+
+	}
+
+	private static String toString(Clob c) {
+		try {
+			Reader reader = c.getCharacterStream();
+			String result = IOUtils.toString(reader);
+			reader.close();
+			c.free();
+			return result;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
 	}
