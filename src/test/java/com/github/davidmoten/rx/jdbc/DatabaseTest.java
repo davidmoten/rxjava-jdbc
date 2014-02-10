@@ -446,6 +446,70 @@ public class DatabaseTest {
 		}
 	}
 
+	@Test
+	public void testAutoMapClob() {
+		Database db = db();
+		insertClob(db);
+		List<PersonClob> list = db
+				.select("select name, document from person_clob")
+				.autoMap(PersonClob.class).toList().toBlockingObservable()
+				.single();
+		assertEquals(1, list.size());
+		assertEquals("FRED", list.get(0).getName());
+		assertTrue(list.get(0).getDocument().contains("rather long"));
+	}
+
+	@Test
+	public void testAutoMapBlob() {
+		Database db = db();
+		insertBlob(db);
+		List<PersonBlob> list = db
+				.select("select name, document from person_blob")
+				.autoMap(PersonBlob.class).toList().toBlockingObservable()
+				.single();
+		assertEquals(1, list.size());
+		assertEquals("FRED", list.get(0).getName());
+		assertTrue(new String(list.get(0).getDocument())
+				.contains("rather long"));
+	}
+
+	static class PersonClob {
+		private final String name;
+		private final String document;
+
+		public PersonClob(String name, String document) {
+			this.name = name;
+			this.document = document;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getDocument() {
+			return document;
+		}
+
+	}
+
+	static class PersonBlob {
+		private final String name;
+		private final byte[] document;
+
+		public PersonBlob(String name, byte[] document) {
+			this.name = name;
+			this.document = document;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public byte[] getDocument() {
+			return document;
+		}
+	}
+
 	static class Person {
 		private final String name;
 		private final double score;
