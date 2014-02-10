@@ -111,7 +111,7 @@ By default queries are run in parallel (to the limits of the current QueryContex
 you specify dependencies. 
 
 To indicate that a query cannot be run before one or more other Observables
-have been completed use the dependsOn() method. Here's an example:
+have been completed use the `dependsOn()` method. Here's an example:
 ```java
 Database db = db();
 Observable<Integer> insert = db
