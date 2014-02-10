@@ -39,6 +39,11 @@ public class QueryExecutor<T> {
 		return createObservable();
 	}
 
+	/**
+	 * Returns the {@link Observable} that is the result of running the query.
+	 * 
+	 * @return the result of running the query as an {@link Observable}
+	 */
 	private Observable<T> createObservable() {
 		if (query instanceof QueryUpdate) {
 			return createObservableUpdate((QueryUpdate<T>) query);
@@ -47,6 +52,13 @@ public class QueryExecutor<T> {
 		}
 	}
 
+	/**
+	 * Ensure that query dependsOn Observables are emitted completely (in fact
+	 * none will be emitted because of the always false filter) before the
+	 * parameters are emitted.
+	 * 
+	 * @return parameters as Observable post completion of dependencies.
+	 */
 	private Observable<Object> parametersAfterDependencies() {
 		// force the subscription of the dependencies before the parameters are
 		// emitted
