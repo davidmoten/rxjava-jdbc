@@ -555,7 +555,7 @@ public class DatabaseTest {
 
 	private ConnectionProvider connectionProvider() {
 		return new SimpleConnectionProvider("jdbc:h2:mem:test"
-				+ dbNumber.incrementAndGet());
+				+ dbNumber.incrementAndGet() + ";DB_CLOSE_DELAY=-1");
 	}
 
 	private Database db() {
