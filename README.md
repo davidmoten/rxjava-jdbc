@@ -163,8 +163,8 @@ Given this class:
 static class Person {
 		private final String name;
 		private final double score;
-		private final long dateOfBirth;
-		private final long registered;
+		private final Long dateOfBirth;
+		private final Long registered;
 
 		Person(String name, double score, Long dateOfBirth,
 				Long registered) {
