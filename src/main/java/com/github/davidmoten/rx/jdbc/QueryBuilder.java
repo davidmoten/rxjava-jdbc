@@ -67,10 +67,10 @@ public class QueryBuilder {
 	 * Appends a dependency to the dependencies that have to complete their
 	 * emitting before the query is executed.
 	 * 
-	 * @param dependant
+	 * @param dependency
 	 */
-	public void dependsOn(Observable<?> dependant) {
-		depends = Observable.concat(depends, dependant);
+	public void dependsOn(Observable<?> dependency) {
+		depends = Observable.concat(depends, dependency);
 	}
 
 	/**
@@ -79,7 +79,6 @@ public class QueryBuilder {
 	 * dependencies that have to complete their emitting before the query is
 	 * executed.
 	 */
-
 	public void dependsOnLastTransaction() {
 		dependsOn(db.getLastTransactionResult());
 	}

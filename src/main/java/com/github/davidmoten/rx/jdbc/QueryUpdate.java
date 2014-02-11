@@ -72,8 +72,8 @@ public class QueryUpdate implements Query {
 			return this;
 		}
 
-		public Builder dependsOn(Observable<?> dependant) {
-			builder.dependsOn(dependant);
+		public Builder dependsOn(Observable<?> dependency) {
+			builder.dependsOn(dependency);
 			return this;
 		}
 
