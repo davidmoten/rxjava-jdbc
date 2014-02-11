@@ -71,11 +71,6 @@ public final class Util {
 		}
 	}
 
-	// public <T,R> Observable<Observable<R>> onFinishedAll(final Observable<T>
-	// ob, Func1<T,Observable<R>> f, Action0 action){
-	//
-	// }
-
 	public static void closeQuietly(Connection connection) {
 		try {
 			if (connection != null && !connection.isClosed()) {
@@ -369,7 +364,7 @@ public final class Util {
 	public static void setParameters(PreparedStatement ps,
 			List<Parameter> params) throws SQLException {
 		for (int i = 1; i <= params.size(); i++) {
-			Object o = params.get(i - 1).getParameter();
+			Object o = params.get(i - 1).getValue();
 			if (o == null)
 				ps.setObject(i, o);
 			else {

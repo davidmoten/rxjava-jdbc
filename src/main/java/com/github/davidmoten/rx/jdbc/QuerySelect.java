@@ -14,6 +14,11 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuple7;
 import com.github.davidmoten.rx.jdbc.tuple.TupleN;
 import com.github.davidmoten.rx.jdbc.tuple.Tuples;
 
+/**
+ * @author dxm
+ * 
+ * @param <T>
+ */
 public class QuerySelect<T> implements Query<T> {
 
 	private final String sql;

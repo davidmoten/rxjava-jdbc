@@ -80,8 +80,8 @@ public class QueryExecutor<T> {
 					.flatMap(doSelect(query));
 		else
 			// run the query once with an empty list of parameters
-			return singleIntegerAfterDependencies().map(TO_EMPTY_PARAMETER_LIST).flatMap(
-					doSelect(query));
+			return singleIntegerAfterDependencies()
+					.map(TO_EMPTY_PARAMETER_LIST).flatMap(doSelect(query));
 	}
 
 	/**
@@ -98,8 +98,8 @@ public class QueryExecutor<T> {
 			return parametersAfterDependencies().buffer(numParamsPerQuery)
 					.flatMap(doUpdate(query));
 		else
-			return singleIntegerAfterDependencies().map(TO_EMPTY_PARAMETER_LIST).flatMap(
-					doUpdate(query));
+			return singleIntegerAfterDependencies()
+					.map(TO_EMPTY_PARAMETER_LIST).flatMap(doUpdate(query));
 	}
 
 	/**
@@ -158,6 +158,14 @@ public class QueryExecutor<T> {
 		};
 	}
 
+	/**
+	 * Returns the results of an update query. Should return an
+	 * {@link Observable} of size one containing the rows affected count.
+	 * 
+	 * @param query
+	 * @param params
+	 * @return
+	 */
 	private Observable<T> createObservable(final QueryUpdate<T> query,
 			final List<Parameter> params) {
 		return Observable.create(new OnSubscribeFunc<T>() {
@@ -172,11 +180,18 @@ public class QueryExecutor<T> {
 		});
 	}
 
-	private Subscription createSubscription(final Cancellable q) {
+	/**
+	 * Create an rx {@link Subscription} that cancels the given
+	 * {@link Cancellable} on unsubscribe.
+	 * 
+	 * @param cancellable
+	 * @return
+	 */
+	private Subscription createSubscription(final Cancellable cancellable) {
 		return new Subscription() {
 			@Override
 			public void unsubscribe() {
-				q.cancel();
+				cancellable.cancel();
 			}
 		};
 	}
