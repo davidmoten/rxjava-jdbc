@@ -68,10 +68,12 @@ public class QuerySelect implements Query {
 		private Observable<?> depends = Observable.empty();
 
 		private final Database db;
+		private final QueryContext context;
 
 		public Builder(String sql, Database db) {
 			this.sql = sql;
 			this.db = db;
+			this.context = db.getQueryContext();
 		}
 
 		public <T> Builder parameters(Observable<T> more) {
@@ -114,13 +116,8 @@ public class QuerySelect implements Query {
 			return get(Util.autoMap(cls));
 		}
 
-		public QuerySelect create() {
-			return new QuerySelect(sql, parameters, depends,
-					db.getQueryContext());
-		}
-
 		public Observable<ResultSet> get() {
-			return create().execute();
+			return new QuerySelect(sql, parameters, depends, context).execute();
 		}
 
 		public <S> Observable<S> getAs(Class<S> cls) {

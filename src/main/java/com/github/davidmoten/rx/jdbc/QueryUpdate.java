@@ -94,12 +94,9 @@ public class QueryUpdate implements Query {
 			return this;
 		}
 
-		public QueryUpdate create() {
-			return new QueryUpdate(sql, parameters, depends, context);
-		}
-
 		public Observable<Integer> getCount() {
-			return create().getCount();
+			return new QueryUpdate(sql, parameters, depends, context)
+					.getCount();
 		}
 	}
 }
