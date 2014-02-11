@@ -80,6 +80,11 @@ public class QuerySelect implements Query {
 			return this;
 		}
 
+		public Builder parameter(Object value) {
+			builder.parameter(value);
+			return this;
+		}
+
 		public Builder dependsOn(Observable<?> dependant) {
 			builder.dependsOn(dependant);
 			return this;
@@ -87,11 +92,6 @@ public class QuerySelect implements Query {
 
 		public Builder dependsOnLastTransaction() {
 			builder.dependsOnLastTransaction();
-			return this;
-		}
-
-		public Builder parameter(Object value) {
-			builder.parameter(value);
 			return this;
 		}
 

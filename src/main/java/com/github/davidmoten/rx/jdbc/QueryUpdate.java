@@ -57,16 +57,6 @@ public class QueryUpdate implements Query {
 			this.builder = new QueryBuilder(sql, db);
 		}
 
-		public Builder dependsOn(Observable<?> dependant) {
-			builder.dependsOn(dependant);
-			return this;
-		}
-
-		public Builder dependsOnLastTransaction() {
-			builder.dependsOnLastTransaction();
-			return this;
-		}
-
 		public <T> Builder parameters(Observable<T> more) {
 			builder.parameters(more);
 			return this;
@@ -79,6 +69,16 @@ public class QueryUpdate implements Query {
 
 		public Builder parameter(Object value) {
 			builder.parameter(value);
+			return this;
+		}
+
+		public Builder dependsOn(Observable<?> dependant) {
+			builder.dependsOn(dependant);
+			return this;
+		}
+
+		public Builder dependsOnLastTransaction() {
+			builder.dependsOnLastTransaction();
 			return this;
 		}
 
