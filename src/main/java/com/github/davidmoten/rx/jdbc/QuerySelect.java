@@ -63,48 +63,35 @@ public class QuerySelect implements Query {
 	}
 
 	public static class Builder {
-		private final String sql;
-		private Observable<Parameter> parameters = Observable.empty();
-		private Observable<?> depends = Observable.empty();
 
-		private final Database db;
-		private final QueryContext context;
+		private final QueryBuilder builder;
 
 		public Builder(String sql, Database db) {
-			this.sql = sql;
-			this.db = db;
-			this.context = db.getQueryContext();
+			builder = new QueryBuilder(sql, db);
 		}
 
 		public <T> Builder parameters(Observable<T> more) {
-			this.parameters = Observable.concat(parameters,
-					more.map(Parameter.TO_PARAMETER));
+			builder.parameters(more);
 			return this;
 		}
 
 		public Builder parameters(Object... objects) {
-			for (Object object : objects)
-				parameter(object);
+			builder.parameters(objects);
 			return this;
 		}
 
 		public Builder dependsOn(Observable<?> dependant) {
-			depends = Observable.concat(depends, dependant);
+			builder.dependsOn(dependant);
 			return this;
 		}
 
 		public Builder dependsOnLastTransaction() {
-			dependsOn(db.getLastTransactionResult());
+			builder.dependsOnLastTransaction();
 			return this;
 		}
 
 		public Builder parameter(Object value) {
-			// TODO check on supported types?
-			if (value instanceof Observable)
-				throw new RuntimeException(
-						"use parameters() method not the parameter() method for an Observable");
-			parameters = Observable.concat(parameters, Observable.from(value)
-					.map(Parameter.TO_PARAMETER));
+			builder.parameter(value);
 			return this;
 		}
 
@@ -117,7 +104,8 @@ public class QuerySelect implements Query {
 		}
 
 		public Observable<ResultSet> get() {
-			return new QuerySelect(sql, parameters, depends, context).execute();
+			return new QuerySelect(builder.sql(), builder.parameters(),
+					builder.depends(), builder.context()).execute();
 		}
 
 		public <S> Observable<S> getAs(Class<S> cls) {

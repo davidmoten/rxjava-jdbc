@@ -50,53 +50,41 @@ public class QueryUpdate implements Query {
 	}
 
 	public static class Builder {
-		private final String sql;
-		private Observable<Parameter> parameters = Observable.empty();
-		private final QueryContext context;
-		private Observable<?> depends = Observable.empty();
-		private final Database db;
+
+		private final QueryBuilder builder;
 
 		public Builder(String sql, Database db) {
-			this.sql = sql;
-			this.db = db;
-			this.context = db.getQueryContext();
+			this.builder = new QueryBuilder(sql, db);
 		}
 
 		public Builder dependsOn(Observable<?> dependant) {
-			depends = Observable.concat(depends, dependant);
+			builder.dependsOn(dependant);
 			return this;
 		}
 
 		public Builder dependsOnLastTransaction() {
-			dependsOn(db.getLastTransactionResult());
+			builder.dependsOnLastTransaction();
 			return this;
 		}
 
 		public <T> Builder parameters(Observable<T> more) {
-			this.parameters = Observable.concat(parameters,
-					more.map(Parameter.TO_PARAMETER));
+			builder.parameters(more);
 			return this;
 		}
 
 		public <T> Builder parameters(Object... objects) {
-			for (Object object : objects)
-				parameter(object);
+			builder.parameters(objects);
 			return this;
 		}
 
 		public Builder parameter(Object value) {
-			// TODO check on supported types
-			if (value instanceof Observable)
-				throw new RuntimeException(
-						"use parameters() method not the parameter() method for an Observable");
-			parameters = Observable.concat(parameters, Observable.from(value)
-					.map(Parameter.TO_PARAMETER));
+			builder.parameter(value);
 			return this;
 		}
 
 		public Observable<Integer> getCount() {
-			return new QueryUpdate(sql, parameters, depends, context)
-					.getCount();
+			return new QueryUpdate(builder.sql(), builder.parameters(),
+					builder.depends(), builder.context()).getCount();
 		}
 	}
 }
