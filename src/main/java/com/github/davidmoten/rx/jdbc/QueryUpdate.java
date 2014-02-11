@@ -5,7 +5,7 @@ import rx.Observable;
 /**
  * Always emits an Observable<Integer>.
  */
-public class QueryUpdate<T> implements Query<T> {
+public class QueryUpdate implements Query {
 
 	private final String sql;
 	private final Observable<Parameter> parameters;
@@ -45,10 +45,8 @@ public class QueryUpdate<T> implements Query<T> {
 		return depends;
 	}
 
-	@SuppressWarnings("unchecked")
 	public Observable<Integer> getCount() {
-		return new QueryExecutor<Integer>((QueryUpdate<Integer>) this)
-				.execute().cast(Integer.class);
+		return new QueryExecutor(this).executeUpdate();
 	}
 
 	public static class Builder {
@@ -96,8 +94,8 @@ public class QueryUpdate<T> implements Query<T> {
 			return this;
 		}
 
-		public QueryUpdate<Integer> create() {
-			return new QueryUpdate<Integer>(sql, parameters, depends, context);
+		public QueryUpdate create() {
+			return new QueryUpdate(sql, parameters, depends, context);
 		}
 
 		public Observable<Integer> getCount() {

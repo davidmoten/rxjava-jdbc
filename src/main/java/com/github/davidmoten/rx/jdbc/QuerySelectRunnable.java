@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import rx.Observer;
 
-class QuerySelectRunnable<T> implements Runnable, Cancellable {
+class QuerySelectRunnable implements Runnable, Cancellable {
 
 	private static final Logger log = Logger
 			.getLogger(QuerySelectRunnable.class);
@@ -17,13 +17,13 @@ class QuerySelectRunnable<T> implements Runnable, Cancellable {
 	private volatile Connection con;
 	private volatile PreparedStatement ps;
 	private volatile ResultSet rs;
-	private final QuerySelect<T> query;
+	private final QuerySelect query;
 	private final List<Parameter> params;
-	private final Observer<? super T> o;
+	private final Observer<? super ResultSet> o;
 	private final AtomicBoolean keepGoing = new AtomicBoolean(true);
 
-	QuerySelectRunnable(QuerySelect<T> query, List<Parameter> params,
-			Observer<? super T> o) {
+	QuerySelectRunnable(QuerySelect query, List<Parameter> params,
+			Observer<? super ResultSet> o) {
 		this.query = query;
 		this.params = params;
 		this.o = o;
@@ -48,7 +48,7 @@ class QuerySelectRunnable<T> implements Runnable, Cancellable {
 				synchronized (connectionLock) {
 					if (rs.next()) {
 						log.debug("onNext");
-						o.onNext(query.function().call(rs));
+						o.onNext(rs);
 					} else
 						keepGoing.set(false);
 				}

@@ -15,25 +15,21 @@ import com.github.davidmoten.rx.jdbc.tuple.TupleN;
 import com.github.davidmoten.rx.jdbc.tuple.Tuples;
 
 /**
- * @author dxm
  * 
  * @param <T>
  */
-public class QuerySelect<T> implements Query<T> {
+public class QuerySelect implements Query {
 
 	private final String sql;
 	private final Observable<Parameter> parameters;
-	private final Func1<ResultSet, T> function;
 	private final QueryContext context;
 	private Observable<?> depends = Observable.empty();
 
 	private QuerySelect(String sql, Observable<Parameter> parameters,
-			Observable<?> depends, Func1<ResultSet, T> function,
-			QueryContext context) {
+			Observable<?> depends, QueryContext context) {
 		this.sql = sql;
 		this.parameters = parameters;
 		this.depends = depends;
-		this.function = function;
 		this.context = context;
 	}
 
@@ -62,26 +58,15 @@ public class QuerySelect<T> implements Query<T> {
 		return depends;
 	}
 
-	public Observable<T> execute() {
-		return new QueryExecutor<T>(this).execute();
+	public Observable<ResultSet> execute() {
+		return new QueryExecutor(this).execute();
 	}
 
-	public Func1<ResultSet, T> function() {
-		return function;
-	}
-
-	public static class Builder<R> {
+	public static class Builder {
 		private final String sql;
 		private Observable<Parameter> parameters = Observable.empty();
 		private Observable<?> depends = Observable.empty();
 
-		private Func1<ResultSet, R> function = new Func1<ResultSet, R>() {
-			@SuppressWarnings("unchecked")
-			@Override
-			public R call(ResultSet rs) {
-				return (R) rs;
-			}
-		};
 		private final Database db;
 
 		public Builder(String sql, Database db) {
@@ -89,29 +74,29 @@ public class QuerySelect<T> implements Query<T> {
 			this.db = db;
 		}
 
-		public <T> Builder<R> parameters(Observable<T> more) {
+		public <T> Builder parameters(Observable<T> more) {
 			this.parameters = Observable.concat(parameters,
 					more.map(Parameter.TO_PARAMETER));
 			return this;
 		}
 
-		public Builder<R> parameters(Object... objects) {
+		public Builder parameters(Object... objects) {
 			for (Object object : objects)
 				parameter(object);
 			return this;
 		}
 
-		public Builder<R> dependsOn(Observable<?> dependant) {
+		public Builder dependsOn(Observable<?> dependant) {
 			depends = Observable.concat(depends, dependant);
 			return this;
 		}
 
-		public Builder<R> dependsOnLastTransaction() {
+		public Builder dependsOnLastTransaction() {
 			dependsOn(db.getLastTransactionResult());
 			return this;
 		}
 
-		public Builder<R> parameter(Object value) {
+		public Builder parameter(Object value) {
 			// TODO check on supported types?
 			if (value instanceof Observable)
 				throw new RuntimeException(
@@ -121,22 +106,20 @@ public class QuerySelect<T> implements Query<T> {
 			return this;
 		}
 
-		@SuppressWarnings("unchecked")
 		public <S> Observable<S> get(Func1<ResultSet, S> function) {
-			this.function = (Func1<ResultSet, R>) function;
-			return (Observable<S>) get();
+			return get().map(function);
 		}
 
 		public <S> Observable<S> autoMap(Class<S> cls) {
 			return get(Util.autoMap(cls));
 		}
 
-		public QuerySelect<R> create() {
-			return new QuerySelect<R>(sql, parameters, depends, function,
+		public QuerySelect create() {
+			return new QuerySelect(sql, parameters, depends,
 					db.getQueryContext());
 		}
 
-		public Observable<R> get() {
+		public Observable<ResultSet> get() {
 			return create().execute();
 		}
 

@@ -7,7 +7,7 @@ import rx.Observable;
  * 
  * @param <T>
  */
-public interface Query<T> {
+public interface Query {
 
 	/**
 	 * Returns the sql statement for this query following JDBC format (? for

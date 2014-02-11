@@ -1,6 +1,5 @@
 package com.github.davidmoten.rx.jdbc;
 
-import java.sql.ResultSet;
 import java.util.concurrent.Executors;
 
 import rx.Observable;
@@ -86,8 +85,8 @@ public class Database {
 	 *            a select statement.
 	 * @return select query builder
 	 */
-	public QuerySelect.Builder<ResultSet> select(String sql) {
-		return new QuerySelect.Builder<ResultSet>(sql, this);
+	public QuerySelect.Builder select(String sql) {
+		return new QuerySelect.Builder(sql, this);
 	}
 
 	/**

@@ -3,6 +3,7 @@ package com.github.davidmoten.rx.jdbc;
 import static com.github.davidmoten.rx.jdbc.Util.TO_EMPTY_PARAMETER_LIST;
 import static com.github.davidmoten.rx.jdbc.Util.concatButIgnoreFirstSequence;
 
+import java.sql.ResultSet;
 import java.util.List;
 
 import rx.Observable;
@@ -17,16 +18,16 @@ import rx.util.functions.Func1;
  * 
  * @param <T>
  */
-public class QueryExecutor<T> {
+public class QueryExecutor {
 
-	private final Query<T> query;
+	private final Query query;
 
 	/**
 	 * Constructor.
 	 * 
 	 * @param query
 	 */
-	public QueryExecutor(Query<T> query) {
+	public QueryExecutor(Query query) {
 		this.query = query;
 	}
 
@@ -35,21 +36,12 @@ public class QueryExecutor<T> {
 	 * 
 	 * @return
 	 */
-	public Observable<T> execute() {
-		return createObservable();
+	public Observable<ResultSet> execute() {
+		return createObservableSelect((QuerySelect) query);
 	}
 
-	/**
-	 * Returns the {@link Observable} that is the result of running the query.
-	 * 
-	 * @return the result of running the query as an {@link Observable}
-	 */
-	private Observable<T> createObservable() {
-		if (query instanceof QueryUpdate) {
-			return createObservableUpdate((QueryUpdate<T>) query);
-		} else {
-			return createObservableSelect((QuerySelect<T>) query);
-		}
+	public Observable<Integer> executeUpdate() {
+		return createObservableUpdate((QueryUpdate) query);
 	}
 
 	/**
@@ -72,7 +64,7 @@ public class QueryExecutor<T> {
 		return concatButIgnoreFirstSequence(query.depends(), Observable.from(1));
 	}
 
-	private Observable<T> createObservableSelect(QuerySelect<T> query) {
+	private Observable<ResultSet> createObservableSelect(QuerySelect query) {
 		final int numParamsPerQuery = Util.parametersPerSetCount(query.sql());
 
 		if (numParamsPerQuery > 0)
@@ -92,7 +84,7 @@ public class QueryExecutor<T> {
 	 * @param query
 	 * @return
 	 */
-	private Observable<T> createObservableUpdate(QueryUpdate<T> query) {
+	private Observable<Integer> createObservableUpdate(QueryUpdate query) {
 		final int numParamsPerQuery = Util.parametersPerSetCount(query.sql());
 		if (numParamsPerQuery > 0)
 			return parametersAfterDependencies().buffer(numParamsPerQuery)
@@ -109,11 +101,11 @@ public class QueryExecutor<T> {
 	 * @param query
 	 * @return
 	 */
-	private Func1<List<Parameter>, Observable<T>> doSelect(
-			final QuerySelect<T> query) {
-		return new Func1<List<Parameter>, Observable<T>>() {
+	private Func1<List<Parameter>, Observable<ResultSet>> doSelect(
+			final QuerySelect query) {
+		return new Func1<List<Parameter>, Observable<ResultSet>>() {
 			@Override
-			public Observable<T> call(final List<Parameter> params) {
+			public Observable<ResultSet> call(final List<Parameter> params) {
 				return createObservable(query, params);
 			}
 		};
@@ -128,13 +120,13 @@ public class QueryExecutor<T> {
 	 * @param params
 	 * @return
 	 */
-	private Observable<T> createObservable(final QuerySelect<T> query,
+	private Observable<ResultSet> createObservable(final QuerySelect query,
 			final List<Parameter> params) {
-		return Observable.create(new OnSubscribeFunc<T>() {
+		return Observable.create(new OnSubscribeFunc<ResultSet>() {
 			@Override
-			public Subscription onSubscribe(Observer<? super T> o) {
-				final QuerySelectRunnable<T> q = new QuerySelectRunnable<T>(
-						query, params, o);
+			public Subscription onSubscribe(Observer<? super ResultSet> o) {
+				final QuerySelectRunnable q = new QuerySelectRunnable(query,
+						params, o);
 				query.context().executor().execute(q);
 				return createSubscription(q);
 			}
@@ -148,11 +140,11 @@ public class QueryExecutor<T> {
 	 * @param query
 	 * @return
 	 */
-	private Func1<List<Parameter>, Observable<T>> doUpdate(
-			final QueryUpdate<T> query) {
-		return new Func1<List<Parameter>, Observable<T>>() {
+	private Func1<List<Parameter>, Observable<Integer>> doUpdate(
+			final QueryUpdate query) {
+		return new Func1<List<Parameter>, Observable<Integer>>() {
 			@Override
-			public Observable<T> call(final List<Parameter> params) {
+			public Observable<Integer> call(final List<Parameter> params) {
 				return createObservable(query, params);
 			}
 		};
@@ -166,13 +158,13 @@ public class QueryExecutor<T> {
 	 * @param params
 	 * @return
 	 */
-	private Observable<T> createObservable(final QueryUpdate<T> query,
+	private Observable<Integer> createObservable(final QueryUpdate query,
 			final List<Parameter> params) {
-		return Observable.create(new OnSubscribeFunc<T>() {
+		return Observable.create(new OnSubscribeFunc<Integer>() {
 			@Override
-			public Subscription onSubscribe(Observer<? super T> o) {
-				final QueryUpdateRunnable<T> q = new QueryUpdateRunnable<T>(
-						query, params, o);
+			public Subscription onSubscribe(Observer<? super Integer> o) {
+				final QueryUpdateRunnable q = new QueryUpdateRunnable(query,
+						params, o);
 				query.context().executor().execute(q);
 				return createSubscription(q);
 			}

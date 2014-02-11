@@ -4,7 +4,6 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static rx.Observable.sum;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -184,10 +183,11 @@ public class DatabaseTest {
 				}
 			}
 		};
-		int count = sum(
-				db().select("select name from person where name >?")
-						.parameter("ALEX").get(countLettersInName)).first()
-				.toBlockingObservable().single();
+		int count = Observable
+				.sumInteger(
+						db().select("select name from person where name >?")
+								.parameter("ALEX").get(countLettersInName))
+				.first().toBlockingObservable().single();
 		assertEquals(19, count);
 	}
 

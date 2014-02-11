@@ -8,7 +8,7 @@ import java.util.List;
 
 import rx.Observer;
 
-public class QueryUpdateRunnable<T> implements Runnable, Cancellable {
+public class QueryUpdateRunnable implements Runnable, Cancellable {
 
 	private static final String ROLLBACK = "rollback";
 	private static final String COMMIT = "commit";
@@ -20,12 +20,12 @@ public class QueryUpdateRunnable<T> implements Runnable, Cancellable {
 	private volatile Connection con;
 	private volatile PreparedStatement ps;
 	private volatile ResultSet rs;
-	private final QueryUpdate<T> query;
+	private final QueryUpdate query;
 	private final List<Parameter> params;
-	private final Observer<? super T> o;
+	private final Observer<? super Integer> o;
 
-	public QueryUpdateRunnable(QueryUpdate<T> query, List<Parameter> params,
-			Observer<? super T> o) {
+	public QueryUpdateRunnable(QueryUpdate query, List<Parameter> params,
+			Observer<? super Integer> o) {
 		this.query = query;
 		this.params = params;
 		this.o = o;
@@ -50,25 +50,22 @@ public class QueryUpdateRunnable<T> implements Runnable, Cancellable {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void performRollback() {
 		Conditions.checkTrue(!Util.isAutoCommit(con));
 		synchronized (connectionLock) {
 			Util.rollback(con);
-			o.onNext((T) Integer.valueOf(0));
+			o.onNext(Integer.valueOf(0));
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void performCommit() {
 		Conditions.checkTrue(!Util.isAutoCommit(con));
 		synchronized (connectionLock) {
 			Util.commit(con);
-			o.onNext((T) Integer.valueOf(1));
+			o.onNext(Integer.valueOf(1));
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void performUpdate() throws SQLException {
 		synchronized (connectionLock) {
 			ps = con.prepareStatement(query.sql());
@@ -78,7 +75,7 @@ public class QueryUpdateRunnable<T> implements Runnable, Cancellable {
 		int count = ps.executeUpdate();
 		log.debug("executed ps=" + ps);
 		log.debug("onNext");
-		o.onNext((T) ((Integer) count));
+		o.onNext((count));
 		synchronized (connectionLock) {
 			close();
 		}
