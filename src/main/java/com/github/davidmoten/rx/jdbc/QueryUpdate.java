@@ -49,39 +49,92 @@ public class QueryUpdate implements Query {
 		return new QueryExecutor(this).executeUpdate();
 	}
 
+	/**
+	 * Builds a {@link QueryUpdate}.
+	 */
 	public static class Builder {
 
 		private final QueryBuilder builder;
 
+		/**
+		 * Constructor.
+		 * 
+		 * @param sql
+		 * @param db
+		 */
 		public Builder(String sql, Database db) {
 			this.builder = new QueryBuilder(sql, db);
 		}
 
-		public <T> Builder parameters(Observable<T> more) {
-			builder.parameters(more);
+		/**
+		 * Appends the given parameters to the parameter list for the query. If
+		 * there are more parameters than required for one execution of the
+		 * query then more than one execution of the query will occur.
+		 * 
+		 * @param parameters
+		 * @return this
+		 */
+		public <T> Builder parameters(Observable<T> parameters) {
+			builder.parameters(parameters);
 			return this;
 		}
 
-		public <T> Builder parameters(Object... objects) {
+		/**
+		 * Appends the given parameter values to the parameter list for the
+		 * query. If there are more parameters than required for one execution
+		 * of the query then more than one execution of the query will occur.
+		 * 
+		 * @param objects
+		 * @return this
+		 */
+		public Builder parameters(Object... objects) {
 			builder.parameters(objects);
 			return this;
 		}
 
+		/**
+		 * Appends a parameter to the parameter list for the query. If there are
+		 * more parameters than required for one execution of the query then
+		 * more than one execution of the query will occur.
+		 * 
+		 * @param value
+		 * @return this
+		 */
 		public Builder parameter(Object value) {
 			builder.parameter(value);
 			return this;
 		}
 
+		/**
+		 * Appends a dependency to the dependencies that have to complete their
+		 * emitting before the query is executed.
+		 * 
+		 * @param dependency
+		 * @return this
+		 */
 		public Builder dependsOn(Observable<?> dependency) {
 			builder.dependsOn(dependency);
 			return this;
 		}
 
+		/**
+		 * Appends a dependency on the result of the last transaction (
+		 * <code>true</code> for commit or <code>false</code> for rollback) to
+		 * the dependencies that have to complete their emitting before the
+		 * query is executed.
+		 * 
+		 * @return this
+		 */
 		public Builder dependsOnLastTransaction() {
 			builder.dependsOnLastTransaction();
 			return this;
 		}
 
+		/**
+		 * Returns the count of rows affected by the update statement.
+		 * 
+		 * @return
+		 */
 		public Observable<Integer> getCount() {
 			return new QueryUpdate(builder.sql(), builder.parameters(),
 					builder.depends(), builder.context()).getCount();

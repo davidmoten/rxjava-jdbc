@@ -61,10 +61,19 @@ public class QuerySelect implements Query {
 		return new QueryExecutor(this).execute();
 	}
 
+	/**
+	 * Builds a {@link QuerySelect}.
+	 */
 	public static class Builder {
 
 		private final QueryBuilder builder;
 
+		/**
+		 * Constructor.
+		 * 
+		 * @param sql
+		 * @param db
+		 */
 		public Builder(String sql, Database db) {
 			builder = new QueryBuilder(sql, db);
 		}
