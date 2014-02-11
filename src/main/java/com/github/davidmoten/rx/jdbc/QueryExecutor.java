@@ -13,8 +13,8 @@ import rx.Subscription;
 import rx.util.functions.Func1;
 
 /**
- * Creates an {@link Observable} or type T corresponding to the results of a
- * query.
+ * Creates an {@link Observable} of the results of running either an update or
+ * select query.
  */
 public class QueryExecutor {
 
