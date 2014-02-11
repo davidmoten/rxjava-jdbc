@@ -31,11 +31,17 @@ import rx.Observable;
 import rx.util.functions.Func1;
 import rx.util.functions.Functions;
 
+/**
+ * Utility methods.
+ */
 public final class Util {
 
+	/**
+	 * Logger.
+	 */
 	private static final Logger log = Logger.getLogger(Util.class);
 
-	public static int parametersPerSetCount(String sql) {
+	static int parametersPerSetCount(String sql) {
 		// TODO account for ? characters in string constants
 		return countOccurrences(sql, '?');
 	}
@@ -49,12 +55,7 @@ public final class Util {
 		return count;
 	}
 
-	public static <T> Observable<? extends T> flatten(
-			Observable<Observable<T>> o) {
-		return o.flatMap(Functions.<Observable<T>> identity());
-	}
-
-	public static void closeQuietly(PreparedStatement ps) {
+	static void closeQuietly(PreparedStatement ps) {
 		try {
 			if (ps != null && !ps.isClosed()) {
 				try {
@@ -71,7 +72,7 @@ public final class Util {
 		}
 	}
 
-	public static void closeQuietly(Connection connection) {
+	static void closeQuietly(Connection connection) {
 		try {
 			if (connection != null && !connection.isClosed()) {
 				connection.close();
@@ -82,7 +83,7 @@ public final class Util {
 		}
 	}
 
-	public static void closeQuietlyIfAutoCommit(Connection connection) {
+	static void closeQuietlyIfAutoCommit(Connection connection) {
 		try {
 			if (connection != null && !connection.isClosed()
 					&& connection.getAutoCommit())
@@ -92,7 +93,7 @@ public final class Util {
 		}
 	}
 
-	public static void commit(Connection connection) {
+	static void commit(Connection connection) {
 		if (connection != null)
 			try {
 				connection.commit();
@@ -102,7 +103,7 @@ public final class Util {
 			}
 	}
 
-	public static void rollback(Connection connection) {
+	static void rollback(Connection connection) {
 		if (connection != null)
 			try {
 				connection.rollback();
@@ -112,7 +113,7 @@ public final class Util {
 			}
 	}
 
-	public static void closeQuietly(ResultSet rs) {
+	static void closeQuietly(ResultSet rs) {
 		try {
 			if (rs != null && !rs.isClosed()) {
 				rs.close();
@@ -123,7 +124,7 @@ public final class Util {
 		}
 	}
 
-	public static boolean isAutoCommit(Connection con) {
+	static boolean isAutoCommit(Connection con) {
 		try {
 			return con.getAutoCommit();
 		} catch (SQLException e) {
@@ -149,22 +150,7 @@ public final class Util {
 		};
 	}
 
-	public static <T> Func1<T, T> delay(final int delayMs) {
-		return new Func1<T, T>() {
-
-			@Override
-			public T call(T t) {
-				try {
-					Thread.sleep(delayMs);
-				} catch (InterruptedException e) {
-					// ignore
-				}
-				return t;
-			}
-		};
-	}
-
-	public static <T> Func1<ResultSet, T> autoMap(final Class<T> cls) {
+	static <T> Func1<ResultSet, T> autoMap(final Class<T> cls) {
 		return new Func1<ResultSet, T>() {
 
 			@Override
@@ -174,7 +160,7 @@ public final class Util {
 		};
 	}
 
-	public static <T> T autoMap(ResultSet rs, Class<T> cls) {
+	static <T> T autoMap(ResultSet rs, Class<T> cls) {
 		try {
 			int n = rs.getMetaData().getColumnCount();
 			for (Constructor<?> c : cls.getDeclaredConstructors()) {
@@ -213,7 +199,7 @@ public final class Util {
 		}
 	}
 
-	public static Object autoMap(Object o, Class<?> cls) {
+	static Object autoMap(Object o, Class<?> cls) {
 		if (o == null)
 			return o;
 		else if (cls.isAssignableFrom(o.getClass())) {
@@ -361,8 +347,8 @@ public final class Util {
 
 	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
-	public static void setParameters(PreparedStatement ps,
-			List<Parameter> params) throws SQLException {
+	static void setParameters(PreparedStatement ps, List<Parameter> params)
+			throws SQLException {
 		for (int i = 1; i <= params.size(); i++) {
 			Object o = params.get(i - 1).getValue();
 			if (o == null)
@@ -447,14 +433,9 @@ public final class Util {
 		}
 	};
 
-	public static <T> Observable<T> iterateAllButEmitNone(
-			Observable<T> observable) {
-		return observable.filter(Functions.alwaysFalse());
-	}
-
 	@SuppressWarnings("unchecked")
-	public static <T> Observable<T> concatButIgnoreFirstSequence(
-			Observable<?> o1, Observable<T> o2) {
+	static <T> Observable<T> concatButIgnoreFirstSequence(Observable<?> o1,
+			Observable<T> o2) {
 		return Observable.concat(
 				(Observable<T>) o1.filter(Functions.alwaysFalse()), o2);
 	}

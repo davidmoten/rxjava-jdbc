@@ -15,12 +15,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
 import rx.Observable;
 import rx.util.functions.Func1;
+import rx.util.functions.Func2;
 
 import com.github.davidmoten.rx.jdbc.connection.ConnectionProvider;
 import com.github.davidmoten.rx.jdbc.connection.SimpleConnectionProvider;
@@ -328,8 +330,16 @@ public class DatabaseTest {
 		Database db = db();
 		Observable<Integer> insert = db
 				.update("insert into person(name,score) values(?,?)")
-				.parameters("JOHN", 45).getCount()
-				.map(Util.<Integer> delay(100));
+				.parameters("JOHN", 45)
+				.getCount()
+				.zip(Observable.interval(100, TimeUnit.MILLISECONDS),
+						new Func2<Integer, Long, Integer>() {
+							@Override
+							public Integer call(Integer t1, Long t2) {
+								return t1;
+							}
+						});
+
 		int count = db.select("select name from person").dependsOn(insert)
 				.get().count().toBlockingObservable().single();
 		assertEquals(4, count);
