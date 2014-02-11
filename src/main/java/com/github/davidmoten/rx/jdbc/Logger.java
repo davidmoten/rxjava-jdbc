@@ -24,6 +24,9 @@ class Logger {
 		debugEnabled = enable;
 	}
 
+	/**
+	 * Name of the logger to be included in the log line.
+	 */
 	private final String name;
 
 	/**

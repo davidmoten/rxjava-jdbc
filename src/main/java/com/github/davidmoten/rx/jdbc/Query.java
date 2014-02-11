@@ -4,7 +4,6 @@ import rx.Observable;
 
 /**
  * A database DML query, either update/insert or select.
- * 
  */
 public interface Query {
 

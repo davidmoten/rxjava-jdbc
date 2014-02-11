@@ -6,6 +6,7 @@ import rx.Observable;
  * Builds base information for a query (either select or update).
  */
 public class QueryBuilder {
+
 	private final String sql;
 	private Observable<Parameter> parameters = Observable.empty();
 	private Observable<?> depends = Observable.empty();

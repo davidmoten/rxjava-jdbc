@@ -1,5 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
+import java.sql.Connection;
 import java.util.concurrent.Executors;
 
 import rx.Observable;
@@ -12,16 +13,27 @@ import com.github.davidmoten.rx.jdbc.connection.SimpleConnectionProvider;
 /**
  * Main entry point for manipulations of a database using rx-java-jdbc style
  * queries.
- * 
  */
 public class Database {
 
-	// TODO use RxJava Scheduler instead of ExecutorService?
-	private static final int DEFAULT_THREAD_POOL_SIZE = 16;
+	private static final int DEFAULT_THREAD_POOL_SIZE = Runtime.getRuntime()
+			.availableProcessors() + 1;
 
+	/**
+	 * Provides {@link Connection}s for queries.
+	 */
 	private final ConnectionProvider cp;
 
+	/**
+	 * Records the current query context which will be set against a new query
+	 * at create time (not at runtime).
+	 */
 	private final ThreadLocal<QueryContext> context = new ThreadLocal<QueryContext>();
+
+	/**
+	 * Records the result of the last finished transaction (committed =
+	 * <code>true</code> or rolled back = <code>false</code>).
+	 */
 	private final ThreadLocal<Observable<Boolean>> lastTransactionResult = new ThreadLocal<Observable<Boolean>>();
 
 	/**
@@ -45,7 +57,11 @@ public class Database {
 	}
 
 	/**
-	 * Constructor. Thread pool size defaults to 16.
+	 * Constructor. Thread pool size defaults to
+	 * <code>{@link Runtime}.getRuntime().availableProcessors()+1</code>. This
+	 * may be too conservative if the database is on another server. If that is
+	 * the case then you may want to use a thread pool size equal to the
+	 * available processors + 1 on the database server.
 	 * 
 	 * @param cp
 	 *            provides connections

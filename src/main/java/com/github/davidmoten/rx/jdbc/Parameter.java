@@ -7,6 +7,9 @@ import rx.util.functions.Func1;
  */
 class Parameter {
 
+	/**
+	 * Actual query parameter value to be encapsulated.
+	 */
 	private final Object parameter;
 
 	/**
