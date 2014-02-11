@@ -8,11 +8,11 @@ import rx.Observable;
 public class QueryUpdate<T> implements Query<T> {
 
 	private final String sql;
-	private final Observable<Object> parameters;
+	private final Observable<Parameter> parameters;
 	private final QueryContext context;
 	private final Observable<?> depends;
 
-	private QueryUpdate(String sql, Observable<Object> parameters,
+	private QueryUpdate(String sql, Observable<Parameter> parameters,
 			Observable<?> depends, QueryContext context) {
 		this.sql = sql;
 		this.parameters = parameters;
@@ -26,7 +26,7 @@ public class QueryUpdate<T> implements Query<T> {
 	}
 
 	@Override
-	public Observable<Object> parameters() {
+	public Observable<Parameter> parameters() {
 		return parameters;
 	}
 
@@ -53,7 +53,7 @@ public class QueryUpdate<T> implements Query<T> {
 
 	public static class Builder {
 		private final String sql;
-		private Observable<Object> parameters = Observable.empty();
+		private Observable<Parameter> parameters = Observable.empty();
 		private final QueryContext context;
 		private Observable<?> depends = Observable.empty();
 		private final Database db;
@@ -76,7 +76,7 @@ public class QueryUpdate<T> implements Query<T> {
 
 		public <T> Builder parameters(Observable<T> more) {
 			this.parameters = Observable.concat(parameters,
-					more.cast(Object.class));
+					more.map(Parameter.TO_PARAMETER));
 			return this;
 		}
 
@@ -91,7 +91,8 @@ public class QueryUpdate<T> implements Query<T> {
 			if (value instanceof Observable)
 				throw new RuntimeException(
 						"use parameters() method not the parameter() method for an Observable");
-			parameters = Observable.concat(parameters, Observable.from(value));
+			parameters = Observable.concat(parameters, Observable.from(value)
+					.map(Parameter.TO_PARAMETER));
 			return this;
 		}
 

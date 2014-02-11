@@ -17,12 +17,12 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuples;
 public class QuerySelect<T> implements Query<T> {
 
 	private final String sql;
-	private final Observable<Object> parameters;
+	private final Observable<Parameter> parameters;
 	private final Func1<ResultSet, T> function;
 	private final QueryContext context;
 	private Observable<?> depends = Observable.empty();
 
-	private QuerySelect(String sql, Observable<Object> parameters,
+	private QuerySelect(String sql, Observable<Parameter> parameters,
 			Observable<?> depends, Func1<ResultSet, T> function,
 			QueryContext context) {
 		this.sql = sql;
@@ -43,7 +43,7 @@ public class QuerySelect<T> implements Query<T> {
 	}
 
 	@Override
-	public Observable<Object> parameters() {
+	public Observable<Parameter> parameters() {
 		return parameters;
 	}
 
@@ -67,7 +67,7 @@ public class QuerySelect<T> implements Query<T> {
 
 	public static class Builder<R> {
 		private final String sql;
-		private Observable<Object> parameters = Observable.empty();
+		private Observable<Parameter> parameters = Observable.empty();
 		private Observable<?> depends = Observable.empty();
 
 		private Func1<ResultSet, R> function = new Func1<ResultSet, R>() {
@@ -86,7 +86,7 @@ public class QuerySelect<T> implements Query<T> {
 
 		public <T> Builder<R> parameters(Observable<T> more) {
 			this.parameters = Observable.concat(parameters,
-					more.cast(Object.class));
+					more.map(Parameter.TO_PARAMETER));
 			return this;
 		}
 
@@ -111,7 +111,8 @@ public class QuerySelect<T> implements Query<T> {
 			if (value instanceof Observable)
 				throw new RuntimeException(
 						"use parameters() method not the parameter() method for an Observable");
-			parameters = Observable.concat(parameters, Observable.from(value));
+			parameters = Observable.concat(parameters, Observable.from(value)
+					.map(Parameter.TO_PARAMETER));
 			return this;
 		}
 

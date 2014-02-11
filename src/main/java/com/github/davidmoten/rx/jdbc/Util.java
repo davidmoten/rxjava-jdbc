@@ -136,9 +136,9 @@ public final class Util {
 		}
 	}
 
-	public static Func1<Integer, List<Object>> TO_EMPTY_LIST = new Func1<Integer, List<Object>>() {
+	public static Func1<Integer, List<Parameter>> TO_EMPTY_PARAMETER_LIST = new Func1<Integer, List<Parameter>>() {
 		@Override
-		public List<Object> call(Integer t1) {
+		public List<Parameter> call(Integer n) {
 			return Collections.emptyList();
 		};
 	};
@@ -366,10 +366,10 @@ public final class Util {
 
 	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
-	public static void setParameters(PreparedStatement ps, List<Object> params)
-			throws SQLException {
+	public static void setParameters(PreparedStatement ps,
+			List<Parameter> params) throws SQLException {
 		for (int i = 1; i <= params.size(); i++) {
-			Object o = params.get(i - 1);
+			Object o = params.get(i - 1).getParameter();
 			if (o == null)
 				ps.setObject(i, o);
 			else {

@@ -18,11 +18,11 @@ class QuerySelectRunnable<T> implements Runnable, Cancellable {
 	private volatile PreparedStatement ps;
 	private volatile ResultSet rs;
 	private final QuerySelect<T> query;
-	private final List<Object> params;
+	private final List<Parameter> params;
 	private final Observer<? super T> o;
 	private final AtomicBoolean keepGoing = new AtomicBoolean(true);
 
-	QuerySelectRunnable(QuerySelect<T> query, List<Object> params,
+	QuerySelectRunnable(QuerySelect<T> query, List<Parameter> params,
 			Observer<? super T> o) {
 		this.query = query;
 		this.params = params;

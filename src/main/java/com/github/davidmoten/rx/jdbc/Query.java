@@ -23,7 +23,7 @@ public interface Query<T> {
 	 * 
 	 * @return
 	 */
-	Observable<Object> parameters();
+	Observable<Parameter> parameters();
 
 	/**
 	 * Returns the Observables that have to complete before this query is

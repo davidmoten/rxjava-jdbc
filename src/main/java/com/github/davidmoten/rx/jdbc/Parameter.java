@@ -19,6 +19,7 @@ class Parameter {
 
 		@Override
 		public Parameter call(Object parameter) {
+			Conditions.checkTrue(!(parameter instanceof Parameter));
 			return new Parameter(parameter);
 		}
 	};

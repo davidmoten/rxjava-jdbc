@@ -1,6 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
-import static com.github.davidmoten.rx.jdbc.Util.TO_EMPTY_LIST;
+import static com.github.davidmoten.rx.jdbc.Util.TO_EMPTY_PARAMETER_LIST;
 import static com.github.davidmoten.rx.jdbc.Util.concatButIgnoreFirstSequence;
 
 import java.util.List;
@@ -58,7 +58,7 @@ public class QueryExecutor<T> {
 	 * 
 	 * @return query parameters
 	 */
-	private Observable<Object> parametersAfterDependencies() {
+	private Observable<Parameter> parametersAfterDependencies() {
 		return concatButIgnoreFirstSequence(query.depends(), query.parameters());
 	}
 
@@ -80,7 +80,7 @@ public class QueryExecutor<T> {
 					.flatMap(doSelect(query));
 		else
 			// run the query once with an empty list of parameters
-			return singleIntegerAfterDependencies().map(TO_EMPTY_LIST).flatMap(
+			return singleIntegerAfterDependencies().map(TO_EMPTY_PARAMETER_LIST).flatMap(
 					doSelect(query));
 	}
 
@@ -98,7 +98,7 @@ public class QueryExecutor<T> {
 			return parametersAfterDependencies().buffer(numParamsPerQuery)
 					.flatMap(doUpdate(query));
 		else
-			return singleIntegerAfterDependencies().map(TO_EMPTY_LIST).flatMap(
+			return singleIntegerAfterDependencies().map(TO_EMPTY_PARAMETER_LIST).flatMap(
 					doUpdate(query));
 	}
 
@@ -109,11 +109,11 @@ public class QueryExecutor<T> {
 	 * @param query
 	 * @return
 	 */
-	private Func1<List<Object>, Observable<T>> doSelect(
+	private Func1<List<Parameter>, Observable<T>> doSelect(
 			final QuerySelect<T> query) {
-		return new Func1<List<Object>, Observable<T>>() {
+		return new Func1<List<Parameter>, Observable<T>>() {
 			@Override
-			public Observable<T> call(final List<Object> params) {
+			public Observable<T> call(final List<Parameter> params) {
 				return createObservable(query, params);
 			}
 		};
@@ -129,7 +129,7 @@ public class QueryExecutor<T> {
 	 * @return
 	 */
 	private Observable<T> createObservable(final QuerySelect<T> query,
-			final List<Object> params) {
+			final List<Parameter> params) {
 		return Observable.create(new OnSubscribeFunc<T>() {
 			@Override
 			public Subscription onSubscribe(Observer<? super T> o) {
@@ -148,18 +148,18 @@ public class QueryExecutor<T> {
 	 * @param query
 	 * @return
 	 */
-	private Func1<List<Object>, Observable<T>> doUpdate(
+	private Func1<List<Parameter>, Observable<T>> doUpdate(
 			final QueryUpdate<T> query) {
-		return new Func1<List<Object>, Observable<T>>() {
+		return new Func1<List<Parameter>, Observable<T>>() {
 			@Override
-			public Observable<T> call(final List<Object> params) {
+			public Observable<T> call(final List<Parameter> params) {
 				return createObservable(query, params);
 			}
 		};
 	}
 
 	private Observable<T> createObservable(final QueryUpdate<T> query,
-			final List<Object> params) {
+			final List<Parameter> params) {
 		return Observable.create(new OnSubscribeFunc<T>() {
 			@Override
 			public Subscription onSubscribe(Observer<? super T> o) {

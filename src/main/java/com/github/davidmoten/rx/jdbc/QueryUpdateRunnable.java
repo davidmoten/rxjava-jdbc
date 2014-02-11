@@ -21,10 +21,10 @@ public class QueryUpdateRunnable<T> implements Runnable, Cancellable {
 	private volatile PreparedStatement ps;
 	private volatile ResultSet rs;
 	private final QueryUpdate<T> query;
-	private final List<Object> params;
+	private final List<Parameter> params;
 	private final Observer<? super T> o;
 
-	public QueryUpdateRunnable(QueryUpdate<T> query, List<Object> params,
+	public QueryUpdateRunnable(QueryUpdate<T> query, List<Parameter> params,
 			Observer<? super T> o) {
 		this.query = query;
 		this.params = params;
