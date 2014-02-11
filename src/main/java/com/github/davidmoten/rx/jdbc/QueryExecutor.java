@@ -5,6 +5,7 @@ import static com.github.davidmoten.rx.jdbc.Util.concatButIgnoreFirstSequence;
 
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import rx.Observable;
 import rx.Observable.OnSubscribeFunc;
@@ -184,6 +185,15 @@ public class QueryExecutor {
 		});
 	}
 
+	/**
+	 * Schedules the runnable for execution using the query context
+	 * {@link ExecutorService} and return a subscription allowing for cancelling
+	 * of the scheduling as well as of a running action.
+	 * 
+	 * @param query
+	 * @param runnable
+	 * @return
+	 */
 	private static <T extends Runnable & Cancellable> Subscription subscribe(
 			Query query, T runnable) {
 		Subscription sub = Schedulers.executor(query.context().executor())
