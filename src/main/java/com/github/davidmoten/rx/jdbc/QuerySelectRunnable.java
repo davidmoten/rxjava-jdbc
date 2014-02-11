@@ -3,6 +3,7 @@ package com.github.davidmoten.rx.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -33,35 +34,58 @@ class QuerySelectRunnable implements Runnable, Cancellable {
 	public void run() {
 		try {
 
-			log.debug(query.context().connectionProvider());
-			synchronized (connectionLock) {
-				if (keepGoing.get()) {
-					con = query.context().connectionProvider().get();
-					ps = con.prepareStatement(query.sql());
-					Util.setParameters(ps, params);
-				}
+			connectAndPrepareStatement();
+
+			executeQuery();
+
+			while (keepGoing.get()) {
+				processRow();
 			}
 
-			rs = ps.executeQuery();
-			log.debug("executed ps=" + ps);
-			while (keepGoing.get()) {
-				synchronized (connectionLock) {
-					if (rs.next()) {
-						log.debug("onNext");
-						o.onNext(rs);
-					} else
-						keepGoing.set(false);
-				}
-			}
-			log.debug("onCompleted");
-			o.onCompleted();
-			synchronized (connectionLock) {
-				close();
-			}
+			complete();
+
 		} catch (Exception e) {
-			log.debug("onError: " + e.getMessage());
-			o.onError(e);
+			handleException(e);
 		}
+	}
+
+	private void connectAndPrepareStatement() throws SQLException {
+		log.debug(query.context().connectionProvider());
+		synchronized (connectionLock) {
+			if (keepGoing.get()) {
+				con = query.context().connectionProvider().get();
+				ps = con.prepareStatement(query.sql());
+				Util.setParameters(ps, params);
+			}
+		}
+	}
+
+	private void executeQuery() throws SQLException {
+		rs = ps.executeQuery();
+		log.debug("executed ps=" + ps);
+	}
+
+	private void processRow() throws SQLException {
+		synchronized (connectionLock) {
+			if (rs.next()) {
+				log.debug("onNext");
+				o.onNext(rs);
+			} else
+				keepGoing.set(false);
+		}
+	}
+
+	private void complete() {
+		log.debug("onCompleted");
+		o.onCompleted();
+		synchronized (connectionLock) {
+			close();
+		}
+	}
+
+	private void handleException(Exception e) {
+		log.debug("onError: " + e.getMessage());
+		o.onError(e);
 	}
 
 	private void close() {

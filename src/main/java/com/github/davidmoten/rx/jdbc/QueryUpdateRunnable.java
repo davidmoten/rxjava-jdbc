@@ -75,19 +75,45 @@ public class QueryUpdateRunnable implements Runnable, Cancellable {
 	@Override
 	public void run() {
 		try {
-			con = query.context().connectionProvider().get();
-			log.debug("cp=" + query.context().connectionProvider());
-			if (query.sql().equals(COMMIT))
+
+			getConnection();
+
+			if (isCommit())
 				performCommit();
-			else if (query.sql().equals(ROLLBACK))
+			else if (isRollback())
 				performRollback();
 			else
 				performUpdate();
-			log.debug("onCompleted");
-			observer.onCompleted();
+
+			complete();
+
 		} catch (Exception e) {
-			log.debug("onError: " + e.getMessage());
-			observer.onError(e);
+			handleException(e);
+		}
+	}
+
+	private void getConnection() {
+		con = query.context().connectionProvider().get();
+		log.debug("cp=" + query.context().connectionProvider());
+	}
+
+	private boolean isCommit() {
+		return query.sql().equals(COMMIT);
+	}
+
+	private boolean isRollback() {
+		return query.sql().equals(ROLLBACK);
+	}
+
+	/**
+	 * Commits the current transaction. Throws {@link RuntimeException} if
+	 * connection is in autoCommit mode.
+	 */
+	private void performCommit() {
+		Conditions.checkTrue(!Util.isAutoCommit(con));
+		synchronized (connectionLock) {
+			Util.commit(con);
+			observer.onNext(Integer.valueOf(1));
 		}
 	}
 
@@ -100,18 +126,6 @@ public class QueryUpdateRunnable implements Runnable, Cancellable {
 		synchronized (connectionLock) {
 			Util.rollback(con);
 			observer.onNext(Integer.valueOf(0));
-		}
-	}
-
-	/**
-	 * Commits the current transaction. Throws {@link RuntimeException} if
-	 * connection is in autoCommit mode.
-	 */
-	private void performCommit() {
-		Conditions.checkTrue(!Util.isAutoCommit(con));
-		synchronized (connectionLock) {
-			Util.commit(con);
-			observer.onNext(Integer.valueOf(1));
 		}
 	}
 
@@ -133,6 +147,16 @@ public class QueryUpdateRunnable implements Runnable, Cancellable {
 		synchronized (connectionLock) {
 			close();
 		}
+	}
+
+	private void complete() {
+		log.debug("onCompleted");
+		observer.onCompleted();
+	}
+
+	private void handleException(Exception e) {
+		log.debug("onError: " + e.getMessage());
+		observer.onError(e);
 	}
 
 	/**
