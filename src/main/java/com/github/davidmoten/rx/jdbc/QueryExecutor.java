@@ -15,8 +15,6 @@ import rx.util.functions.Func1;
 /**
  * Creates an {@link Observable} or type T corresponding to the results of a
  * query.
- * 
- * @param <T>
  */
 public class QueryExecutor {
 
@@ -64,6 +62,13 @@ public class QueryExecutor {
 		return concatButIgnoreFirstSequence(query.depends(), Observable.from(1));
 	}
 
+	/**
+	 * Returns the {@link ResultSet}s for each iteration of the result of the
+	 * query.
+	 * 
+	 * @param query
+	 * @return
+	 */
 	private Observable<ResultSet> createObservableSelect(QuerySelect query) {
 		final int numParamsPerQuery = Util.parametersPerSetCount(query.sql());
 

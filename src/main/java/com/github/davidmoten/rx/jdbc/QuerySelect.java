@@ -16,7 +16,6 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuples;
 
 /**
  * 
- * @param <T>
  */
 public class QuerySelect implements Query {
 
