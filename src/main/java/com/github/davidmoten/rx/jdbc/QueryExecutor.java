@@ -18,6 +18,9 @@ import rx.util.functions.Func1;
  */
 public class QueryExecutor {
 
+	/**
+	 * The query to be executed.
+	 */
 	private final Query query;
 
 	/**
@@ -30,7 +33,7 @@ public class QueryExecutor {
 	}
 
 	/**
-	 * Returns the results of running the query.
+	 * Returns the results of running a select query.
 	 * 
 	 * @return
 	 */
@@ -38,6 +41,11 @@ public class QueryExecutor {
 		return createObservableSelect((QuerySelect) query);
 	}
 
+	/**
+	 * Returns the result of running an update query.
+	 * 
+	 * @return
+	 */
 	public Observable<Integer> executeUpdate() {
 		return createObservableUpdate((QueryUpdate) query);
 	}
@@ -160,16 +168,16 @@ public class QueryExecutor {
 	 * {@link Observable} of size one containing the rows affected count.
 	 * 
 	 * @param query
-	 * @param params
+	 * @param parameters
 	 * @return
 	 */
 	private Observable<Integer> createObservable(final QueryUpdate query,
-			final List<Parameter> params) {
+			final List<Parameter> parameters) {
 		return Observable.create(new OnSubscribeFunc<Integer>() {
 			@Override
 			public Subscription onSubscribe(Observer<? super Integer> o) {
 				final QueryUpdateRunnable q = new QueryUpdateRunnable(query,
-						params, o);
+						parameters, o);
 				query.context().executor().execute(q);
 				return createSubscription(q);
 			}
