@@ -1,12 +1,10 @@
 package com.github.davidmoten.rx.jdbc;
 
 import java.sql.Connection;
-import java.util.concurrent.Executors;
 
 import rx.Observable;
 import rx.util.functions.Func1;
 
-import com.github.davidmoten.rx.jdbc.connection.AutoCommittingConnectionProvider;
 import com.github.davidmoten.rx.jdbc.connection.ConnectionProvider;
 import com.github.davidmoten.rx.jdbc.connection.SimpleConnectionProvider;
 
@@ -51,9 +49,8 @@ public class Database {
 	 */
 	public Database(ConnectionProvider cp, int threadPoolSize) {
 		this.cp = cp;
-		this.asynchronousQueryContext = new QueryContext(
-				Executors.newFixedThreadPool(threadPoolSize),
-				new AutoCommittingConnectionProvider(cp));
+		this.asynchronousQueryContext = QueryContext
+				.newAsynchronousQueryContext(cp, threadPoolSize);
 	}
 
 	/**
@@ -125,7 +122,7 @@ public class Database {
 	 * @return
 	 */
 	public Database beginTransaction() {
-		context.set(new TransactionalQueryContext(cp));
+		context.set(QueryContext.newTransactionalQueryContext(cp));
 		return this;
 	}
 
