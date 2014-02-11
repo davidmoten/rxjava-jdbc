@@ -15,7 +15,7 @@ import com.github.davidmoten.rx.jdbc.tuple.TupleN;
 import com.github.davidmoten.rx.jdbc.tuple.Tuples;
 
 /**
- * 
+ * A query and its executable context.
  */
 public class QuerySelect implements Query {
 
@@ -24,6 +24,14 @@ public class QuerySelect implements Query {
 	private final QueryContext context;
 	private Observable<?> depends = Observable.empty();
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param sql
+	 * @param parameters
+	 * @param depends
+	 * @param context
+	 */
 	private QuerySelect(String sql, Observable<Parameter> parameters,
 			Observable<?> depends, QueryContext context) {
 		this.sql = sql;
@@ -66,6 +74,9 @@ public class QuerySelect implements Query {
 	 */
 	public static class Builder {
 
+		/**
+		 * Builds the standard stuff.
+		 */
 		private final QueryBuilder builder;
 
 		/**
@@ -142,54 +153,168 @@ public class QuerySelect implements Query {
 			return this;
 		}
 
-		public <S> Observable<S> get(Func1<ResultSet, S> function) {
+		/**
+		 * Transforms the results using the given function.
+		 * 
+		 * @param function
+		 * @return
+		 */
+		public <T> Observable<T> get(Func1<ResultSet, T> function) {
 			return get().map(function);
 		}
 
-		public <S> Observable<S> autoMap(Class<S> cls) {
+		/**
+		 * <p>
+		 * Transforms each row of the ResultSet into an instance of
+		 * <code>T</code> using <i>automapping</i> of the ResultSet columns into
+		 * corresponding constructor parameters that are assignable. Beyond
+		 * normal assignable criteria other conversions exist to facilitate the
+		 * automapping.
+		 * </p>
+		 * <p>
+		 * They are:
+		 * <ul>
+		 * <li>java.sql.Blob -> byte[]</li>
+		 * <li>java.sql.Blob -> java.io.InputStream</li>
+		 * <li>java.sql.Clob -> String</li>
+		 * <li>java.sql.Clob -> java.io.Reader</li>
+		 * <li>java.sql.Date -> java.util.Date</li>
+		 * <li>java.sql.Date -> Long</li>
+		 * <li>java.sql.Timestamp -> java.util.Date</li>
+		 * <li>java.sql.Timestamp -> Long</li>
+		 * <li>java.sql.Time -> java.util.Date</li>
+		 * <li>java.sql.Time -> Long</li>
+		 * </p>
+		 * 
+		 * @param cls
+		 * @return
+		 */
+		public <T> Observable<T> autoMap(Class<T> cls) {
 			return get(Util.autoMap(cls));
 		}
 
+		/**
+		 * Returns the ResultSet rows of the select query.
+		 * 
+		 * @return
+		 */
 		public Observable<ResultSet> get() {
 			return new QuerySelect(builder.sql(), builder.parameters(),
 					builder.depends(), builder.context()).execute();
 		}
 
+		/**
+		 * Automaps the first column of the ResultSet into the target class
+		 * <code>cls</code>.
+		 * 
+		 * @param cls
+		 * @return
+		 */
 		public <S> Observable<S> getAs(Class<S> cls) {
 			return get(Tuples.single(cls));
 		}
 
+		/**
+		 * Automaps all the columns of the {@link ResultSet} into the target
+		 * class <code>cls</code>. See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls
+		 * @return
+		 */
 		public <S> Observable<TupleN<S>> getTupleN(Class<S> cls) {
 			return get(Tuples.tupleN(cls));
 		}
 
+		/**
+		 * Automaps the columns of the {@link ResultSet} into the specified
+		 * classes. See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls1
+		 * @param cls2
+		 * @return
+		 */
 		public <T1, T2> Observable<Tuple2<T1, T2>> getAs(Class<T1> cls1,
 				Class<T2> cls2) {
 			return get(Tuples.tuple(cls1, cls2));
 		}
 
+		/**
+		 * Automaps the columns of the {@link ResultSet} into the specified
+		 * classes. See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls1
+		 * @param cls2
+		 * @param cls3
+		 * @return
+		 */
 		public <T1, T2, T3> Observable<Tuple3<T1, T2, T3>> getAs(
 				Class<T1> cls1, Class<T2> cls2, Class<T3> cls3) {
 			return get(Tuples.tuple(cls1, cls2, cls3));
 		}
 
+		/**
+		 * Automaps the columns of the {@link ResultSet} into the specified
+		 * classes. See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls1
+		 * @param cls2
+		 * @param cls3
+		 * @param cls4
+		 * @return
+		 */
 		public <T1, T2, T3, T4> Observable<Tuple4<T1, T2, T3, T4>> getAs(
 				Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4) {
 			return get(Tuples.tuple(cls1, cls2, cls3, cls4));
 		}
 
+		/**
+		 * Automaps the columns of the {@link ResultSet} into the specified
+		 * classes. See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls1
+		 * @param cls2
+		 * @param cls3
+		 * @param cls4
+		 * @param cls5
+		 * @return
+		 */
 		public <T1, T2, T3, T4, T5> Observable<Tuple5<T1, T2, T3, T4, T5>> getAs(
 				Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4,
 				Class<T5> cls5) {
 			return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5));
 		}
 
+		/**
+		 * Automaps the columns of the {@link ResultSet} into the specified
+		 * classes. See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls1
+		 * @param cls2
+		 * @param cls3
+		 * @param cls4
+		 * @param cls5
+		 * @param cls6
+		 * @return
+		 */
 		public <T1, T2, T3, T4, T5, T6> Observable<Tuple6<T1, T2, T3, T4, T5, T6>> getAs(
 				Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4,
 				Class<T5> cls5, Class<T6> cls6) {
 			return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6));
 		}
 
+		/**
+		 * Automaps the columns of the {@link ResultSet} into the specified
+		 * classes. See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls1
+		 * @param cls2
+		 * @param cls3
+		 * @param cls4
+		 * @param cls5
+		 * @param cls6
+		 * @param cls7
+		 * @return
+		 */
 		public <T1, T2, T3, T4, T5, T6, T7> Observable<Tuple7<T1, T2, T3, T4, T5, T6, T7>> getAs(
 				Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4,
 				Class<T5> cls5, Class<T6> cls6, Class<T7> cls7) {
