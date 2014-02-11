@@ -451,4 +451,16 @@ public final class Util {
 			}
 		}
 	};
+
+	public static <T> Observable<T> iterateAllButEmitNone(
+			Observable<T> observable) {
+		return observable.filter(Functions.alwaysFalse());
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> Observable<T> concatButIgnoreFirstSequence(
+			Observable<?> o1, Observable<T> o2) {
+		return Observable.concat(
+				(Observable<T>) o1.filter(Functions.alwaysFalse()), o2);
+	}
 }
