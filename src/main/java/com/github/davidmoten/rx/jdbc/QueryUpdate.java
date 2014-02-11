@@ -3,7 +3,8 @@ package com.github.davidmoten.rx.jdbc;
 import rx.Observable;
 
 /**
- * Always emits an Observable<Integer>.
+ * Always emits an Observable<Integer> of size 1 containing the number of
+ * affected records.
  */
 public class QueryUpdate implements Query {
 
@@ -12,6 +13,14 @@ public class QueryUpdate implements Query {
 	private final QueryContext context;
 	private final Observable<?> depends;
 
+	/**
+	 * Private constructor.
+	 * 
+	 * @param sql
+	 * @param parameters
+	 * @param depends
+	 * @param context
+	 */
 	private QueryUpdate(String sql, Observable<Parameter> parameters,
 			Observable<?> depends, QueryContext context) {
 		this.sql = sql;
@@ -54,6 +63,9 @@ public class QueryUpdate implements Query {
 	 */
 	public static class Builder {
 
+		/**
+		 * Standard query builder.
+		 */
 		private final QueryBuilder builder;
 
 		/**
