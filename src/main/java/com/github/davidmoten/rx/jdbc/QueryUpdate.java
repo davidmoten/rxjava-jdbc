@@ -143,7 +143,8 @@ public class QueryUpdate implements Query {
 		}
 
 		/**
-		 * Returns the count of rows affected by the update statement.
+		 * Returns an {@link Observable} with the count of rows affected by the
+		 * update statement.
 		 * 
 		 * @return
 		 */
