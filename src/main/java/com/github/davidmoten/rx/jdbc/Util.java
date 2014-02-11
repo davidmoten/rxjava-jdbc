@@ -28,6 +28,7 @@ import java.util.TimeZone;
 import org.apache.commons.io.IOUtils;
 
 import rx.Observable;
+import rx.util.functions.Action0;
 import rx.util.functions.Func1;
 import rx.util.functions.Functions;
 
@@ -244,11 +245,11 @@ public final class Util {
 			// TODO java.util.Calendar support
 			// TODO XMLGregorian Calendar support
 			if (type == Types.DATE)
-				return rs.getDate(i, Calendar.getInstance(UTC));
+				return rs.getDate(i, Calendar.getInstance());
 			else if (type == Types.TIME)
-				return rs.getTime(i, Calendar.getInstance(UTC));
+				return rs.getTime(i, Calendar.getInstance());
 			else if (type == Types.TIMESTAMP)
-				return rs.getTimestamp(i, Calendar.getInstance(UTC));
+				return rs.getTimestamp(i, Calendar.getInstance());
 			else if (type == Types.CLOB && cls.equals(String.class)) {
 				return toString(rs.getClob(i));
 			} else if (type == Types.CLOB && Reader.class.isAssignableFrom(cls)) {
@@ -360,13 +361,13 @@ public final class Util {
 				} else if (Blob.class.isAssignableFrom(cls)) {
 					setBlob(ps, i, o, cls);
 				} else if (Time.class.isAssignableFrom(cls)) {
-					Calendar cal = Calendar.getInstance(UTC);
+					Calendar cal = Calendar.getInstance();
 					ps.setTime(i, (Time) o, cal);
 				} else if (Timestamp.class.isAssignableFrom(cls)) {
-					Calendar cal = Calendar.getInstance(UTC);
+					Calendar cal = Calendar.getInstance();
 					ps.setTimestamp(i, (Timestamp) o, cal);
 				} else if (java.sql.Date.class.isAssignableFrom(cls)) {
-					Calendar cal = Calendar.getInstance(UTC);
+					Calendar cal = Calendar.getInstance();
 					ps.setDate(i, (java.sql.Date) o, cal);
 				} else
 					ps.setObject(i, o);
@@ -438,5 +439,15 @@ public final class Util {
 			Observable<T> o2) {
 		return Observable.concat(
 				(Observable<T>) o1.filter(Functions.alwaysFalse()), o2);
+	}
+
+	static Action0 toAction0(final Runnable r) {
+		return new Action0() {
+
+			@Override
+			public void call() {
+				r.run();
+			}
+		};
 	}
 }

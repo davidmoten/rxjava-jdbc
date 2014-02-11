@@ -10,6 +10,8 @@ import rx.Observable;
 import rx.Observable.OnSubscribeFunc;
 import rx.Observer;
 import rx.Subscription;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.Subscriptions;
 import rx.util.functions.Func1;
 
 /**
@@ -140,8 +142,7 @@ public class QueryExecutor {
 			public Subscription onSubscribe(Observer<? super ResultSet> o) {
 				final QuerySelectRunnable q = new QuerySelectRunnable(query,
 						params, o);
-				query.context().executor().execute(q);
-				return createSubscription(q);
+				return subscribe(query, q);
 			}
 		});
 	}
@@ -178,11 +179,16 @@ public class QueryExecutor {
 			public Subscription onSubscribe(Observer<? super Integer> o) {
 				final QueryUpdateRunnable q = new QueryUpdateRunnable(query,
 						parameters, o);
-				query.context().executor().execute(q);
-				return createSubscription(q);
+				return subscribe(query, q);
 			}
-
 		});
+	}
+
+	private static <T extends Runnable & Cancellable> Subscription subscribe(
+			Query query, T runnable) {
+		Subscription sub = Schedulers.executor(query.context().executor())
+				.schedule(Util.toAction0(runnable));
+		return Subscriptions.from(sub, createSubscription(runnable));
 	}
 
 	/**
@@ -192,7 +198,7 @@ public class QueryExecutor {
 	 * @param cancellable
 	 * @return
 	 */
-	private Subscription createSubscription(final Cancellable cancellable) {
+	private static Subscription createSubscription(final Cancellable cancellable) {
 		return new Subscription() {
 			@Override
 			public void unsubscribe() {
