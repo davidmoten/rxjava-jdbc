@@ -11,6 +11,9 @@ import rx.Subscription;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.Subscriptions;
 
+/**
+ * Utility methods for queries.
+ */
 class Queries {
 	/**
 	 * Returns the number of parameters required to run this query once. Roughly
@@ -45,6 +48,15 @@ class Queries {
 		return concatButIgnoreFirstSequence(query.depends(), Observable.from(1));
 	}
 
+	/**
+	 * If the number of parameters in a query is >0 then group the parameters in
+	 * lists of that number in size but only after the dependencies have been
+	 * completed. If the number of parameteres is zero then return an observable
+	 * containing one item being an empty list.
+	 * 
+	 * @param query
+	 * @return
+	 */
 	static Observable<List<Parameter>> bufferedParameters(Query query) {
 		int numParamsPerQuery = numParamsPerQuery(query);
 		if (numParamsPerQuery > 0)
