@@ -63,7 +63,7 @@ class Queries {
 	 * @param runnable
 	 * @return
 	 */
-	static <T extends Runnable & Cancellable> Subscription subscribe(
+	static <T extends Runnable & Cancellable> Subscription schedule(
 			Query query, T runnable) {
 		Subscription sub = Schedulers.executor(query.context().executor())
 				.schedule(Util.toAction0(runnable));

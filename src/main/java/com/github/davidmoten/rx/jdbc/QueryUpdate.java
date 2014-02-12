@@ -1,7 +1,7 @@
 package com.github.davidmoten.rx.jdbc;
 
 import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
-import static com.github.davidmoten.rx.jdbc.Queries.subscribe;
+import static com.github.davidmoten.rx.jdbc.Queries.schedule;
 
 import java.util.List;
 
@@ -72,7 +72,7 @@ public class QueryUpdate implements Query {
 	 * @return
 	 */
 	public Observable<Integer> getCount() {
-		return bufferedParameters(this).flatMap(doUpdate());
+		return bufferedParameters(this).flatMap(executeOnce());
 	}
 
 	/**
@@ -82,7 +82,7 @@ public class QueryUpdate implements Query {
 	 * @param query
 	 * @return
 	 */
-	private Func1<List<Parameter>, Observable<Integer>> doUpdate() {
+	private Func1<List<Parameter>, Observable<Integer>> executeOnce() {
 		return new Func1<List<Parameter>, Observable<Integer>>() {
 			@Override
 			public Observable<Integer> call(final List<Parameter> params) {
@@ -106,7 +106,7 @@ public class QueryUpdate implements Query {
 			public Subscription onSubscribe(Observer<? super Integer> o) {
 				final QueryUpdateRunnable q = new QueryUpdateRunnable(
 						QueryUpdate.this, parameters, o);
-				return subscribe(QueryUpdate.this, q);
+				return schedule(QueryUpdate.this, q);
 			}
 		});
 	}

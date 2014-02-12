@@ -1,7 +1,7 @@
 package com.github.davidmoten.rx.jdbc;
 
 import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
-import static com.github.davidmoten.rx.jdbc.Queries.subscribe;
+import static com.github.davidmoten.rx.jdbc.Queries.schedule;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -78,7 +78,7 @@ public class QuerySelect implements Query {
 	 * @return
 	 */
 	public Observable<ResultSet> execute() {
-		return bufferedParameters(this).flatMap(doSelect());
+		return bufferedParameters(this).flatMap(executeOnce());
 	}
 
 	/**
@@ -88,10 +88,10 @@ public class QuerySelect implements Query {
 	 * @param query
 	 * @return
 	 */
-	private Func1<List<Parameter>, Observable<ResultSet>> doSelect() {
+	private Func1<List<Parameter>, Observable<ResultSet>> executeOnce() {
 		return new Func1<List<Parameter>, Observable<ResultSet>>() {
 			@Override
-			public Observable<ResultSet> call(final List<Parameter> params) {
+			public Observable<ResultSet> call(List<Parameter> params) {
 				return createObservable(params);
 			}
 		};
@@ -103,7 +103,7 @@ public class QuerySelect implements Query {
 			public Subscription onSubscribe(Observer<? super ResultSet> o) {
 				final QuerySelectRunnable q = new QuerySelectRunnable(
 						QuerySelect.this, params, o);
-				return subscribe(QuerySelect.this, q);
+				return schedule(QuerySelect.this, q);
 			}
 		});
 	}
