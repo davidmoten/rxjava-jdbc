@@ -23,7 +23,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 
 import org.apache.commons.io.IOUtils;
 
@@ -346,8 +345,6 @@ public final class Util {
 			}
 		};
 	}
-
-	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
 	static void setParameters(PreparedStatement ps, List<Parameter> params)
 			throws SQLException {

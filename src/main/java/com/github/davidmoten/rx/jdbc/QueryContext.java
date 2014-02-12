@@ -45,12 +45,27 @@ class QueryContext {
 		return connectionProvider;
 	}
 
+	/**
+	 * Returns a {@link QueryContext} suitable for running with a sequence of
+	 * queries bounded by a database transaction.
+	 * 
+	 * @param connectionProvider
+	 * @return
+	 */
 	static QueryContext newTransactionalQueryContext(
 			ConnectionProvider connectionProvider) {
 		return new QueryContext(Executors.newSingleThreadExecutor(),
 				new SingletonManualCommitConnectionProvider(connectionProvider));
 	}
 
+	/**
+	 * Returns an asynchronous (outside database transactions)
+	 * {@link QueryContext}.
+	 * 
+	 * @param cp
+	 * @param threadPoolSize
+	 * @return
+	 */
 	static QueryContext newAsynchronousQueryContext(ConnectionProvider cp,
 			int threadPoolSize) {
 

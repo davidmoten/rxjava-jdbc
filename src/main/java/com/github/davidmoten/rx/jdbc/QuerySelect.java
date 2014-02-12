@@ -92,12 +92,12 @@ public class QuerySelect implements Query {
 		return new Func1<List<Parameter>, Observable<ResultSet>>() {
 			@Override
 			public Observable<ResultSet> call(List<Parameter> params) {
-				return createObservable(params);
+				return executeOnce(params);
 			}
 		};
 	}
 
-	private Observable<ResultSet> createObservable(final List<Parameter> params) {
+	private Observable<ResultSet> executeOnce(final List<Parameter> params) {
 		return Observable.create(new OnSubscribeFunc<ResultSet>() {
 			@Override
 			public Subscription onSubscribe(Observer<? super ResultSet> o) {

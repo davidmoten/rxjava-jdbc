@@ -86,7 +86,7 @@ public class QueryUpdate implements Query {
 		return new Func1<List<Parameter>, Observable<Integer>>() {
 			@Override
 			public Observable<Integer> call(final List<Parameter> params) {
-				return createObservable(params);
+				return executeOnce(params);
 			}
 		};
 	}
@@ -99,7 +99,7 @@ public class QueryUpdate implements Query {
 	 * @param parameters
 	 * @return
 	 */
-	private Observable<Integer> createObservable(
+	private Observable<Integer> executeOnce(
 			final List<Parameter> parameters) {
 		return Observable.create(new OnSubscribeFunc<Integer>() {
 			@Override
