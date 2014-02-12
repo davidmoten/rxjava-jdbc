@@ -134,6 +134,7 @@ public class QueryExecutor {
 	 * 
 	 * @param query
 	 * @param params
+	 *            parameters prefixed by dependencies that do not emit.
 	 * @return
 	 */
 	private Observable<ResultSet> createObservable(final QuerySelect query,

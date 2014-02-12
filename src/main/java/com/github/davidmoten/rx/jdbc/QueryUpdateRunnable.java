@@ -34,7 +34,9 @@ public class QueryUpdateRunnable implements Runnable, Cancellable {
 	private final QueryUpdate query;
 
 	/**
-	 * The query parameters.
+	 * The parameters to run the query against (may be a subset of the query
+	 * parameters specified in the query because the query may be run multiple
+	 * times with multiple sets of parameters).
 	 */
 	private final List<Parameter> parameters;
 
@@ -48,6 +50,7 @@ public class QueryUpdateRunnable implements Runnable, Cancellable {
 	 * Query connection.
 	 */
 	private volatile Connection con;
+
 	/**
 	 * Prepared statement for the query.
 	 */
@@ -92,6 +95,9 @@ public class QueryUpdateRunnable implements Runnable, Cancellable {
 		}
 	}
 
+	/**
+	 * Gets the current connection.
+	 */
 	private void getConnection() {
 		con = query.context().connectionProvider().get();
 		log.debug("cp=" + query.context().connectionProvider());
