@@ -133,14 +133,14 @@ public final class Util {
 		}
 	}
 
-	public static Func1<Integer, List<Parameter>> TO_EMPTY_PARAMETER_LIST = new Func1<Integer, List<Parameter>>() {
+	static Func1<Integer, List<Parameter>> TO_EMPTY_PARAMETER_LIST = new Func1<Integer, List<Parameter>>() {
 		@Override
 		public List<Parameter> call(Integer n) {
 			return Collections.emptyList();
 		};
 	};
 
-	public static <R, S> Func1<R, S> constant(final S s) {
+	static <R, S> Func1<R, S> constant(final S s) {
 		return new Func1<R, S>() {
 
 			@Override
