@@ -41,16 +41,21 @@ public class QueryExecutor {
 	 * @return
 	 */
 	public Observable<ResultSet> execute() {
-		return createObservableSelect((QuerySelect) query);
+		return createObservable(numParamsPerQuery(),
+				doSelect((QuerySelect) query));
 	}
 
 	/**
-	 * Returns the result of running an update query.
+	 * Returns the results of an update query. Should be an {@link Observable}
+	 * of size 1 containing the number of records affected by the update (or
+	 * insert) statement.
 	 * 
+	 * @param query
 	 * @return
 	 */
 	public Observable<Integer> executeUpdate() {
-		return createObservableUpdate((QueryUpdate) query);
+		return createObservable(numParamsPerQuery(),
+				doUpdate((QueryUpdate) query));
 	}
 
 	/**
@@ -74,40 +79,25 @@ public class QueryExecutor {
 	}
 
 	/**
-	 * Returns the {@link ResultSet}s for each iteration of the result of the
-	 * query.
+	 * Returns the number of parameters required to run this query once. Roughly
+	 * corresponds to the number of ? characters in the sql but have to watch
+	 * out for ? characters within quoted strings.
 	 * 
-	 * @param query
-	 * @return
+	 * @return number of parameters in query sql
 	 */
-	private Observable<ResultSet> createObservableSelect(QuerySelect query) {
-		final int numParamsPerQuery = Util.parametersPerSetCount(query.sql());
-
-		if (numParamsPerQuery > 0)
-			return parametersAfterDependencies().buffer(numParamsPerQuery)
-					.flatMap(doSelect(query));
-		else
-			// run the query once with an empty list of parameters
-			return singleIntegerAfterDependencies()
-					.map(TO_EMPTY_PARAMETER_LIST).flatMap(doSelect(query));
+	private int numParamsPerQuery() {
+		return Util.parametersPerSetCount(query.sql());
 	}
 
-	/**
-	 * Returns the results of an update query. Should be an {@link Observable}
-	 * of size 1 containing the number of records affected by the update (or
-	 * insert) statement.
-	 * 
-	 * @param query
-	 * @return
-	 */
-	private Observable<Integer> createObservableUpdate(QueryUpdate query) {
-		final int numParamsPerQuery = Util.parametersPerSetCount(query.sql());
+	private <T> Observable<T> createObservable(final int numParamsPerQuery,
+			Func1<List<Parameter>, Observable<T>> function) {
 		if (numParamsPerQuery > 0)
 			return parametersAfterDependencies().buffer(numParamsPerQuery)
-					.flatMap(doUpdate(query));
-		else
+					.flatMap(function);
+		else {
 			return singleIntegerAfterDependencies()
-					.map(TO_EMPTY_PARAMETER_LIST).flatMap(doUpdate(query));
+					.map(TO_EMPTY_PARAMETER_LIST).flatMap(function);
+		}
 	}
 
 	/**
