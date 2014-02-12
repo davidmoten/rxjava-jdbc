@@ -104,9 +104,9 @@ public class QueryUpdate implements Query {
 		return Observable.create(new OnSubscribeFunc<Integer>() {
 			@Override
 			public Subscription onSubscribe(Observer<? super Integer> o) {
-				final QueryUpdateRunnable q = new QueryUpdateRunnable(
+				final QueryUpdateRunnable task = new QueryUpdateRunnable(
 						QueryUpdate.this, parameters, o);
-				return schedule(QueryUpdate.this, q);
+				return schedule(QueryUpdate.this, task);
 			}
 		});
 	}
