@@ -103,10 +103,20 @@ public class QueryUpdateRunnable implements Runnable, Cancellable {
 		log.debug("cp=" + query.context().connectionProvider());
 	}
 
+	/**
+	 * Returns true if and only if the sql statement is a commit command.
+	 * 
+	 * @return if is commit
+	 */
 	private boolean isCommit() {
 		return query.sql().equals(COMMIT);
 	}
 
+	/**
+	 * Returns true if and only if the sql statement is a rollback command.
+	 * 
+	 * @return if is rollback
+	 */
 	private boolean isRollback() {
 		return query.sql().equals(ROLLBACK);
 	}
@@ -155,11 +165,19 @@ public class QueryUpdateRunnable implements Runnable, Cancellable {
 		}
 	}
 
+	/**
+	 * Notify observer that sequence is complete.
+	 */
 	private void complete() {
 		log.debug("onCompleted");
 		observer.onCompleted();
 	}
 
+	/**
+	 * Notify observer of an error.
+	 * 
+	 * @param e
+	 */
 	private void handleException(Exception e) {
 		log.debug("onError: " + e.getMessage());
 		observer.onError(e);

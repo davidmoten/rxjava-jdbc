@@ -82,8 +82,8 @@ public class QuerySelect implements Query {
 	}
 
 	/**
-	 * Returns a {@link Func1} that itself returns the results of pushing
-	 * parameters through a select query.
+	 * Returns a {@link Func1} that itself returns the results of pushing one
+	 * set of parameters through a select query.
 	 * 
 	 * @param query
 	 * @return
@@ -97,6 +97,14 @@ public class QuerySelect implements Query {
 		};
 	}
 
+	/**
+	 * Returns an Observable of the results of pushing one set of parameters
+	 * through a select query.
+	 * 
+	 * @param params
+	 *            one set of parameters to be run with the query
+	 * @return
+	 */
 	private Observable<ResultSet> executeOnce(final List<Parameter> params) {
 		return Observable.create(new OnSubscribeFunc<ResultSet>() {
 			@Override
