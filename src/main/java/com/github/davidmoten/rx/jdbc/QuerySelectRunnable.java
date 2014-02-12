@@ -13,7 +13,7 @@ import rx.Observer;
  * Executes a select query (sql that returns a ResultSet). Can be cancelled by
  * calling the cancel() method.
  */
-class QuerySelectRunnable implements Runnable, Cancellable {
+public class QuerySelectRunnable implements Runnable, Cancellable {
 
 	private static final Logger log = Logger
 			.getLogger(QuerySelectRunnable.class);
