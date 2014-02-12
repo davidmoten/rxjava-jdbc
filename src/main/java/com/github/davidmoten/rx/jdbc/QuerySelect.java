@@ -1,8 +1,15 @@
 package com.github.davidmoten.rx.jdbc;
 
+import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
+import static com.github.davidmoten.rx.jdbc.Queries.subscribe;
+
 import java.sql.ResultSet;
+import java.util.List;
 
 import rx.Observable;
+import rx.Observable.OnSubscribeFunc;
+import rx.Observer;
+import rx.Subscription;
 import rx.util.functions.Func1;
 
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
@@ -65,8 +72,40 @@ public class QuerySelect implements Query {
 		return depends;
 	}
 
+	/**
+	 * Returns the results of running a select query.
+	 * 
+	 * @return
+	 */
 	public Observable<ResultSet> execute() {
-		return new QueryExecutor(this).execute();
+		return bufferedParameters(this).flatMap(doSelect());
+	}
+
+	/**
+	 * Returns a {@link Func1} that itself returns the results of pushing
+	 * parameters through a select query.
+	 * 
+	 * @param query
+	 * @return
+	 */
+	private Func1<List<Parameter>, Observable<ResultSet>> doSelect() {
+		return new Func1<List<Parameter>, Observable<ResultSet>>() {
+			@Override
+			public Observable<ResultSet> call(final List<Parameter> params) {
+				return createObservable(params);
+			}
+		};
+	}
+
+	private Observable<ResultSet> createObservable(final List<Parameter> params) {
+		return Observable.create(new OnSubscribeFunc<ResultSet>() {
+			@Override
+			public Subscription onSubscribe(Observer<? super ResultSet> o) {
+				final QuerySelectRunnable q = new QuerySelectRunnable(
+						QuerySelect.this, params, o);
+				return subscribe(QuerySelect.this, q);
+			}
+		});
 	}
 
 	/**

@@ -1,6 +1,15 @@
 package com.github.davidmoten.rx.jdbc;
 
+import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
+import static com.github.davidmoten.rx.jdbc.Queries.subscribe;
+
+import java.util.List;
+
 import rx.Observable;
+import rx.Observable.OnSubscribeFunc;
+import rx.Observer;
+import rx.Subscription;
+import rx.util.functions.Func1;
 
 /**
  * Always emits an Observable<Integer> of size 1 containing the number of
@@ -54,8 +63,52 @@ public class QueryUpdate implements Query {
 		return depends;
 	}
 
+	/**
+	 * Returns the results of an update query. Should be an {@link Observable}
+	 * of size 1 containing the number of records affected by the update (or
+	 * insert) statement.
+	 * 
+	 * @param query
+	 * @return
+	 */
 	public Observable<Integer> getCount() {
-		return new QueryExecutor(this).executeUpdate();
+		return bufferedParameters(this).flatMap(doUpdate());
+	}
+
+	/**
+	 * Returns a {@link Func1} that itself returns the results of pushing
+	 * parameters through an update query.
+	 * 
+	 * @param query
+	 * @return
+	 */
+	private Func1<List<Parameter>, Observable<Integer>> doUpdate() {
+		return new Func1<List<Parameter>, Observable<Integer>>() {
+			@Override
+			public Observable<Integer> call(final List<Parameter> params) {
+				return createObservable(params);
+			}
+		};
+	}
+
+	/**
+	 * Returns the results of an update query. Should return an
+	 * {@link Observable} of size one containing the rows affected count.
+	 * 
+	 * @param query
+	 * @param parameters
+	 * @return
+	 */
+	private Observable<Integer> createObservable(
+			final List<Parameter> parameters) {
+		return Observable.create(new OnSubscribeFunc<Integer>() {
+			@Override
+			public Subscription onSubscribe(Observer<? super Integer> o) {
+				final QueryUpdateRunnable q = new QueryUpdateRunnable(
+						QueryUpdate.this, parameters, o);
+				return subscribe(QueryUpdate.this, q);
+			}
+		});
 	}
 
 	/**

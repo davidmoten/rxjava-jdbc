@@ -28,6 +28,7 @@ import java.util.TimeZone;
 import org.apache.commons.io.IOUtils;
 
 import rx.Observable;
+import rx.Subscription;
 import rx.util.functions.Action0;
 import rx.util.functions.Func1;
 import rx.util.functions.Functions;
@@ -447,6 +448,22 @@ public final class Util {
 			@Override
 			public void call() {
 				r.run();
+			}
+		};
+	}
+
+	/**
+	 * Create an rx {@link Subscription} that cancels the given
+	 * {@link Cancellable} on unsubscribe.
+	 * 
+	 * @param cancellable
+	 * @return
+	 */
+	static Subscription createSubscription(final Cancellable cancellable) {
+		return new Subscription() {
+			@Override
+			public void unsubscribe() {
+				cancellable.cancel();
 			}
 		};
 	}
