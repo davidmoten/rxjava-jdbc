@@ -3,7 +3,7 @@ package com.github.davidmoten.rx.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-class ConnectionProviderAutoCommitting implements ConnectionProvider {
+final class ConnectionProviderAutoCommitting implements ConnectionProvider {
 
 	private final ConnectionProvider cp;
 
