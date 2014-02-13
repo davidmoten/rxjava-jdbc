@@ -12,4 +12,9 @@ public class UtilTest {
 				Util.autoMap(new java.sql.Date(1), java.util.Date.class));
 	}
 
+	@Test
+	public void obtainCoverageOfPrivateConstructor() {
+		TestingUtil.instantiateUsingPrivateConstructor(Util.class);
+	}
+
 }

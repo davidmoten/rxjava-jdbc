@@ -11,6 +11,10 @@ import rx.util.functions.Func1;
 
 public class Tuples {
 
+	private Tuples() {
+		// prevent instantiation.
+	}
+
 	public static final <T> Func1<ResultSet, T> single(final Class<T> cls) {
 		return new Func1<ResultSet, T>() {
 
