@@ -455,6 +455,14 @@ public class DatabaseTest {
 	}
 
 	@Test
+	public void testLastTransactionWithoutTransaction() {
+		Database db = db();
+		List<Boolean> list = db.getLastTransactionResult().toList()
+				.toBlockingObservable().single();
+		assertTrue(list.isEmpty());
+	}
+
+	@Test
 	public void testAutoMapClob() {
 		Database db = db();
 		insertClob(db);
