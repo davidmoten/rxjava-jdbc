@@ -42,11 +42,24 @@ public final class Util {
 	 */
 	private static final Logger log = Logger.getLogger(Util.class);
 
-	static int parametersPerSetCount(String sql) {
+	/**
+	 * Count the number of JDBC parameters in a sql statement.
+	 * 
+	 * @param sql
+	 * @return
+	 */
+	static int parametersCount(String sql) {
 		// TODO account for ? characters in string constants
 		return countOccurrences(sql, '?');
 	}
 
+	/**
+	 * Returns the number of occurrences of a character in a string.
+	 * 
+	 * @param haystack
+	 * @param needle
+	 * @return
+	 */
 	private static int countOccurrences(String haystack, char needle) {
 		int count = 0;
 		for (int i = 0; i < haystack.length(); i++) {
@@ -56,6 +69,12 @@ public final class Util {
 		return count;
 	}
 
+	/**
+	 * Cancels then closes a {@link PreparedStatement} and logs exceptions
+	 * without throwing. Does nothing if ps is null.
+	 * 
+	 * @param ps
+	 */
 	static void closeQuietly(PreparedStatement ps) {
 		try {
 			if (ps != null && !ps.isClosed()) {
@@ -73,6 +92,12 @@ public final class Util {
 		}
 	}
 
+	/**
+	 * Closes a {@link Connection} and logs exceptions without throwing. Does
+	 * nothing if connection is null.
+	 * 
+	 * @param connection
+	 */
 	static void closeQuietly(Connection connection) {
 		try {
 			if (connection != null && !connection.isClosed()) {
@@ -84,6 +109,12 @@ public final class Util {
 		}
 	}
 
+	/**
+	 * Closes a {@link Connection} only if the connection is in auto commit mode
+	 * and logs exceptions without throwing. Does nothing if connection is null.
+	 * 
+	 * @param connection
+	 */
 	static void closeQuietlyIfAutoCommit(Connection connection) {
 		try {
 			if (connection != null && !connection.isClosed()
@@ -94,6 +125,11 @@ public final class Util {
 		}
 	}
 
+	/**
+	 * Commits a {@link Connection} and logs exceptions without throwing.
+	 * 
+	 * @param connection
+	 */
 	static void commit(Connection connection) {
 		if (connection != null)
 			try {
@@ -104,6 +140,11 @@ public final class Util {
 			}
 	}
 
+	/**
+	 * Rolls back a {@link Connection} and logs exceptions without throwing.
+	 * 
+	 * @param connection
+	 */
 	static void rollback(Connection connection) {
 		if (connection != null)
 			try {
@@ -114,6 +155,11 @@ public final class Util {
 			}
 	}
 
+	/**
+	 * Closes a {@link ResultSet} and logs exceptions without throwing.
+	 * 
+	 * @param rs
+	 */
 	static void closeQuietly(ResultSet rs) {
 		try {
 			if (rs != null && !rs.isClosed()) {
@@ -125,6 +171,12 @@ public final class Util {
 		}
 	}
 
+	/**
+	 * Returns true if and only if {@link Connection} is in auto commit mode.
+	 * 
+	 * @param con
+	 * @return
+	 */
 	static boolean isAutoCommit(Connection con) {
 		try {
 			return con.getAutoCommit();
@@ -133,6 +185,9 @@ public final class Util {
 		}
 	}
 
+	/**
+	 * Returns the empty list whenever called.
+	 */
 	static Func1<Integer, List<Parameter>> TO_EMPTY_PARAMETER_LIST = new Func1<Integer, List<Parameter>>() {
 		@Override
 		public List<Parameter> call(Integer n) {
@@ -140,20 +195,23 @@ public final class Util {
 		};
 	};
 
+	/**
+	 * Returns a constant value.
+	 * 
+	 * @param s
+	 * @return
+	 */
 	static <R, S> Func1<R, S> constant(final S s) {
 		return new Func1<R, S>() {
-
 			@Override
 			public S call(R t1) {
 				return s;
 			}
-
 		};
 	}
 
 	static <T> Func1<ResultSet, T> autoMap(final Class<T> cls) {
 		return new Func1<ResultSet, T>() {
-
 			@Override
 			public T call(ResultSet rs) {
 				return autoMap(rs, cls);

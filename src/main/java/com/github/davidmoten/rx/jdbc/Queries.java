@@ -23,7 +23,7 @@ final class Queries {
 	 * @return number of parameters in query sql
 	 */
 	static int numParamsPerQuery(Query query) {
-		return Util.parametersPerSetCount(query.sql());
+		return Util.parametersCount(query.sql());
 	}
 
 	/**
