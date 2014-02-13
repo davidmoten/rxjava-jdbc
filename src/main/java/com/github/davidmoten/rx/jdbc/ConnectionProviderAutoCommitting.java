@@ -1,13 +1,13 @@
-package com.github.davidmoten.rx.jdbc.connection;
+package com.github.davidmoten.rx.jdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class AutoCommittingConnectionProvider implements ConnectionProvider {
+class ConnectionProviderAutoCommitting implements ConnectionProvider {
 
 	private final ConnectionProvider cp;
 
-	public AutoCommittingConnectionProvider(ConnectionProvider cp) {
+	ConnectionProviderAutoCommitting(ConnectionProvider cp) {
 		this.cp = cp;
 	}
 

@@ -5,9 +5,6 @@ import java.sql.Connection;
 import rx.Observable;
 import rx.util.functions.Func1;
 
-import com.github.davidmoten.rx.jdbc.connection.ConnectionProvider;
-import com.github.davidmoten.rx.jdbc.connection.SimpleConnectionProvider;
-
 /**
  * Main entry point for manipulations of a database using rx-java-jdbc style
  * queries.
@@ -68,14 +65,14 @@ public class Database {
 	}
 
 	/**
-	 * Constructor. Uses a {@link SimpleConnectionProvider} based on the given
+	 * Constructor. Uses a {@link ConnectionProviderFromUrl} based on the given
 	 * url.
 	 * 
 	 * @param url
 	 *            jdbc connection url
 	 */
 	public Database(String url) {
-		this(new SimpleConnectionProvider(url));
+		this(new ConnectionProviderFromUrl(url));
 	}
 
 	/**

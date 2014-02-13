@@ -1,15 +1,14 @@
-package com.github.davidmoten.rx.jdbc.connection;
+package com.github.davidmoten.rx.jdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class SingletonManualCommitConnectionProvider implements
-		ConnectionProvider {
+class ConnectionProviderSingletonManualCommit implements ConnectionProvider {
 
 	private Connection con;
-	private ConnectionProvider cp;
+	private final ConnectionProvider cp;
 
-	public SingletonManualCommitConnectionProvider(ConnectionProvider cp) {
+	ConnectionProviderSingletonManualCommit(ConnectionProvider cp) {
 		this.cp = cp;
 	}
 

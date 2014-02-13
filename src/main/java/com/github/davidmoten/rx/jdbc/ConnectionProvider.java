@@ -1,4 +1,4 @@
-package com.github.davidmoten.rx.jdbc.connection;
+package com.github.davidmoten.rx.jdbc;
 
 import java.sql.Connection;
 
@@ -14,6 +14,6 @@ public interface ConnectionProvider {
 	 * 
 	 * @return a new Connection to a database
 	 */
-	public Connection get();
+	Connection get();
 
 }

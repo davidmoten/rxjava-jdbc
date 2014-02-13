@@ -3,10 +3,6 @@ package com.github.davidmoten.rx.jdbc;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.github.davidmoten.rx.jdbc.connection.AutoCommittingConnectionProvider;
-import com.github.davidmoten.rx.jdbc.connection.ConnectionProvider;
-import com.github.davidmoten.rx.jdbc.connection.SingletonManualCommitConnectionProvider;
-
 /**
  * The threading and database connection context for mutliple jdbc queries.
  * 
@@ -55,7 +51,7 @@ class QueryContext {
 	static QueryContext newTransactionalQueryContext(
 			ConnectionProvider connectionProvider) {
 		return new QueryContext(Executors.newSingleThreadExecutor(),
-				new SingletonManualCommitConnectionProvider(connectionProvider));
+				new ConnectionProviderSingletonManualCommit(connectionProvider));
 	}
 
 	/**
@@ -70,7 +66,7 @@ class QueryContext {
 			int threadPoolSize) {
 
 		return new QueryContext(Executors.newFixedThreadPool(threadPoolSize),
-				new AutoCommittingConnectionProvider(cp));
+				new ConnectionProviderAutoCommitting(cp));
 	}
 
 }

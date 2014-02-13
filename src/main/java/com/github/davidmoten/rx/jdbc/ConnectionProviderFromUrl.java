@@ -1,14 +1,14 @@
-package com.github.davidmoten.rx.jdbc.connection;
+package com.github.davidmoten.rx.jdbc;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class SimpleConnectionProvider implements ConnectionProvider {
+public class ConnectionProviderFromUrl implements ConnectionProvider {
 
 	private final String url;
 
-	public SimpleConnectionProvider(String url) {
+	public ConnectionProviderFromUrl(String url) {
 		this.url = url;
 	}
 
