@@ -24,7 +24,7 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuples;
 /**
  * A query and its executable context.
  */
-public class QuerySelect implements Query {
+final public class QuerySelect implements Query {
 
 	private final String sql;
 	private final Observable<Parameter> parameters;
@@ -119,7 +119,7 @@ public class QuerySelect implements Query {
 	/**
 	 * Builds a {@link QuerySelect}.
 	 */
-	public static class Builder {
+	final public static class Builder {
 
 		/**
 		 * Builds the standard stuff.

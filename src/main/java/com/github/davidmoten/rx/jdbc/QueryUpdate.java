@@ -15,7 +15,7 @@ import rx.util.functions.Func1;
  * Always emits an Observable<Integer> of size 1 containing the number of
  * affected records.
  */
-public class QueryUpdate implements Query {
+final public class QueryUpdate implements Query {
 
 	private final String sql;
 	private final Observable<Parameter> parameters;
@@ -113,7 +113,7 @@ public class QueryUpdate implements Query {
 	/**
 	 * Builds a {@link QueryUpdate}.
 	 */
-	public static class Builder {
+	final public static class Builder {
 
 		/**
 		 * Standard query builder.

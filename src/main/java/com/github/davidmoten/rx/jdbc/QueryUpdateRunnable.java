@@ -10,7 +10,7 @@ import rx.Observer;
 /**
  * Executes an update query.
  */
-public class QueryUpdateRunnable implements Runnable, Cancellable {
+final public class QueryUpdateRunnable implements Runnable, Cancellable {
 
 	/**
 	 * Logger.

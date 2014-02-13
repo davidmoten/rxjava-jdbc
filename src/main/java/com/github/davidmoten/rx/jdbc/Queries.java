@@ -14,7 +14,7 @@ import rx.subscriptions.Subscriptions;
 /**
  * Utility methods for queries.
  */
-class Queries {
+final class Queries {
 	/**
 	 * Returns the number of parameters required to run this query once. Roughly
 	 * corresponds to the number of ? characters in the sql but have to watch

@@ -5,7 +5,7 @@ import rx.util.functions.Func1;
 /**
  * Encapsulate a query parameter.
  */
-class Parameter {
+final class Parameter {
 
 	/**
 	 * Actual query parameter value to be encapsulated.

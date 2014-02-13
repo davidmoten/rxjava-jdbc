@@ -3,7 +3,8 @@ package com.github.davidmoten.rx.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-class ConnectionProviderSingletonManualCommit implements ConnectionProvider {
+final class ConnectionProviderSingletonManualCommit implements
+		ConnectionProvider {
 
 	private Connection con;
 	private final ConnectionProvider cp;

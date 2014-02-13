@@ -9,7 +9,7 @@ import java.util.TimeZone;
  * dependencies but might consider switch to slf4j).
  * 
  */
-class Logger {
+final class Logger {
 
 	// TODO turn off by default
 	private static boolean debugEnabled = true;

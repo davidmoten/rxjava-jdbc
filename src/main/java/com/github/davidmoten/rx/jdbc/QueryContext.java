@@ -7,7 +7,7 @@ import java.util.concurrent.Executors;
  * The threading and database connection context for mutliple jdbc queries.
  * 
  */
-class QueryContext {
+final class QueryContext {
 
 	private final ExecutorService executor;
 	private final ConnectionProvider connectionProvider;

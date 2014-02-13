@@ -9,7 +9,7 @@ import rx.util.functions.Func1;
  * Main entry point for manipulations of a database using rx-java-jdbc style
  * queries.
  */
-public class Database {
+final public class Database {
 
 	private static final int DEFAULT_THREAD_POOL_SIZE = Runtime.getRuntime()
 			.availableProcessors() + 1;
