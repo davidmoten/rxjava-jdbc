@@ -25,6 +25,11 @@ import rx.util.functions.Func1;
 import rx.util.functions.Func2;
 
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
+import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
+import com.github.davidmoten.rx.jdbc.tuple.Tuple4;
+import com.github.davidmoten.rx.jdbc.tuple.Tuple5;
+import com.github.davidmoten.rx.jdbc.tuple.Tuple6;
+import com.github.davidmoten.rx.jdbc.tuple.Tuple7;
 import com.github.davidmoten.rx.jdbc.tuple.TupleN;
 
 public class DatabaseTest {
@@ -460,6 +465,74 @@ public class DatabaseTest {
 		List<Boolean> list = db.getLastTransactionResult().toList()
 				.toBlockingObservable().single();
 		assertTrue(list.isEmpty());
+	}
+
+	@Test
+	public void testTuple3() {
+		Tuple3<String, Integer, String> tuple = db()
+				.select("select name,1,lower(name) from person order by name")
+				.getAs(String.class, Integer.class, String.class).first()
+				.toBlockingObservable().single();
+		assertEquals("FRED", tuple.value1());
+		assertEquals(1, (int) tuple.value2());
+		assertEquals("fred", tuple.value3());
+	}
+
+	@Test
+	public void testTuple4() {
+		Tuple4<String, Integer, String, Integer> tuple = db()
+				.select("select name,1,lower(name),2 from person order by name")
+				.getAs(String.class, Integer.class, String.class, Integer.class)
+				.first().toBlockingObservable().single();
+		assertEquals("FRED", tuple.value1());
+		assertEquals(1, (int) tuple.value2());
+		assertEquals("fred", tuple.value3());
+		assertEquals(2, (int) tuple.value4());
+	}
+
+	@Test
+	public void testTuple5() {
+		Tuple5<String, Integer, String, Integer, String> tuple = db()
+				.select("select name,1,lower(name),2,name from person order by name")
+				.getAs(String.class, Integer.class, String.class,
+						Integer.class, String.class).first()
+				.toBlockingObservable().single();
+		assertEquals("FRED", tuple.value1());
+		assertEquals(1, (int) tuple.value2());
+		assertEquals("fred", tuple.value3());
+		assertEquals(2, (int) tuple.value4());
+		assertEquals("FRED", tuple.value5());
+	}
+
+	@Test
+	public void testTuple6() {
+		Tuple6<String, Integer, String, Integer, String, Integer> tuple = db()
+				.select("select name,1,lower(name),2,name,3 from person order by name")
+				.getAs(String.class, Integer.class, String.class,
+						Integer.class, String.class, Integer.class).first()
+				.toBlockingObservable().single();
+		assertEquals("FRED", tuple.value1());
+		assertEquals(1, (int) tuple.value2());
+		assertEquals("fred", tuple.value3());
+		assertEquals(2, (int) tuple.value4());
+		assertEquals("FRED", tuple.value5());
+		assertEquals(3, (int) tuple.value6());
+	}
+
+	@Test
+	public void testTuple7() {
+		Tuple7<String, Integer, String, Integer, String, Integer, Integer> tuple = db()
+				.select("select name,1,lower(name),2,name,3,4 from person order by name")
+				.getAs(String.class, Integer.class, String.class,
+						Integer.class, String.class, Integer.class,
+						Integer.class).first().toBlockingObservable().single();
+		assertEquals("FRED", tuple.value1());
+		assertEquals(1, (int) tuple.value2());
+		assertEquals("fred", tuple.value3());
+		assertEquals(2, (int) tuple.value4());
+		assertEquals("FRED", tuple.value5());
+		assertEquals(3, (int) tuple.value6());
+		assertEquals(4, (int) tuple.value7());
 	}
 
 	@Test
