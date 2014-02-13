@@ -22,7 +22,7 @@ The only runtime dependencies are [rxjava-core](https://github.com/Netflix/RxJav
 
 Continuous integration with Jenkins for this project is [here](https://xuml-tools.ci.cloudbees.com/). <a href="https://xuml-tools.ci.cloudbees.com/"><img  src="http://web-static-cloudfront.s3.amazonaws.com/images/badges/BuiltOnDEV.png"/></a>
 
-Javadocs are [here](http://davidmoten.github.io/rxjava-jdbc/apidocs/).
+Maven site reports are [here](http://davidmoten.github.io/rxjava-jdbc/site/index.html).
 
 Getting started
 --------------------
