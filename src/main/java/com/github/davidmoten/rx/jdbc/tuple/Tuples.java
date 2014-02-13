@@ -23,18 +23,6 @@ public class Tuples {
 		};
 	}
 
-	public static final <T> Func1<ResultSet, T> single() {
-		return new Func1<ResultSet, T>() {
-
-			@SuppressWarnings("unchecked")
-			@Override
-			public T call(ResultSet rs) {
-				return (T) getObject(rs, Object.class, 1);
-			}
-
-		};
-	}
-
 	public static final <T1, T2> Func1<ResultSet, Tuple2<T1, T2>> tuple(
 			final Class<T1> cls1, final Class<T2> cls2) {
 		return new Func1<ResultSet, Tuple2<T1, T2>>() {
