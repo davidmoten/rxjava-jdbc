@@ -210,6 +210,15 @@ public final class Util {
 		};
 	}
 
+	/**
+	 * Returns a function that converts the ResultSet column values into
+	 * parameters to the constructor (with number of parameters equals the
+	 * number of columns) of type <code>cls</code> then returns an instance of
+	 * type <code>cls</code>.
+	 * 
+	 * @param cls
+	 * @return
+	 */
 	static <T> Func1<ResultSet, T> autoMap(final Class<T> cls) {
 		return new Func1<ResultSet, T>() {
 			@Override
@@ -219,6 +228,15 @@ public final class Util {
 		};
 	}
 
+	/**
+	 * Converts the ResultSet column values into parameters to the constructor
+	 * (with number of parameters equals the number of columns) of type
+	 * <code>T</code> then returns an instance of type <code>T</code>.
+	 * 
+	 * @param cls
+	 *            the class of the resultant instance
+	 * @return an automapped instance
+	 */
 	static <T> T autoMap(ResultSet rs, Class<T> cls) {
 		try {
 			int n = rs.getMetaData().getColumnCount();
@@ -234,6 +252,19 @@ public final class Util {
 		}
 	}
 
+	/**
+	 * Converts the ResultSet column values into parameters to the given
+	 * constructor (with number of parameters equals the number of columns) of
+	 * type <code>T</code> then returns an instance of type <code>T</code>.
+	 * 
+	 * @param rs
+	 *            the result set row
+	 * @param cls
+	 *            type of instance to instantiate
+	 * @param c
+	 *            constructor to use for instantiation
+	 * @return automapped instance
+	 */
 	private static <T> T autoMap(ResultSet rs, Class<T> cls, Constructor<?> c) {
 		Class<?>[] types = c.getParameterTypes();
 		List<Object> list = new ArrayList<Object>();
@@ -243,10 +274,18 @@ public final class Util {
 		return newInstance(c, list);
 	}
 
+	/**
+	 * 
+	 * @param c
+	 *            constructor to use
+	 * @param parameters
+	 *            constructor parameters
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
-	private static <T> T newInstance(Constructor<?> c, List<Object> list) {
+	private static <T> T newInstance(Constructor<?> c, List<Object> parameters) {
 		try {
-			return (T) c.newInstance(list.toArray());
+			return (T) c.newInstance(parameters.toArray());
 		} catch (InstantiationException e) {
 			throw new RuntimeException(e);
 		} catch (IllegalAccessException e) {
@@ -328,6 +367,13 @@ public final class Util {
 		}
 	}
 
+	/**
+	 * Returns the bytes of a {@link Blob} and frees the blob resource.
+	 * 
+	 * @param b
+	 *            blob
+	 * @return
+	 */
 	private static byte[] toBytes(Blob b) {
 		try {
 			InputStream is = b.getBinaryStream();
@@ -343,6 +389,12 @@ public final class Util {
 
 	}
 
+	/**
+	 * Returns the String of a {@link Clob} and frees the clob resource.
+	 * 
+	 * @param c
+	 * @return
+	 */
 	private static String toString(Clob c) {
 		try {
 			Reader reader = c.getCharacterStream();
@@ -357,7 +409,15 @@ public final class Util {
 		}
 	}
 
-	private static InputStream createFreeOnCloseInputStream(final Blob b,
+	/**
+	 * Automatically frees the blob (<code>blob.free()</code>) once the blob
+	 * {@link InputStream} is closed.
+	 * 
+	 * @param blob
+	 * @param is
+	 * @return
+	 */
+	private static InputStream createFreeOnCloseInputStream(final Blob blob,
 			final InputStream is) {
 		return new InputStream() {
 
@@ -372,7 +432,7 @@ public final class Util {
 					is.close();
 				} finally {
 					try {
-						b.free();
+						blob.free();
 					} catch (SQLException e) {
 						log.debug(e.getMessage());
 					}
@@ -381,16 +441,24 @@ public final class Util {
 		};
 	}
 
-	private static Reader createFreeOnCloseReader(final Clob b, final Reader r) {
+	/**
+	 * Automatically frees the clob (<code>Clob.free()</code>) once the clob
+	 * Reader is closed.
+	 * 
+	 * @param clob
+	 * @param reader
+	 * @return
+	 */
+	private static Reader createFreeOnCloseReader(final Clob clob, final Reader reader) {
 		return new Reader() {
 
 			@Override
 			public void close() throws IOException {
 				try {
-					r.close();
+					reader.close();
 				} finally {
 					try {
-						b.free();
+						clob.free();
 					} catch (SQLException e) {
 						log.debug(e.getMessage());
 					}
@@ -399,7 +467,7 @@ public final class Util {
 
 			@Override
 			public int read(char[] cbuf, int off, int len) throws IOException {
-				return r.read(cbuf, off, len);
+				return reader.read(cbuf, off, len);
 			}
 		};
 	}
