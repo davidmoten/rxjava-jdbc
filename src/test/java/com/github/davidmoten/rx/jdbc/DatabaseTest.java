@@ -565,7 +565,7 @@ public class DatabaseTest {
 	}
 
 	@Test
-	public void testCalendar() throws SQLException {
+	public void testCalendarParameter() throws SQLException {
 		Database db = db();
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeInMillis(0);

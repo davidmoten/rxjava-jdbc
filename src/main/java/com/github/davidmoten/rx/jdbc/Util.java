@@ -492,6 +492,10 @@ public final class Util {
 					setClob(ps, i, o, cls);
 				} else if (Blob.class.isAssignableFrom(cls)) {
 					setBlob(ps, i, o, cls);
+				} else if (Calendar.class.isAssignableFrom(cls)) {
+					Calendar cal = (Calendar) o;
+					Timestamp t = new java.sql.Timestamp(cal.getTimeInMillis());
+					ps.setTimestamp(i, t, cal);
 				} else if (Time.class.isAssignableFrom(cls)) {
 					Calendar cal = Calendar.getInstance();
 					ps.setTime(i, (Time) o, cal);
