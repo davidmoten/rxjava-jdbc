@@ -456,7 +456,8 @@ public final class Util {
 	 * @param reader
 	 * @return
 	 */
-	private static Reader createFreeOnCloseReader(final Clob clob, final Reader reader) {
+	private static Reader createFreeOnCloseReader(final Clob clob,
+			final Reader reader) {
 		return new Reader() {
 
 			@Override
@@ -538,6 +539,13 @@ public final class Util {
 		ps.setClob(i, c);
 	}
 
+	/**
+	 * Copies a {@link Reader} to a {@link Writer}.
+	 * 
+	 * @param input
+	 * @param output
+	 * @return
+	 */
 	private static int copy(Reader input, Writer output) {
 		try {
 			return IOUtils.copy(input, output);
@@ -546,6 +554,13 @@ public final class Util {
 		}
 	}
 
+	/**
+	 * Copies an {@link InputStream} to an {@link OutputStream}.
+	 * 
+	 * @param input
+	 * @param output
+	 * @return
+	 */
 	private static int copy(InputStream input, OutputStream output) {
 		try {
 			return IOUtils.copy(input, output);
@@ -554,6 +569,9 @@ public final class Util {
 		}
 	}
 
+	/**
+	 * Returns a function that reads a {@link Reader} into a String.
+	 */
 	public static final Func1<Reader, String> READER_TO_STRING = new Func1<Reader, String>() {
 		@Override
 		public String call(Reader r) {
@@ -565,6 +583,14 @@ public final class Util {
 		}
 	};
 
+	/**
+	 * The first sequence will be emitted in its entirety and ignored before o2
+	 * starts emitting.
+	 * 
+	 * @param o1
+	 * @param o2
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	static <T> Observable<T> concatButIgnoreFirstSequence(Observable<?> o1,
 			Observable<T> o2) {
@@ -572,12 +598,18 @@ public final class Util {
 				(Observable<T>) o1.filter(Functions.alwaysFalse()), o2);
 	}
 
-	static Action0 toAction0(final Runnable r) {
+	/**
+	 * Converts a {@link Runnable} to an {@link Action0}.
+	 * 
+	 * @param runnable
+	 * @return
+	 */
+	static Action0 toAction0(final Runnable runnable) {
 		return new Action0() {
 
 			@Override
 			public void call() {
-				r.run();
+				runnable.run();
 			}
 		};
 	}
