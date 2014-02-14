@@ -14,4 +14,9 @@ public class ConditionsTest {
 		Conditions.checkTrue(false);
 	}
 
+	@Test
+	public void obtainCoverageOfPrivateConstructor() {
+		TestingUtil.instantiateUsingPrivateConstructor(Conditions.class);
+	}
+
 }

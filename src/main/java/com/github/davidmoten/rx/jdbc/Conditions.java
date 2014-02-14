@@ -6,6 +6,13 @@ package com.github.davidmoten.rx.jdbc;
 final class Conditions {
 
 	/**
+	 * Private constructor to prevent instantiation.
+	 */
+	private Conditions() {
+		// prevent instantiation
+	}
+
+	/**
 	 * If and only if parameter is false throw a {@link RuntimeException}.
 	 * 
 	 * @param b
