@@ -11,7 +11,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -562,6 +564,20 @@ public class DatabaseTest {
 				.contains("rather long"));
 	}
 
+	@Test
+	public void testCalendar() throws SQLException {
+		Database db = db();
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis(0);
+		Observable<Integer> update = db
+				.update("update person set registered=? where name=?")
+				.parameters(cal, "FRED").getCount();
+		Timestamp t = db.select("select registered from person where name=?")
+				.parameter("FRED").dependsOn(update).getAs(Timestamp.class)
+				.first().toBlockingObservable().single();
+		assertEquals(0, t.getTime());
+	}
+
 	static class PersonClob {
 		private final String name;
 		private final String document;
@@ -578,7 +594,6 @@ public class DatabaseTest {
 		public String getDocument() {
 			return document;
 		}
-
 	}
 
 	static class PersonBlob {
