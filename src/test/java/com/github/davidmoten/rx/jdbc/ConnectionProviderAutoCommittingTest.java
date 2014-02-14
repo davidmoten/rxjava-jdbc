@@ -31,4 +31,5 @@ public class ConnectionProviderAutoCommittingTest {
 			EasyMock.verify(cp, connection);
 		}
 	}
+
 }
