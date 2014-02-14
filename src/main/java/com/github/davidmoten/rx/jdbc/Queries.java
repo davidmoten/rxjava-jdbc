@@ -15,6 +15,14 @@ import rx.subscriptions.Subscriptions;
  * Utility methods for queries.
  */
 final class Queries {
+
+	/**
+	 * Private constructor to prevent instantiation.
+	 */
+	private Queries() {
+		// prevent instantiation
+	}
+
 	/**
 	 * Returns the number of parameters required to run this query once. Roughly
 	 * corresponds to the number of ? characters in the sql but have to watch

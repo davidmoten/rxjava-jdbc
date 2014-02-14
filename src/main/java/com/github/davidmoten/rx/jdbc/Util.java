@@ -38,6 +38,13 @@ import rx.util.functions.Functions;
 public final class Util {
 
 	/**
+	 * Private constructor to prevent instantiation.
+	 */
+	private Util() {
+		// prevent instantiation
+	}
+
+	/**
 	 * Logger.
 	 */
 	private static final Logger log = Logger.getLogger(Util.class);

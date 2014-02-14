@@ -11,6 +11,10 @@ import rx.util.functions.Func1;
 
 public class Tuples {
 
+	private Tuples() {
+		// prevent instantiation.
+	}
+
 	public static final <T> Func1<ResultSet, T> single(final Class<T> cls) {
 		return new Func1<ResultSet, T>() {
 
@@ -18,18 +22,6 @@ public class Tuples {
 			@Override
 			public T call(ResultSet rs) {
 				return (T) getObject(rs, cls, 1);
-			}
-
-		};
-	}
-
-	public static final <T> Func1<ResultSet, T> single() {
-		return new Func1<ResultSet, T>() {
-
-			@SuppressWarnings("unchecked")
-			@Override
-			public T call(ResultSet rs) {
-				return (T) getObject(rs, Object.class, 1);
 			}
 
 		};
