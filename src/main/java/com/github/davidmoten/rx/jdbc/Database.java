@@ -92,14 +92,14 @@ final public class Database {
 		return new Builder(cp);
 	}
 
-	public static class Builder {
+	public final static class Builder {
 
 		private final ConnectionProvider cp;
 		private Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler = Functions
 				.identity();
 		private Func1<Observable<Integer>, Observable<Integer>> updateHandler = Functions
 				.identity();
-		private int threadPoolSize;
+		private int threadPoolSize = DEFAULT_THREAD_POOL_SIZE;
 
 		private Builder(ConnectionProvider cp) {
 			this.cp = cp;
