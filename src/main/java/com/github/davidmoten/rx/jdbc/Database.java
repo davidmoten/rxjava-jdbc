@@ -88,6 +88,10 @@ final public class Database {
 		return new Builder(cp);
 	}
 
+	public static Builder builder(String url) {
+		return builder(new ConnectionProviderFromUrl(url));
+	}
+
 	public final static class Builder {
 
 		private final ConnectionProvider cp;
