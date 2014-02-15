@@ -21,9 +21,7 @@ final public class Database {
 	 */
 	private final ConnectionProvider cp;
 
-	private final Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler;
-
-	private final Func1<Observable<Integer>, Observable<Integer>> updateHandler;
+	private final Handlers handlers;
 
 	/**
 	 * Records the current query context which will be set against a new query
@@ -54,11 +52,9 @@ final public class Database {
 			Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler,
 			Func1<Observable<Integer>, Observable<Integer>> updateHandler) {
 		this.cp = cp;
-		this.selectHandler = selectHandler;
-		this.updateHandler = updateHandler;
+		this.handlers = new Handlers(selectHandler, updateHandler);
 		this.asynchronousQueryContext = QueryContext
-				.newAsynchronousQueryContext(cp, threadPoolSize,
-						DEFAULT_HANDLERS);
+				.newAsynchronousQueryContext(cp, threadPoolSize, handlers);
 	}
 
 	/**
@@ -191,8 +187,7 @@ final public class Database {
 	 * @return
 	 */
 	public Database beginTransaction() {
-		context.set(QueryContext.newTransactionalQueryContext(cp,
-				DEFAULT_HANDLERS));
+		context.set(QueryContext.newTransactionalQueryContext(cp, handlers));
 		return this;
 	}
 
