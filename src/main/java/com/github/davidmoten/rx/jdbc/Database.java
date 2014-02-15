@@ -265,7 +265,7 @@ final public class Database {
 	 * 
 	 * @return
 	 */
-	public Observable<Boolean> getLastTransactionResult() {
+	public Observable<Boolean> lastTransactionResult() {
 		Observable<Boolean> o = lastTransactionResult.get();
 		if (o == null)
 			return Observable.empty();
@@ -280,15 +280,7 @@ final public class Database {
 		context.set(asynchronousQueryContext);
 	}
 
-	public Func1<Observable<Integer>, Observable<Integer>> getUpdateHandler() {
-		return updateHandler;
-	}
-
-	public Func1<Observable<ResultSet>, Observable<ResultSet>> getSelectHandler() {
-		return selectHandler;
-	}
-
-	public final static Handlers DEFAULT_HANDLERS = new Handlers(
+	private final static Handlers DEFAULT_HANDLERS = new Handlers(
 			Functions.<Observable<ResultSet>> identity(),
 			Functions.<Observable<Integer>> identity());
 

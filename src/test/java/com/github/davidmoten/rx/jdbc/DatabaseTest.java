@@ -464,7 +464,7 @@ public class DatabaseTest {
 	@Test
 	public void testLastTransactionWithoutTransaction() {
 		Database db = db();
-		List<Boolean> list = db.getLastTransactionResult().toList()
+		List<Boolean> list = db.lastTransactionResult().toList()
 				.toBlockingObservable().single();
 		assertTrue(list.isEmpty());
 	}

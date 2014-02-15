@@ -81,7 +81,7 @@ final public class QueryBuilder {
 	 * executed.
 	 */
 	public void dependsOnLastTransaction() {
-		dependsOn(db.getLastTransactionResult());
+		dependsOn(db.lastTransactionResult());
 	}
 
 	/**
