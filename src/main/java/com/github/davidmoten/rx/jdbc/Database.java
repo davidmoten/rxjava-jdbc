@@ -117,24 +117,21 @@ final public class Database {
 			return this;
 		}
 
-		public <T> Builder handler(
-				final Func1<Observable<T>, Observable<T>> handler) {
+		// TODO bit dubious this one
+		public Builder handler(
+				final Func1<Observable<Object>, Observable<Object>> handler) {
 			this.selectHandler = new Func1<Observable<ResultSet>, Observable<ResultSet>>() {
-
-				@SuppressWarnings("unchecked")
 				@Override
-				public Observable<ResultSet> call(Observable<ResultSet> rs) {
-					return (Observable<ResultSet>) handler
-							.call((Observable<T>) rs);
+				public Observable<ResultSet> call(Observable<ResultSet> result) {
+					return handler.call(result.cast(Object.class)).cast(
+							ResultSet.class);
 				}
 			};
 			this.updateHandler = new Func1<Observable<Integer>, Observable<Integer>>() {
-
-				@SuppressWarnings("unchecked")
 				@Override
-				public Observable<Integer> call(Observable<Integer> rs) {
-					return (Observable<Integer>) handler
-							.call((Observable<T>) rs);
+				public Observable<Integer> call(Observable<Integer> result) {
+					return handler.call(result.cast(Object.class)).cast(
+							Integer.class);
 				}
 			};
 			return this;
