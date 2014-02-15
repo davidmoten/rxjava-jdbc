@@ -1,9 +1,11 @@
 package com.github.davidmoten.rx.jdbc;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 
 import rx.Observable;
 import rx.util.functions.Func1;
+import rx.util.functions.Functions;
 
 /**
  * Main entry point for manipulations of a database using rx-java-jdbc style
@@ -18,6 +20,10 @@ final public class Database {
 	 * Provides {@link Connection}s for queries.
 	 */
 	private final ConnectionProvider cp;
+
+	private final Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler;
+
+	private final Func1<Observable<Integer>, Observable<Integer>> updateHandler;
 
 	/**
 	 * Records the current query context which will be set against a new query
@@ -44,10 +50,15 @@ final public class Database {
 	 * @param threadPoolSize
 	 *            for asynchronous query context
 	 */
-	public Database(ConnectionProvider cp, int threadPoolSize) {
+	public Database(ConnectionProvider cp, int threadPoolSize,
+			Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler,
+			Func1<Observable<Integer>, Observable<Integer>> updateHandler) {
 		this.cp = cp;
+		this.selectHandler = selectHandler;
+		this.updateHandler = updateHandler;
 		this.asynchronousQueryContext = QueryContext
-				.newAsynchronousQueryContext(cp, threadPoolSize);
+				.newAsynchronousQueryContext(cp, threadPoolSize,
+						DEFAULT_HANDLERS);
 	}
 
 	/**
@@ -61,7 +72,9 @@ final public class Database {
 	 *            provides connections
 	 */
 	public Database(ConnectionProvider cp) {
-		this(cp, DEFAULT_THREAD_POOL_SIZE);
+		this(cp, DEFAULT_THREAD_POOL_SIZE, Functions
+				.<Observable<ResultSet>> identity(), Functions
+				.<Observable<Integer>> identity());
 	}
 
 	/**
@@ -73,6 +86,69 @@ final public class Database {
 	 */
 	public Database(String url) {
 		this(new ConnectionProviderFromUrl(url));
+	}
+
+	public static Builder builder(ConnectionProvider cp) {
+		return new Builder(cp);
+	}
+
+	public static class Builder {
+
+		private final ConnectionProvider cp;
+		private Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler = Functions
+				.identity();
+		private Func1<Observable<Integer>, Observable<Integer>> updateHandler = Functions
+				.identity();
+		private int threadPoolSize;
+
+		private Builder(ConnectionProvider cp) {
+			this.cp = cp;
+		}
+
+		public Builder selectHandler(
+				Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler) {
+			this.selectHandler = selectHandler;
+			return this;
+		}
+
+		public Builder updateHandler(
+				Func1<Observable<Integer>, Observable<Integer>> updateHandler) {
+			this.updateHandler = updateHandler;
+			return this;
+		}
+
+		public <T> Builder handler(
+				final Func1<Observable<T>, Observable<T>> handler) {
+			this.selectHandler = new Func1<Observable<ResultSet>, Observable<ResultSet>>() {
+
+				@SuppressWarnings("unchecked")
+				@Override
+				public Observable<ResultSet> call(Observable<ResultSet> rs) {
+					return (Observable<ResultSet>) handler
+							.call((Observable<T>) rs);
+				}
+			};
+			this.updateHandler = new Func1<Observable<Integer>, Observable<Integer>>() {
+
+				@SuppressWarnings("unchecked")
+				@Override
+				public Observable<Integer> call(Observable<Integer> rs) {
+					return (Observable<Integer>) handler
+							.call((Observable<T>) rs);
+				}
+			};
+			return this;
+		}
+
+		public Builder threadPoolSize(int threadPoolSize) {
+			this.threadPoolSize = threadPoolSize;
+			return this;
+		}
+
+		public Database build() {
+			return new Database(cp, threadPoolSize, selectHandler,
+					updateHandler);
+		}
 	}
 
 	/**
@@ -119,7 +195,8 @@ final public class Database {
 	 * @return
 	 */
 	public Database beginTransaction() {
-		context.set(QueryContext.newTransactionalQueryContext(cp));
+		context.set(QueryContext.newTransactionalQueryContext(cp,
+				DEFAULT_HANDLERS));
 		return this;
 	}
 
@@ -206,5 +283,17 @@ final public class Database {
 	private void resetQueryContext() {
 		context.set(asynchronousQueryContext);
 	}
+
+	public Func1<Observable<Integer>, Observable<Integer>> getUpdateHandler() {
+		return updateHandler;
+	}
+
+	public Func1<Observable<ResultSet>, Observable<ResultSet>> getSelectHandler() {
+		return selectHandler;
+	}
+
+	public final static Handlers DEFAULT_HANDLERS = new Handlers(
+			Functions.<Observable<ResultSet>> identity(),
+			Functions.<Observable<Integer>> identity());
 
 }

@@ -11,6 +11,7 @@ final class QueryContext {
 
 	private final ExecutorService executor;
 	private final ConnectionProvider connectionProvider;
+	private final Handlers handlers;
 
 	/**
 	 * Constructor.
@@ -18,9 +19,11 @@ final class QueryContext {
 	 * @param executor
 	 * @param connectionProvider
 	 */
-	QueryContext(ExecutorService executor, ConnectionProvider connectionProvider) {
+	QueryContext(ExecutorService executor,
+			ConnectionProvider connectionProvider, Handlers handlers) {
 		this.executor = executor;
 		this.connectionProvider = connectionProvider;
+		this.handlers = handlers;
 	}
 
 	/**
@@ -49,9 +52,11 @@ final class QueryContext {
 	 * @return
 	 */
 	static QueryContext newTransactionalQueryContext(
-			ConnectionProvider connectionProvider) {
-		return new QueryContext(Executors.newSingleThreadExecutor(),
-				new ConnectionProviderSingletonManualCommit(connectionProvider));
+			ConnectionProvider connectionProvider, Handlers handlers) {
+		return new QueryContext(
+				Executors.newSingleThreadExecutor(),
+				new ConnectionProviderSingletonManualCommit(connectionProvider),
+				handlers);
 	}
 
 	/**
@@ -63,10 +68,14 @@ final class QueryContext {
 	 * @return
 	 */
 	static QueryContext newAsynchronousQueryContext(ConnectionProvider cp,
-			int threadPoolSize) {
+			int threadPoolSize, Handlers handlers) {
 
 		return new QueryContext(Executors.newFixedThreadPool(threadPoolSize),
-				new ConnectionProviderAutoCommitting(cp));
+				new ConnectionProviderAutoCommitting(cp), handlers);
+	}
+
+	public Handlers handlers() {
+		return handlers;
 	}
 
 }

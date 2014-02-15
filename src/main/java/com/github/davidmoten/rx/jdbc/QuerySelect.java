@@ -78,7 +78,9 @@ final public class QuerySelect implements Query {
 	 * @return
 	 */
 	public Observable<ResultSet> execute() {
-		return bufferedParameters(this).flatMap(executeOnce());
+		return context.handlers().selectHandler()
+				.call(bufferedParameters(this).flatMap(executeOnce()));
+
 	}
 
 	/**
