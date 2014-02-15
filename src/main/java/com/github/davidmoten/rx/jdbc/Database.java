@@ -117,7 +117,6 @@ final public class Database {
 			return this;
 		}
 
-		// TODO bit dubious this one
 		public Builder handler(
 				final Func1<Observable<Object>, Observable<Object>> handler) {
 			this.selectHandler = new Func1<Observable<ResultSet>, Observable<ResultSet>>() {
