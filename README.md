@@ -106,6 +106,14 @@ String name = db
 assertEquals("FRED", name);
 ```
 
+About BlockingObservable
+----------------------------
+You'll see ```toBlockingObservable()``` used in the examples in this page and in 
+the unit tests but in your application code you should try to avoid using it. The most benefit 
+from the reactive style is obtained by *not leaving the monad*. That is, stay in Observable land and make 
+the most of it. Chain everything together and leave toBlockingObservable to 
+an endpoint or better still just subscribe with an Observer.
+
 Dependencies
 --------------
 You can setup chains of dependencies that will determine the order of running of queries. 
