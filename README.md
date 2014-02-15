@@ -297,9 +297,9 @@ assertEquals(3, count);
 Handlers
 ------------------------
 You can specify a select handler and an update handler individually or one general 
-handler to for instance log events for say a select statement. 
+handler. For example you could log all error events for all database queries.
 
-A handler operates globally for one ```Database``` object. An example is ```Handlers.LOG_ON_ERROR_HANDLER``` which intercepts an ```onError``` event and writes 
+The handlers operate globally for one ```Database``` object. An example is ```Handlers.LOG_ON_ERROR_HANDLER``` which intercepts an ```onError``` event and writes 
 a SEVERE log line using ```java.util.logging``` and then passes the error on. To create handlers use the ```Database``` builder method:
 
 ```java
