@@ -1,5 +1,8 @@
 package com.github.davidmoten.rx.jdbc;
 
+import static com.github.davidmoten.rx.jdbc.DatabaseCreator.connectionProvider;
+import static com.github.davidmoten.rx.jdbc.DatabaseCreator.createDatabase;
+import static com.github.davidmoten.rx.jdbc.DatabaseCreator.db;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -18,7 +21,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
@@ -37,8 +39,6 @@ import com.github.davidmoten.rx.jdbc.tuple.TupleN;
 public class DatabaseTest {
 
 	private static final Logger log = Logger.getLogger(DatabaseTest.class);
-
-	private static AtomicInteger dbNumber = new AtomicInteger();
 
 	@Test
 	public void testOldStyle() {
@@ -275,8 +275,7 @@ public class DatabaseTest {
 
 	@Test
 	public void testInstantiateDatabaseWithUrl() throws SQLException {
-		Database db = new Database("jdbc:h2:mem:test"
-				+ dbNumber.incrementAndGet());
+		Database db = new Database("jdbc:h2:mem:testa1");
 		Connection con = db.getQueryContext().connectionProvider().get();
 		con.close();
 	}
@@ -655,44 +654,6 @@ public class DatabaseTest {
 			return builder.toString();
 		}
 
-	}
-
-	private ConnectionProvider connectionProvider() {
-		return new ConnectionProviderFromUrl("jdbc:h2:mem:test"
-				+ dbNumber.incrementAndGet() + ";DB_CLOSE_DELAY=-1");
-	}
-
-	private Database db() {
-		ConnectionProvider cp = connectionProvider();
-		createDatabase(cp.get());
-		return new Database(cp);
-	}
-
-	private static void createDatabase(Connection c) {
-		try {
-			c.setAutoCommit(true);
-			c.prepareStatement(
-					"create table person (name varchar(50) primary key, score int not null,dob date, registered timestamp)")
-					.execute();
-			c.prepareStatement(
-					"insert into person(name,score) values('FRED',21)")
-					.execute();
-			c.prepareStatement(
-					"insert into person(name,score) values('JOSEPH',34)")
-					.execute();
-			c.prepareStatement(
-					"insert into person(name,score) values('MARMADUKE',25)")
-					.execute();
-
-			c.prepareStatement(
-					"create table person_clob (name varchar(50) not null,  document clob not null)")
-					.execute();
-			c.prepareStatement(
-					"create table person_blob (name varchar(50) not null, document blob not null)")
-					.execute();
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 }

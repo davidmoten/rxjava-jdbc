@@ -33,17 +33,13 @@ public class Handlers {
 		return updateHandler;
 	}
 
-	public static Func1<Observable<Object>, Observable<Object>> utilLoggingOnErrorLoggerHandler() {
-		return new Func1<Observable<Object>, Observable<Object>>() {
+	public static Func1<Observable<Object>, Observable<Object>> LOG_ON_ERROR_HANDLER = new Func1<Observable<Object>, Observable<Object>>() {
 
-			@Override
-			public Observable<Object> call(Observable<Object> source) {
-				return Observable
-						.create(createLogOnErrorOnSubscribeFunc(source));
-			}
-
-		};
-	}
+		@Override
+		public Observable<Object> call(Observable<Object> source) {
+			return Observable.create(createLogOnErrorOnSubscribeFunc(source));
+		}
+	};
 
 	private static OnSubscribeFunc<Object> createLogOnErrorOnSubscribeFunc(
 			final Observable<Object> source) {

@@ -275,8 +275,4 @@ final public class Database {
 		context.set(asynchronousQueryContext);
 	}
 
-	private final static Handlers DEFAULT_HANDLERS = new Handlers(
-			Functions.<Observable<ResultSet>> identity(),
-			Functions.<Observable<Integer>> identity());
-
 }
