@@ -8,7 +8,6 @@ import java.util.concurrent.ExecutorService;
 
 import rx.Observable;
 import rx.Subscription;
-import rx.schedulers.Schedulers;
 import rx.subscriptions.Subscriptions;
 
 /**
@@ -85,7 +84,7 @@ final class Queries {
 	 */
 	static <T extends Runnable & Cancellable> Subscription schedule(
 			Query query, T runnable) {
-		Subscription sub = Schedulers.executor(query.context().executor())
+		Subscription sub = query.context().scheduler()
 				.schedule(Util.toAction0(runnable));
 		return Subscriptions.from(sub, Util.createSubscription(runnable));
 	}

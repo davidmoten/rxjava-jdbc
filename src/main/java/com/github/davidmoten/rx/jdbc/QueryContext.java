@@ -1,7 +1,7 @@
 package com.github.davidmoten.rx.jdbc;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import rx.Scheduler;
+import rx.schedulers.Schedulers;
 
 /**
  * The threading and database connection context for mutliple jdbc queries.
@@ -9,9 +9,9 @@ import java.util.concurrent.Executors;
  */
 final class QueryContext {
 
-	private final ExecutorService executor;
 	private final ConnectionProvider connectionProvider;
 	private final Handlers handlers;
+	private final Scheduler scheduler;
 
 	/**
 	 * Constructor.
@@ -19,20 +19,20 @@ final class QueryContext {
 	 * @param executor
 	 * @param connectionProvider
 	 */
-	QueryContext(ExecutorService executor,
-			ConnectionProvider connectionProvider, Handlers handlers) {
-		this.executor = executor;
+	QueryContext(Scheduler scheduler, ConnectionProvider connectionProvider,
+			Handlers handlers) {
+		this.scheduler = scheduler;
 		this.connectionProvider = connectionProvider;
 		this.handlers = handlers;
 	}
 
 	/**
-	 * Returns the executor service to use to run queries with this context.
+	 * Returns the scheduler service to use to run queries with this context.
 	 * 
 	 * @return
 	 */
-	ExecutorService executor() {
-		return executor;
+	Scheduler scheduler() {
+		return scheduler;
 	}
 
 	/**
@@ -54,7 +54,7 @@ final class QueryContext {
 	static QueryContext newTransactionalQueryContext(
 			ConnectionProvider connectionProvider, Handlers handlers) {
 		return new QueryContext(
-				Executors.newSingleThreadExecutor(),
+				Schedulers.currentThread(),
 				new ConnectionProviderSingletonManualCommit(connectionProvider),
 				handlers);
 	}
@@ -70,7 +70,7 @@ final class QueryContext {
 	static QueryContext newAsynchronousQueryContext(ConnectionProvider cp,
 			int threadPoolSize, Handlers handlers) {
 
-		return new QueryContext(Executors.newFixedThreadPool(threadPoolSize),
+		return new QueryContext(Schedulers.computation(),
 				new ConnectionProviderAutoCommitting(cp), handlers);
 	}
 
