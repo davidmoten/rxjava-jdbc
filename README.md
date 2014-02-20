@@ -335,7 +335,7 @@ System.out.println(names);
 db.close();
 ```
 
-You can "stay in the monad* by making the closure of the database an Observable as well with dependencies.
+You can *stay in the monad* by making the closure of the database an Observable as well with dependencies.
 
 ```java
 Database db = db();
