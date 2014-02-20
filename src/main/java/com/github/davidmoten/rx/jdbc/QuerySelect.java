@@ -275,6 +275,17 @@ final public class QuerySelect implements Query {
 		}
 
 		/**
+		 * Automaps all the columns of the {@link ResultSet} into {@link Object}
+		 * . See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls
+		 * @return
+		 */
+		public <S> Observable<TupleN<Object>> getTupleN() {
+			return get(Tuples.tupleN(Object.class));
+		}
+
+		/**
 		 * Automaps the columns of the {@link ResultSet} into the specified
 		 * classes. See {@link #autoMap(Class) autoMap()}.
 		 * 
