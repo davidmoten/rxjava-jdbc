@@ -38,6 +38,7 @@ List<String> names = db.
 		.getAs(String.class)
 		.toList().toBlockingObservable().single();
 System.out.println(names);
+db.close();
 ```
 output:
 ```
@@ -315,4 +316,22 @@ Database db = Database.builder(url).handler(Handlers.LOG_ON_ERROR_HANDLER).build
 //The call below will throw a RuntimeException but will also log the exception before throwing.
 db.select("seeeelect name from person")
   .getAs(String.class).first().toBlockingObservable().single();
+```
+
+Closing the database
+----------------------------
+Once you've finished doing work with a ```Database``` run ```Database.close()``` to shutdown executors. If you need to
+ perform some additional action to close your custom ```ConnectionProvider``` then you should do that also.
+ 
+ Example:
+ ```java
+Database db = new Database(url);
+List<String> names = db.
+		.select("select name from person order by name")
+		.getAs(String.class)
+		.toList().toBlockingObservable().single();
+System.out.println(names);
+
+//close the database to shutdown executors 
+db.close();
 ```
