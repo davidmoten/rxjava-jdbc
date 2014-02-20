@@ -68,7 +68,7 @@ final class QueryContext {
 	 * @return
 	 */
 	static QueryContext newAsynchronousQueryContext(ConnectionProvider cp,
-			int threadPoolSize, Handlers handlers) {
+			Handlers handlers) {
 
 		return new QueryContext(Schedulers.computation(),
 				new ConnectionProviderAutoCommitting(cp), handlers);

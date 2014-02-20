@@ -1,6 +1,5 @@
 package com.github.davidmoten.rx.jdbc;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 
 import rx.Observable;
@@ -12,14 +11,6 @@ import rx.util.functions.Functions;
  * queries.
  */
 final public class Database {
-
-	private static final int DEFAULT_THREAD_POOL_SIZE = Runtime.getRuntime()
-			.availableProcessors() + 1;
-
-	/**
-	 * Provides {@link Connection}s for queries.
-	 */
-	private final ConnectionProvider cp;
 
 	private final Handlers handlers;
 
@@ -50,13 +41,12 @@ final public class Database {
 	 * @param threadPoolSize
 	 *            for asynchronous query context
 	 */
-	public Database(ConnectionProvider cp, int threadPoolSize,
+	public Database(ConnectionProvider cp,
 			Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler,
 			Func1<Observable<Integer>, Observable<Integer>> updateHandler) {
-		this.cp = cp;
 		this.handlers = new Handlers(selectHandler, updateHandler);
 		this.asynchronousQueryContext = QueryContext
-				.newAsynchronousQueryContext(cp, threadPoolSize, handlers);
+				.newAsynchronousQueryContext(cp, handlers);
 		this.transactionalQueryContext = QueryContext
 				.newTransactionalQueryContext(cp, handlers);
 	}
@@ -72,8 +62,7 @@ final public class Database {
 	 *            provides connections
 	 */
 	public Database(ConnectionProvider cp) {
-		this(cp, DEFAULT_THREAD_POOL_SIZE, Functions
-				.<Observable<ResultSet>> identity(), Functions
+		this(cp, Functions.<Observable<ResultSet>> identity(), Functions
 				.<Observable<Integer>> identity());
 	}
 
@@ -103,7 +92,6 @@ final public class Database {
 				.identity();
 		private Func1<Observable<Integer>, Observable<Integer>> updateHandler = Functions
 				.identity();
-		private int threadPoolSize = DEFAULT_THREAD_POOL_SIZE;
 
 		private Builder(ConnectionProvider cp) {
 			this.cp = cp;
@@ -140,14 +128,8 @@ final public class Database {
 			return this;
 		}
 
-		public Builder threadPoolSize(int threadPoolSize) {
-			this.threadPoolSize = threadPoolSize;
-			return this;
-		}
-
 		public Database build() {
-			return new Database(cp, threadPoolSize, selectHandler,
-					updateHandler);
+			return new Database(cp, selectHandler, updateHandler);
 		}
 	}
 
