@@ -587,6 +587,16 @@ public final class Util {
 		}
 	};
 
+	public static final <T> Func1<T, T> println() {
+		return new Func1<T, T>() {
+			@Override
+			public T call(T t) {
+				System.out.println(t);
+				return t;
+			}
+		};
+	}
+
 	/**
 	 * The first sequence will be emitted in its entirety and ignored before o2
 	 * starts emitting.
@@ -633,4 +643,5 @@ public final class Util {
 			}
 		};
 	}
+
 }

@@ -124,7 +124,6 @@ you specify dependencies.
 To indicate that a query cannot be run before one or more other Observables
 have been completed use the `dependsOn()` method. Here's an example:
 ```java
-Database db = db();
 Observable<Integer> insert = db
 		.update("insert into person(name,score) values(?,?)")
 		.parameters("JOHN", 45)
@@ -143,7 +142,7 @@ Mixing explicit and Observable parameters
 ------------------------------------------
 Example:
 ```java
-String name= db()
+String name= db
 	.query("select name from person where name > ?  and score < ? order by name")
 	.parameter("BARRY")
 	.parameters(Observable.from(100))
@@ -161,7 +160,7 @@ This causes the statement to be run twice.
 
 ```java
 List<Integer> list = 
-	db().query("select score from person where name=?")
+	db.query("select score from person where name=?")
 	    .parameter("FRED").parameter("JOSEPH")
 		.getAs(Integer.class).toList().toBlockingObservable().single();
 assertEquals(Arrays.asList(21,34),list);
@@ -339,11 +338,9 @@ db.close();
 You can *stay in the monad* by making the closure of the database an Observable as well with dependencies.
 
 ```java
-Database db = db();
-Observable<Integer> insert = db()
+Observable<Integer> insert = db
 		.update("insert into person(name,score,dob) values(?,?,?)")
 		.parameters("JACKIE", 42, null).getCount();
-boolean done = db.closeAfter(insert).toBlockingObservable().last();
-assertTrue(done);
+db.closeAfter(insert).subscribe();
 ```
  
