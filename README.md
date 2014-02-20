@@ -338,5 +338,11 @@ db.close();
 You can "stay in the monad* by making the closure of the database an Observable as well with dependencies.
 
 ```java
+Database db = db();
+Observable<Integer> insert = db()
+		.update("insert into person(name,score,dob) values(?,?,?)")
+		.parameters("JACKIE", 42, null).getCount();
+boolean done = db.close(insert).toBlockingObservable().last();
+assertTrue(done);
 ```
  
