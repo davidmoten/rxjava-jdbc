@@ -320,8 +320,9 @@ db.select("seeeelect name from person")
 
 Closing the database
 ----------------------------
-Once you've finished doing work with a ```Database``` run ```Database.close()``` to shutdown executors. If you need to
-perform some additional action to close your custom ```ConnectionProvider``` then you should do that also.
+Once you've finished doing work with a ```Database``` run ```Database.close()``` or ```Database.closeAfter()```
+to shutdown executors. If you need to perform some additional action to close your custom ```ConnectionProvider```
+then you should do that also. 
 
  ```java
 Database db = new Database(url);
