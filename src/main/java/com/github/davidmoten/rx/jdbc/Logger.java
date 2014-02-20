@@ -12,7 +12,7 @@ import java.util.TimeZone;
 final class Logger {
 
 	// TODO turn off by default
-	private static boolean debugEnabled = true;
+	private static boolean debugEnabled = false;
 
 	/**
 	 * Set the parameter to true to enable logging of database and observable

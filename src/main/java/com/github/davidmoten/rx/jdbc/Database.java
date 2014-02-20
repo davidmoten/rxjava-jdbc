@@ -40,6 +40,8 @@ final public class Database {
 	 */
 	private final QueryContext asynchronousQueryContext;
 
+	private final QueryContext transactionalQueryContext;
+
 	/**
 	 * Constructor.
 	 * 
@@ -55,6 +57,8 @@ final public class Database {
 		this.handlers = new Handlers(selectHandler, updateHandler);
 		this.asynchronousQueryContext = QueryContext
 				.newAsynchronousQueryContext(cp, threadPoolSize, handlers);
+		this.transactionalQueryContext = QueryContext
+				.newTransactionalQueryContext(cp, handlers);
 	}
 
 	/**
@@ -191,7 +195,7 @@ final public class Database {
 	 * @return
 	 */
 	public Database beginTransaction() {
-		context.set(QueryContext.newTransactionalQueryContext(cp, handlers));
+		context.set(transactionalQueryContext);
 		return this;
 	}
 
@@ -277,6 +281,11 @@ final public class Database {
 	 */
 	private void resetQueryContext() {
 		context.set(asynchronousQueryContext);
+	}
+
+	public void close() {
+		transactionalQueryContext.executor().shutdown();
+		asynchronousQueryContext.executor().shutdown();
 	}
 
 }
