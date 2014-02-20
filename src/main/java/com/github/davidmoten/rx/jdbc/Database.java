@@ -292,7 +292,7 @@ final public class Database {
 		asynchronousQueryContext.executor().shutdown();
 	}
 
-	public Observable<Boolean> close(Observable<?>... dependencies) {
+	public Observable<Boolean> closeAfter(Observable<?>... dependencies) {
 		Observable<Boolean> result = Observable.empty();
 		for (Observable<?> dep : dependencies) {
 			result = Util.concatButIgnoreFirstSequence(dep, result);

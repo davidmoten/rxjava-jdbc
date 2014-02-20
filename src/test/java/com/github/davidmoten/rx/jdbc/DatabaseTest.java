@@ -583,7 +583,7 @@ public class DatabaseTest {
 		Observable<Integer> insert = db()
 				.update("insert into person(name,score,dob) values(?,?,?)")
 				.parameters("JACKIE", 42, null).getCount();
-		boolean done = db.close(insert).toBlockingObservable().last();
+		boolean done = db.closeAfter(insert).toBlockingObservable().last();
 		assertTrue(done);
 	}
 
