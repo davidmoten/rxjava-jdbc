@@ -321,9 +321,8 @@ db.select("seeeelect name from person")
 Closing the database
 ----------------------------
 Once you've finished doing work with a ```Database``` run ```Database.close()``` to shutdown executors. If you need to
- perform some additional action to close your custom ```ConnectionProvider``` then you should do that also.
- 
- Example:
+perform some additional action to close your custom ```ConnectionProvider``` then you should do that also.
+
  ```java
 Database db = new Database(url);
 List<String> names = db.
@@ -335,3 +334,9 @@ System.out.println(names);
 //close the database to shutdown executors 
 db.close();
 ```
+
+You can "stay in the monad* by making the closure of the database an Observable as well with dependencies.
+
+```java
+```
+ 

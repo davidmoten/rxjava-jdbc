@@ -577,6 +577,16 @@ public class DatabaseTest {
 		assertEquals(0, t.getTime());
 	}
 
+	@Test
+	public void testClose() {
+		Database db = db();
+		Observable<Integer> insert = db()
+				.update("insert into person(name,score,dob) values(?,?,?)")
+				.parameters("JACKIE", 42, null).getCount();
+		boolean done = db.close(insert).toBlockingObservable().last();
+		assertTrue(done);
+	}
+
 	static class PersonClob {
 		private final String name;
 		private final String document;

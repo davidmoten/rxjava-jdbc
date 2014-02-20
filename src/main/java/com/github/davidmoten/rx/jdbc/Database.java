@@ -4,6 +4,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 
 import rx.Observable;
+import rx.Observable.OnSubscribeFunc;
+import rx.Observer;
+import rx.Subscription;
+import rx.subscriptions.Subscriptions;
 import rx.util.functions.Func1;
 import rx.util.functions.Functions;
 
@@ -286,6 +290,33 @@ final public class Database {
 	public void close() {
 		transactionalQueryContext.executor().shutdown();
 		asynchronousQueryContext.executor().shutdown();
+	}
+
+	public Observable<Boolean> close(Observable<?>... dependencies) {
+		Observable<Boolean> result = Observable.empty();
+		for (Observable<?> dep : dependencies) {
+			result = Util.concatButIgnoreFirstSequence(dep, result);
+		}
+		Observable<Boolean> closeObservable = createCloseObservable();
+		result = Util.concatButIgnoreFirstSequence(result, closeObservable);
+		return result;
+	}
+
+	private Observable<Boolean> createCloseObservable() {
+		return Observable.create(new OnSubscribeFunc<Boolean>() {
+			@Override
+			public Subscription onSubscribe(Observer<? super Boolean> o) {
+				try {
+					close();
+					o.onNext(true);
+					o.onCompleted();
+					return Subscriptions.empty();
+				} catch (RuntimeException e) {
+					o.onError(e);
+					return Subscriptions.empty();
+				}
+			}
+		});
 	}
 
 }
