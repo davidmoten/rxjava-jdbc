@@ -14,6 +14,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -278,7 +279,48 @@ public final class Util {
 		for (int i = 0; i < types.length; i++) {
 			list.add(autoMap(getObject(rs, types[i], i + 1), types[i]));
 		}
-		return newInstance(c, list);
+		try {
+			return newInstance(c, list);
+		} catch (RuntimeException e) {
+			throw new RuntimeException("problem with parameters="
+					+ getTypeInfo(list) + ", rs types=" + getRowInfo(rs), e);
+		}
+	}
+
+	private static String getTypeInfo(List<Object> list) {
+
+		StringBuilder s = new StringBuilder();
+		for (Object o : list) {
+			if (s.length() > 0)
+				s.append(", ");
+			if (o == null)
+				s.append("null");
+			else {
+				s.append(o.getClass().getName());
+				s.append("=");
+				s.append(o);
+			}
+		}
+		return s.toString();
+	}
+
+	private static String getRowInfo(ResultSet rs) {
+		StringBuilder s = new StringBuilder();
+		try {
+			ResultSetMetaData md = rs.getMetaData();
+			for (int i = 1; i <= md.getColumnCount(); i++) {
+				String name = md.getColumnName(i);
+				String type = md.getColumnClassName(i);
+				if (s.length() > 0)
+					s.append(", ");
+				s.append(name);
+				s.append("=");
+				s.append(type);
+			}
+		} catch (SQLException e1) {
+			throw new RuntimeException(e1);
+		}
+		return s.toString();
 	}
 
 	/**
