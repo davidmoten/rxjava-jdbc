@@ -123,20 +123,23 @@ public final class Tuples {
 	public static final <T> Func1<ResultSet, TupleN<T>> tupleN(
 			final Class<T> cls) {
 		return new Func1<ResultSet, TupleN<T>>() {
-			@SuppressWarnings("unchecked")
 			@Override
 			public TupleN<T> call(ResultSet rs) {
-				try {
-					int n = rs.getMetaData().getColumnCount();
-					List<T> list = new ArrayList<T>();
-					for (int i = 1; i <= n; i++) {
-						list.add((T) getObject(rs, cls, i));
-					}
-					return new TupleN<T>(list);
-				} catch (SQLException e) {
-					throw new RuntimeException(e);
-				}
+				return toTupleN(cls, rs);
 			}
 		};
+	}
+
+	private static <T> TupleN<T> toTupleN(final Class<T> cls, ResultSet rs) {
+		try {
+			int n = rs.getMetaData().getColumnCount();
+			List<T> list = new ArrayList<T>();
+			for (int i = 1; i <= n; i++) {
+				list.add((T) getObject(rs, cls, i));
+			}
+			return new TupleN<T>(list);
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }
