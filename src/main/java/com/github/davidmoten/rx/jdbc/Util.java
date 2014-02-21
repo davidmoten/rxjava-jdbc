@@ -9,6 +9,8 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -380,7 +382,24 @@ public final class Util {
 				return toBytes((Blob) o);
 			} else if (o instanceof Clob && cls.isAssignableFrom(String.class)) {
 				return toString((Clob) o);
-			} else
+			} else if (o instanceof BigInteger
+					&& cls.isAssignableFrom(Long.class)) {
+				return ((BigInteger) o).longValue();
+			} else if (o instanceof BigInteger
+					&& cls.isAssignableFrom(Integer.class)) {
+				return ((BigInteger) o).intValue();
+			} else if (o instanceof BigDecimal
+					&& cls.isAssignableFrom(Double.class)) {
+				return ((BigDecimal) o).doubleValue();
+			} else if (o instanceof BigDecimal
+					&& cls.isAssignableFrom(Integer.class)) {
+				return ((BigDecimal) o).toBigInteger().intValue();
+			} else if (o instanceof BigDecimal
+					&& cls.isAssignableFrom(Long.class)) {
+				return ((BigDecimal) o).toBigInteger().longValue();
+			}
+
+			else
 				return o;
 		}
 	}
