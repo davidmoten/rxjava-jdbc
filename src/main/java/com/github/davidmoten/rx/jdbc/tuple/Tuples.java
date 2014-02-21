@@ -9,7 +9,7 @@ import java.util.List;
 
 import rx.util.functions.Func1;
 
-public class Tuples {
+public final class Tuples {
 
 	private Tuples() {
 		// prevent instantiation.
