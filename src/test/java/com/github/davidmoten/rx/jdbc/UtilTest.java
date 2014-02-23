@@ -7,8 +7,10 @@ import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
+import java.io.StringReader;
 import java.math.BigInteger;
 import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.Arrays;
 
@@ -120,5 +122,27 @@ public class UtilTest {
 		Object bytes = autoMap(blob, Simple.class);
 		assertEquals(bytes, blob);
 		verify(blob);
+	}
+
+	@Test
+	public void testAutoMapClobToByteArray() throws SQLException {
+		Clob clob = EasyMock.createMock(Clob.class);
+		String s = "hello there";
+		expect(clob.getCharacterStream()).andReturn(new StringReader(s)).once();
+		clob.free();
+		EasyMock.expectLastCall().once();
+		replay(clob);
+		Object string = autoMap(clob, String.class);
+		assertEquals(s, string);
+		verify(clob);
+	}
+
+	@Test
+	public void testAutoMapClobToSimple() throws SQLException {
+		Clob clob = EasyMock.createMock(Clob.class);
+		replay(clob);
+		Object result = autoMap(clob, Simple.class);
+		assertEquals(clob, result);
+		verify(clob);
 	}
 }
