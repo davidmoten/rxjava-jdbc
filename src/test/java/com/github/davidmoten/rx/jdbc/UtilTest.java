@@ -100,7 +100,7 @@ public class UtilTest {
 	}
 
 	@Test
-	public void testAutoMapBlob() throws SQLException {
+	public void testAutoMapBlobToByteArray() throws SQLException {
 		Blob blob = EasyMock.createMock(Blob.class);
 		byte[] b = "hello there".getBytes();
 		expect(blob.getBinaryStream()).andReturn(new ByteArrayInputStream(b))
@@ -110,6 +110,15 @@ public class UtilTest {
 		replay(blob);
 		Object bytes = autoMap(blob, byte[].class);
 		Arrays.equals(b, (byte[]) bytes);
+		verify(blob);
+	}
+
+	@Test
+	public void testAutoMapBlobToSimple() throws SQLException {
+		Blob blob = EasyMock.createMock(Blob.class);
+		replay(blob);
+		Object bytes = autoMap(blob, Simple.class);
+		assertEquals(bytes, blob);
 		verify(blob);
 	}
 }
