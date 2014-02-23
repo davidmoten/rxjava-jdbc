@@ -24,7 +24,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -374,9 +373,7 @@ public final class Util {
 					return o;
 			} else if (o instanceof java.sql.Timestamp) {
 				Timestamp t = (java.sql.Timestamp) o;
-				if (cls.isAssignableFrom(Date.class))
-					return new Date(t.getTime());
-				else if (cls.isAssignableFrom(Long.class))
+				if (cls.isAssignableFrom(Long.class))
 					return t.getTime();
 				else if (cls.isAssignableFrom(BigInteger.class))
 					return BigInteger.valueOf(t.getTime());
@@ -384,9 +381,7 @@ public final class Util {
 					return o;
 			} else if (o instanceof java.sql.Time) {
 				Time t = (java.sql.Time) o;
-				if (cls.isAssignableFrom(Date.class))
-					return new Date(t.getTime());
-				else if (cls.isAssignableFrom(Long.class))
+				if (cls.isAssignableFrom(Long.class))
 					return t.getTime();
 				else if (cls.isAssignableFrom(BigInteger.class))
 					return BigInteger.valueOf(t.getTime());

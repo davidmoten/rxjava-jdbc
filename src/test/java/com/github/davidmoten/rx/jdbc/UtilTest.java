@@ -36,10 +36,13 @@ public class UtilTest {
 				autoMap(new java.sql.Date(1), BigInteger.class));
 	}
 
+	private static class Simple {
+	}
+
 	@Test
-	public void testAutoMapOfSqlDateToObject() {
+	public void testAutoMapOfSqlDateToSimple() {
 		assertEquals(new java.sql.Date(1),
-				autoMap(new java.sql.Date(1), Object.class));
+				autoMap(new java.sql.Date(1), Simple.class));
 	}
 
 	@Test
