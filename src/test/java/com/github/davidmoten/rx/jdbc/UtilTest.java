@@ -1,10 +1,18 @@
 package com.github.davidmoten.rx.jdbc;
 
 import static com.github.davidmoten.rx.jdbc.Util.autoMap;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
+import java.sql.Blob;
+import java.sql.SQLException;
+import java.util.Arrays;
 
+import org.easymock.EasyMock;
 import org.junit.Test;
 
 public class UtilTest {
@@ -63,6 +71,12 @@ public class UtilTest {
 	}
 
 	@Test
+	public void testAutoMapOfSqlTimestampToSimple() {
+		assertEquals(new java.sql.Timestamp(1),
+				autoMap(new java.sql.Timestamp(1), Simple.class));
+	}
+
+	@Test
 	public void testAutoMapOfSqlTimeToUtilDate() {
 		assertEquals(new java.util.Date(1),
 				autoMap(new java.sql.Time(1), java.util.Date.class));
@@ -79,4 +93,23 @@ public class UtilTest {
 				autoMap(new java.sql.Time(1), BigInteger.class));
 	}
 
+	@Test
+	public void testAutoMapOfSqlTimeToSimple() {
+		assertEquals(new java.sql.Time(1),
+				autoMap(new java.sql.Time(1), Simple.class));
+	}
+
+	@Test
+	public void testAutoMapBlob() throws SQLException {
+		Blob blob = EasyMock.createMock(Blob.class);
+		byte[] b = "hello there".getBytes();
+		expect(blob.getBinaryStream()).andReturn(new ByteArrayInputStream(b))
+				.once();
+		blob.free();
+		EasyMock.expectLastCall().once();
+		replay(blob);
+		Object bytes = autoMap(blob, byte[].class);
+		Arrays.equals(b, (byte[]) bytes);
+		verify(blob);
+	}
 }
