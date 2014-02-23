@@ -172,4 +172,14 @@ public class UtilTest {
 	public void testAutoMapBigDecimalToLong() {
 		assertEquals(1L, autoMap(BigDecimal.ONE, Long.class));
 	}
+
+	@Test
+	public void testAutoMapOfBigIntegerToSimple() {
+		assertEquals(BigInteger.ONE, autoMap(BigInteger.ONE, Simple.class));
+	}
+
+	@Test
+	public void testAutoMapOfBigDecimalToSimple() {
+		assertEquals(BigDecimal.ONE, autoMap(BigDecimal.ONE, Simple.class));
+	}
 }
