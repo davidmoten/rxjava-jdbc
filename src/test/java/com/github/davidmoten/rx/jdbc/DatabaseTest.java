@@ -23,6 +23,8 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import rx.Observable;
 import rx.util.functions.Func1;
@@ -38,7 +40,8 @@ import com.github.davidmoten.rx.jdbc.tuple.TupleN;
 
 public class DatabaseTest {
 
-	private static final Logger log = Logger.getLogger(DatabaseTest.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(DatabaseTest.class);
 
 	@Test
 	public void testOldStyle() {
@@ -82,7 +85,7 @@ public class DatabaseTest {
 				"select name from person order by name").getAs(String.class);
 		// convert the names to a list for unit test
 		List<String> list = names.toList().toBlockingObservable().single();
-		log.debug(list);
+		log.debug("list=" + list);
 		assertEquals(asList("FRED", "JOSEPH", "MARMADUKE"), list);
 	}
 
@@ -326,7 +329,7 @@ public class DatabaseTest {
 		Integer name = db().select("select name from person where name >?")
 				.parameter("ALEX").getAs(Integer.class).first()
 				.toBlockingObservable().single();
-		log.debug(name);
+		log.debug("name=" + name);
 	}
 
 	@Test

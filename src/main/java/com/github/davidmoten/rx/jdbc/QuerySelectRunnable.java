@@ -7,6 +7,9 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import rx.Observer;
 
 /**
@@ -15,7 +18,7 @@ import rx.Observer;
  */
 final public class QuerySelectRunnable implements Runnable, Cancellable {
 
-	private static final Logger log = Logger
+	private static final Logger log = LoggerFactory
 			.getLogger(QuerySelectRunnable.class);
 
 	/**
@@ -87,7 +90,7 @@ final public class QuerySelectRunnable implements Runnable, Cancellable {
 	 * @throws SQLException
 	 */
 	private void connectAndPrepareStatement() throws SQLException {
-		log.debug(query.context().connectionProvider());
+		log.debug("connectionProvider=" + query.context().connectionProvider());
 		synchronized (connectionLock) {
 			if (keepGoing.get()) {
 				con = query.context().connectionProvider().get();

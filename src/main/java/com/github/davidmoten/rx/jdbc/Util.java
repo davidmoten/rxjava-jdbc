@@ -28,6 +28,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import rx.Observable;
 import rx.Subscription;
@@ -50,7 +52,7 @@ public final class Util {
 	/**
 	 * Logger.
 	 */
-	private static final Logger log = Logger.getLogger(Util.class);
+	private static final Logger log = LoggerFactory.getLogger(Util.class);
 
 	/**
 	 * Count the number of JDBC parameters in a sql statement.
