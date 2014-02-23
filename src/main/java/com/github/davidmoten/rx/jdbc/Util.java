@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import rx.Observable;
 import rx.Subscription;
-import rx.util.functions.Action0;
 import rx.util.functions.Func1;
 import rx.util.functions.Functions;
 
@@ -680,22 +679,6 @@ public final class Util {
 			Observable<T> o2) {
 		return Observable.concat(
 				(Observable<T>) o1.filter(Functions.alwaysFalse()), o2);
-	}
-
-	/**
-	 * Converts a {@link Runnable} to an {@link Action0}.
-	 * 
-	 * @param runnable
-	 * @return
-	 */
-	static Action0 toAction0(final Runnable runnable) {
-		return new Action0() {
-
-			@Override
-			public void call() {
-				runnable.run();
-			}
-		};
 	}
 
 	/**
