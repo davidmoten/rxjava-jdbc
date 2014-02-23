@@ -111,9 +111,9 @@ final public class QuerySelect implements Query {
 		return Observable.create(new OnSubscribeFunc<ResultSet>() {
 			@Override
 			public Subscription onSubscribe(Observer<? super ResultSet> o) {
-				final QuerySelectAction task = new QuerySelectAction(
+				final QuerySelectAction action = new QuerySelectAction(
 						QuerySelect.this, params, o);
-				return schedule(QuerySelect.this, task);
+				return schedule(QuerySelect.this, action);
 			}
 		});
 	}

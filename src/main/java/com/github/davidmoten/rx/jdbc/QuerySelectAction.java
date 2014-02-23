@@ -11,12 +11,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rx.Observer;
+import rx.util.functions.Action0;
 
 /**
  * Executes a select query (sql that returns a ResultSet). Can be cancelled by
  * calling the cancel() method.
  */
-final public class QuerySelectAction implements Runnable, Cancellable {
+final public class QuerySelectAction implements Action0, Cancellable {
 
 	private static final Logger log = LoggerFactory
 			.getLogger(QuerySelectAction.class);
@@ -65,7 +66,7 @@ final public class QuerySelectAction implements Runnable, Cancellable {
 	}
 
 	@Override
-	public void run() {
+	public void call() {
 		try {
 
 			connectAndPrepareStatement();

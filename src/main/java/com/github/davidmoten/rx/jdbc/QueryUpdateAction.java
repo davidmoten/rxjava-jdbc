@@ -9,17 +9,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rx.Observer;
+import rx.util.functions.Action0;
 
 /**
  * Executes an update query.
  */
-final public class QueryUpdateRunnable implements Runnable, Cancellable {
+final public class QueryUpdateAction implements Action0, Cancellable {
 
 	/**
 	 * Logger.
 	 */
 	private static final Logger log = LoggerFactory
-			.getLogger(QueryUpdateRunnable.class);
+			.getLogger(QueryUpdateAction.class);
 
 	/**
 	 * Special sql command that brings about a rollback.
@@ -71,7 +72,7 @@ final public class QueryUpdateRunnable implements Runnable, Cancellable {
 	 * @param parameters
 	 * @param observer
 	 */
-	public QueryUpdateRunnable(QueryUpdate query, List<Parameter> parameters,
+	public QueryUpdateAction(QueryUpdate query, List<Parameter> parameters,
 			Observer<? super Integer> observer) {
 		this.query = query;
 		this.parameters = parameters;
@@ -79,7 +80,7 @@ final public class QueryUpdateRunnable implements Runnable, Cancellable {
 	}
 
 	@Override
-	public void run() {
+	public void call() {
 		try {
 
 			getConnection();
