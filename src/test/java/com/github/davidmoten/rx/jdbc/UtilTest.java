@@ -37,6 +37,12 @@ public class UtilTest {
 	}
 
 	@Test
+	public void testAutoMapOfSqlDateToObject() {
+		assertEquals(new java.sql.Date(1),
+				autoMap(new java.sql.Date(1), Object.class));
+	}
+
+	@Test
 	public void testAutoMapOfSqlTimestampToUtilDate() {
 		assertEquals(new java.util.Date(1),
 				autoMap(new java.sql.Timestamp(1), java.util.Date.class));

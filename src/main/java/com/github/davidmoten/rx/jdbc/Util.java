@@ -366,9 +366,7 @@ public final class Util {
 		} else {
 			if (o instanceof java.sql.Date) {
 				java.sql.Date d = (java.sql.Date) o;
-				if (cls.isAssignableFrom(Date.class))
-					return new Date(d.getTime());
-				else if (cls.isAssignableFrom(Long.class))
+				if (cls.isAssignableFrom(Long.class))
 					return d.getTime();
 				else if (cls.isAssignableFrom(BigInteger.class))
 					return BigInteger.valueOf(d.getTime());
