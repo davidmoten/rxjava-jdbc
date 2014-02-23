@@ -390,6 +390,8 @@ public final class Util {
 					return new Date(t.getTime());
 				else if (cls.isAssignableFrom(Long.class))
 					return t.getTime();
+				else if (cls.isAssignableFrom(BigInteger.class))
+					return BigInteger.valueOf(t.getTime());
 				else
 					return o;
 			} else if (o instanceof Blob && cls.isAssignableFrom(byte[].class)) {

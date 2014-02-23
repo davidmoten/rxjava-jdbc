@@ -53,4 +53,21 @@ public class UtilTest {
 				autoMap(new java.sql.Timestamp(1), BigInteger.class));
 	}
 
+	@Test
+	public void testAutoMapOfSqlTimeToUtilDate() {
+		assertEquals(new java.util.Date(1),
+				autoMap(new java.sql.Time(1), java.util.Date.class));
+	}
+
+	@Test
+	public void testAutoMapOfSqlTimeToLong() {
+		assertEquals(1L, autoMap(new java.sql.Time(1), Long.class));
+	}
+
+	@Test
+	public void testAutoMapOfSqlTimeToBigInteger() {
+		assertEquals(BigInteger.ONE,
+				autoMap(new java.sql.Time(1), BigInteger.class));
+	}
+
 }
