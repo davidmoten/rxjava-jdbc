@@ -8,6 +8,16 @@ import java.math.BigInteger;
 import org.junit.Test;
 
 public class UtilTest {
+	@Test
+	public void obtainCoverageOfPrivateConstructor() {
+		TestingUtil.instantiateUsingPrivateConstructor(Util.class);
+	}
+
+	@Test
+	public void testAutoMapOfUtilDateToSqlDate() {
+		assertEquals(new java.sql.Date(1),
+				autoMap(new java.util.Date(1), java.sql.Date.class));
+	}
 
 	@Test
 	public void testAutoMapOfSqlDateToUtilDate() {
@@ -27,14 +37,20 @@ public class UtilTest {
 	}
 
 	@Test
-	public void testAutoMapOfUtilDateToSqlDate() {
-		assertEquals(new java.sql.Date(1),
-				autoMap(new java.util.Date(1), java.sql.Date.class));
+	public void testAutoMapOfSqlTimestampToUtilDate() {
+		assertEquals(new java.util.Date(1),
+				autoMap(new java.sql.Timestamp(1), java.util.Date.class));
 	}
 
 	@Test
-	public void obtainCoverageOfPrivateConstructor() {
-		TestingUtil.instantiateUsingPrivateConstructor(Util.class);
+	public void testAutoMapOfSqlTimestampToLong() {
+		assertEquals(1L, autoMap(new java.sql.Timestamp(1), Long.class));
+	}
+
+	@Test
+	public void testAutoMapOfSqlTimestampToBigInteger() {
+		assertEquals(BigInteger.ONE,
+				autoMap(new java.sql.Timestamp(1), BigInteger.class));
 	}
 
 }

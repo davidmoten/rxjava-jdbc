@@ -350,6 +350,14 @@ public final class Util {
 		}
 	}
 
+	/**
+	 * Converts from java.sql Types to common java types like java.util.Date and
+	 * numeric types.
+	 * 
+	 * @param o
+	 * @param cls
+	 * @return
+	 */
 	static Object autoMap(Object o, Class<?> cls) {
 		if (o == null)
 			return o;
@@ -372,6 +380,8 @@ public final class Util {
 					return new Date(t.getTime());
 				else if (cls.isAssignableFrom(Long.class))
 					return t.getTime();
+				else if (cls.isAssignableFrom(BigInteger.class))
+					return BigInteger.valueOf(t.getTime());
 				else
 					return o;
 			} else if (o instanceof java.sql.Time) {
