@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -144,5 +145,31 @@ public class UtilTest {
 		Object result = autoMap(clob, Simple.class);
 		assertEquals(clob, result);
 		verify(clob);
+	}
+
+	@Test
+	public void testAutoMapBigIntegerToLong() {
+		assertEquals(1L, autoMap(BigInteger.ONE, Long.class));
+	}
+
+	@Test
+	public void testAutoMapBigIntegerToInteger() {
+		assertEquals(1, autoMap(BigInteger.ONE, Integer.class));
+	}
+
+	@Test
+	public void testAutoMapBigDecimalToDouble() {
+		assertEquals(1.0, (Double) autoMap(BigDecimal.ONE, Double.class),
+				0.00001);
+	}
+
+	@Test
+	public void testAutoMapBigDecimalToInteger() {
+		assertEquals(1, autoMap(BigDecimal.ONE, Integer.class));
+	}
+
+	@Test
+	public void testAutoMapBigDecimalToLong() {
+		assertEquals(1L, autoMap(BigDecimal.ONE, Long.class));
 	}
 }
