@@ -362,6 +362,8 @@ public final class Util {
 					return new Date(d.getTime());
 				else if (cls.isAssignableFrom(Long.class))
 					return d.getTime();
+				else if (cls.isAssignableFrom(BigInteger.class))
+					return BigInteger.valueOf(d.getTime());
 				else
 					return o;
 			} else if (o instanceof java.sql.Timestamp) {
