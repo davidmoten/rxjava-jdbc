@@ -216,6 +216,16 @@ public class UtilTest {
 		verify(con);
 	}
 
+	@Test
+	public void testCommitNullDoesNothing() {
+		Util.commit(null);
+	}
+
+	@Test
+	public void testRollbackNullDoesNothing() {
+		Util.rollback(null);
+	}
+
 	@Test(expected = RuntimeException.class)
 	public void testRollback() throws SQLException {
 		Connection con = createMock(Connection.class);
