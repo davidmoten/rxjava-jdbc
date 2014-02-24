@@ -1,7 +1,11 @@
 package com.github.davidmoten.rx.jdbc;
 
 import static com.github.davidmoten.rx.jdbc.Util.autoMap;
+import static com.github.davidmoten.rx.jdbc.Util.closeQuietly;
+import static com.github.davidmoten.rx.jdbc.Util.closeQuietlyIfAutoCommit;
+import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
@@ -12,6 +16,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 
@@ -181,5 +186,43 @@ public class UtilTest {
 	@Test
 	public void testAutoMapOfBigDecimalToSimple() {
 		assertEquals(BigDecimal.ONE, autoMap(BigDecimal.ONE, Simple.class));
+	}
+
+	@Test
+	public void testClose1() throws SQLException {
+		Connection con = createMock(Connection.class);
+		expect(con.isClosed()).andThrow(new SQLException());
+		replay(con);
+		closeQuietly(con);
+		verify(con);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testClose2() throws SQLException {
+		Connection con = createMock(Connection.class);
+		expect(con.isClosed()).andThrow(new SQLException());
+		replay(con);
+		closeQuietlyIfAutoCommit(con);
+		verify(con);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testCommit() throws SQLException {
+		Connection con = createMock(Connection.class);
+		con.commit();
+		expectLastCall().andThrow(new SQLException());
+		replay(con);
+		Util.commit(con);
+		verify(con);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testRollback() throws SQLException {
+		Connection con = createMock(Connection.class);
+		con.rollback();
+		expectLastCall().andThrow(new SQLException());
+		replay(con);
+		Util.rollback(con);
+		verify(con);
 	}
 }
