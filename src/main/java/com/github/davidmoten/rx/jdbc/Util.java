@@ -554,7 +554,7 @@ public final class Util {
 		for (int i = 1; i <= params.size(); i++) {
 			Object o = params.get(i - 1).getValue();
 			if (o == null)
-				ps.setObject(i, o);
+				ps.setObject(i, null);
 			else {
 				Class<?> cls = o.getClass();
 				if (Clob.class.isAssignableFrom(cls)) {
