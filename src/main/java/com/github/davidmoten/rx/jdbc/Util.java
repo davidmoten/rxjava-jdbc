@@ -98,7 +98,7 @@ public final class Util {
 				log.debug("closed " + ps);
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			log.debug(e.getMessage(), e);
 		}
 	}
 
@@ -115,7 +115,7 @@ public final class Util {
 				log.debug("closed " + connection);
 			}
 		} catch (SQLException e) {
-			log.debug(e.getMessage());
+			log.debug(e.getMessage(), e);
 		}
 	}
 
@@ -177,7 +177,7 @@ public final class Util {
 				log.debug("closed " + rs);
 			}
 		} catch (SQLException e) {
-			log.debug(e.getMessage());
+			log.debug(e.getMessage(), e);
 		}
 	}
 
