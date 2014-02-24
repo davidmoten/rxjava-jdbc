@@ -130,6 +130,7 @@ public final class Tuples {
 		};
 	}
 
+	@SuppressWarnings("unchecked")
 	private static <T> TupleN<T> toTupleN(final Class<T> cls, ResultSet rs) {
 		try {
 			int n = rs.getMetaData().getColumnCount();
