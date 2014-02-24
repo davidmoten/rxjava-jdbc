@@ -3,6 +3,7 @@ package com.github.davidmoten.rx.jdbc;
 import java.sql.ResultSet;
 
 import rx.Observable;
+import rx.util.functions.Func0;
 import rx.util.functions.Func1;
 import rx.util.functions.Functions;
 
@@ -29,7 +30,9 @@ final public class Database {
 	/**
 	 * Used to run queries in autocommit mode outside of transactions.
 	 */
-	private final QueryContext asynchronousQueryContext;
+	private final Func0<QueryContext> asynchronousQueryContext;
+
+	private final Func0<QueryContext> transactionalQueryContext;
 
 	private final ConnectionProvider cp;
 
@@ -41,13 +44,23 @@ final public class Database {
 	 * @param threadPoolSize
 	 *            for asynchronous query context
 	 */
-	public Database(ConnectionProvider cp,
+	public Database(final ConnectionProvider cp,
 			Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler,
 			Func1<Observable<Integer>, Observable<Integer>> updateHandler) {
 		this.cp = cp;
 		this.handlers = new Handlers(selectHandler, updateHandler);
-		this.asynchronousQueryContext = QueryContext
-				.newAsynchronousQueryContext(cp, handlers);
+		this.asynchronousQueryContext = new Func0<QueryContext>() {
+			@Override
+			public QueryContext call() {
+				return QueryContext.newAsynchronousQueryContext(cp, handlers);
+			}
+		};
+		this.transactionalQueryContext = new Func0<QueryContext>() {
+			@Override
+			public QueryContext call() {
+				return QueryContext.newTransactionalQueryContext(cp, handlers);
+			}
+		};
 	}
 
 	/**
@@ -139,7 +152,7 @@ final public class Database {
 	 */
 	public QueryContext getQueryContext() {
 		if (context.get() == null)
-			return asynchronousQueryContext;
+			return asynchronousQueryContext.call();
 		else
 			return context.get();
 	}
@@ -176,8 +189,7 @@ final public class Database {
 	 * @return
 	 */
 	public Database beginTransaction() {
-		QueryContext queryContext = QueryContext.newTransactionalQueryContext(
-				cp, handlers);
+		QueryContext queryContext = transactionalQueryContext.call();
 		context.set(queryContext);
 		return this;
 	}
@@ -263,7 +275,7 @@ final public class Database {
 	 * Revert query context to default asynchronous version.
 	 */
 	private void resetQueryContext() {
-		context.set(asynchronousQueryContext);
+		context.set(asynchronousQueryContext.call());
 	}
 
 }
