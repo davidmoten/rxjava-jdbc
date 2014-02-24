@@ -24,6 +24,7 @@ import org.easymock.EasyMock;
 import org.junit.Test;
 
 public class UtilTest {
+
 	@Test
 	public void obtainCoverageOfPrivateConstructor() {
 		TestingUtil.instantiateUsingPrivateConstructor(Util.class);
