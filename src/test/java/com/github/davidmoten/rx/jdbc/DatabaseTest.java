@@ -362,6 +362,13 @@ public class DatabaseTest {
 		assertNull(person.getDateOfBirth());
 	}
 
+	@Test(expected = RuntimeException.class)
+	public void testAutoMapCannotFindConstructorWithEnoughParameters() {
+		db().select(
+				"select name,score,dob,registered,name from person order by name")
+				.autoMap(Person.class).first().toBlockingObservable().single();
+	}
+
 	@Test
 	public void testGetTimestamp() {
 		Database db = db();
