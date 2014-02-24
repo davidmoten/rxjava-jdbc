@@ -1,5 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
+import java.sql.Connection;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -52,7 +53,9 @@ final class QueryContext {
 
 	/**
 	 * Returns a {@link QueryContext} suitable for running with a sequence of
-	 * queries bounded by a database transaction.
+	 * queries bounded by a database transaction. All queries running within a
+	 * transaction should use the same {@link Connection} and the same
+	 * {@link Thread} to execute on.
 	 * 
 	 * @param connectionProvider
 	 * @return
