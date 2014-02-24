@@ -31,7 +31,7 @@ final public class Database {
 	 */
 	private final QueryContext asynchronousQueryContext;
 
-	private final QueryContext transactionalQueryContext;
+	private final ConnectionProvider cp;
 
 	/**
 	 * Constructor.
@@ -44,11 +44,10 @@ final public class Database {
 	public Database(ConnectionProvider cp,
 			Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler,
 			Func1<Observable<Integer>, Observable<Integer>> updateHandler) {
+		this.cp = cp;
 		this.handlers = new Handlers(selectHandler, updateHandler);
 		this.asynchronousQueryContext = QueryContext
 				.newAsynchronousQueryContext(cp, handlers);
-		this.transactionalQueryContext = QueryContext
-				.newTransactionalQueryContext(cp, handlers);
 	}
 
 	/**
@@ -177,7 +176,9 @@ final public class Database {
 	 * @return
 	 */
 	public Database beginTransaction() {
-		context.set(transactionalQueryContext);
+		QueryContext queryContext = QueryContext.newTransactionalQueryContext(
+				cp, handlers);
+		context.set(queryContext);
 		return this;
 	}
 
