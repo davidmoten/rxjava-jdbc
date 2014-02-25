@@ -1,10 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
 import java.sql.Connection;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import rx.Scheduler;
 import rx.schedulers.Schedulers;
@@ -61,30 +57,12 @@ final class QueryContext {
 	 * @return
 	 */
 	static QueryContext newTransactionalQueryContext(
-			ConnectionProvider connectionProvider, Handlers handlers) {
+			ConnectionProvider connectionProvider, Handlers handlers,
+			Scheduler scheduler) {
 		return new QueryContext(
-				Schedulers.executor(createSingleThreadExecutor()),
+				scheduler,
 				new ConnectionProviderSingletonManualCommit(connectionProvider),
 				handlers);
-	}
-
-	/**
-	 * Creates a {@link ScheduledExecutorService} based on a single thread pool.
-	 * 
-	 * @return executor service based on single thread pool.
-	 */
-	private static ScheduledExecutorService createSingleThreadExecutor() {
-		return Executors.newScheduledThreadPool(1, new ThreadFactory() {
-			final AtomicInteger counter = new AtomicInteger();
-
-			@Override
-			public Thread newThread(Runnable r) {
-				Thread t = new Thread(r, "TransactionThreadPool-"
-						+ counter.incrementAndGet());
-				t.setDaemon(true);
-				return t;
-			}
-		});
 	}
 
 	/**
@@ -95,10 +73,10 @@ final class QueryContext {
 	 * @param threadPoolSize
 	 * @return
 	 */
-	static QueryContext newAsynchronousQueryContext(ConnectionProvider cp,
-			Handlers handlers) {
+	static QueryContext newNonTransactionalQueryContext(ConnectionProvider cp,
+			Handlers handlers, Scheduler scheduler) {
 
-		return new QueryContext(Schedulers.computation(),
+		return new QueryContext(scheduler,
 				new ConnectionProviderAutoCommitting(cp), handlers);
 	}
 

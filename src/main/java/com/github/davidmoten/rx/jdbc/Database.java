@@ -1,9 +1,13 @@
 package com.github.davidmoten.rx.jdbc;
 
 import java.sql.ResultSet;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import rx.Observable;
-import rx.util.functions.Func0;
+import rx.schedulers.Schedulers;
 import rx.util.functions.Func1;
 import rx.util.functions.Functions;
 
@@ -27,13 +31,6 @@ final public class Database {
 	 */
 	private final ThreadLocal<Observable<Boolean>> lastTransactionResult = new ThreadLocal<Observable<Boolean>>();
 
-	/**
-	 * Used to run queries in autocommit mode outside of transactions.
-	 */
-	private final Func0<QueryContext> asynchronousQueryContext;
-
-	private final Func0<QueryContext> transactionalQueryContext;
-
 	private final ConnectionProvider cp;
 
 	/**
@@ -49,18 +46,6 @@ final public class Database {
 			Func1<Observable<Integer>, Observable<Integer>> updateHandler) {
 		this.cp = cp;
 		this.handlers = new Handlers(selectHandler, updateHandler);
-		this.asynchronousQueryContext = new Func0<QueryContext>() {
-			@Override
-			public QueryContext call() {
-				return QueryContext.newAsynchronousQueryContext(cp, handlers);
-			}
-		};
-		this.transactionalQueryContext = new Func0<QueryContext>() {
-			@Override
-			public QueryContext call() {
-				return QueryContext.newTransactionalQueryContext(cp, handlers);
-			}
-		};
 	}
 
 	/**
@@ -151,10 +136,11 @@ final public class Database {
 	 * @return
 	 */
 	public QueryContext getQueryContext() {
-		if (context.get() == null)
-			return asynchronousQueryContext.call();
-		else
-			return context.get();
+		if (context.get() == null) {
+			context.set(QueryContext.newNonTransactionalQueryContext(cp,
+					handlers, Schedulers.computation()));
+		}
+		return context.get();
 	}
 
 	/**
@@ -189,9 +175,30 @@ final public class Database {
 	 * @return
 	 */
 	public Database beginTransaction() {
-		QueryContext queryContext = transactionalQueryContext.call();
+		QueryContext queryContext = QueryContext
+				.newTransactionalQueryContext(cp, handlers,
+						Schedulers.executor(createSingleThreadExecutor()));
 		context.set(queryContext);
 		return this;
+	}
+
+	/**
+	 * Creates a {@link ScheduledExecutorService} based on a single thread pool.
+	 * 
+	 * @return executor service based on single thread pool.
+	 */
+	private static ScheduledExecutorService createSingleThreadExecutor() {
+		return Executors.newScheduledThreadPool(1, new ThreadFactory() {
+			final AtomicInteger counter = new AtomicInteger();
+
+			@Override
+			public Thread newThread(Runnable r) {
+				Thread t = new Thread(r, "TransactionThreadPool-"
+						+ counter.incrementAndGet());
+				t.setDaemon(true);
+				return t;
+			}
+		});
 	}
 
 	/**
@@ -275,7 +282,7 @@ final public class Database {
 	 * Revert query context to default asynchronous version.
 	 */
 	private void resetQueryContext() {
-		context.set(asynchronousQueryContext.call());
+		context.set(null);
 	}
 
 }
