@@ -52,6 +52,7 @@ final public class Database {
 			Func1<Observable<Integer>, Observable<Integer>> updateHandler,
 			Func0<Scheduler> nonTransactionalSchedulerFactory,
 			Func0<Scheduler> transactionalSchedulerFactory) {
+		Conditions.checkNotNull(cp);
 		this.cp = cp;
 		if (nonTransactionalSchedulerFactory != null)
 			this.nonTransactionalSchedulerFactory = nonTransactionalSchedulerFactory;

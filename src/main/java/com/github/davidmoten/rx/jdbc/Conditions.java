@@ -22,4 +22,9 @@ final class Conditions {
 			throw new RuntimeException("check failed");
 	}
 
+	static void checkNotNull(Object obj) {
+		if (obj == null)
+			throw new NullPointerException("argument cannot be null");
+	}
+
 }

@@ -94,8 +94,11 @@ final public class QuerySelectAction implements Action0, Cancellable {
 		log.debug("connectionProvider=" + query.context().connectionProvider());
 		synchronized (connectionLock) {
 			if (keepGoing.get()) {
+				log.debug("getting connection");
 				con = query.context().connectionProvider().get();
+				log.debug("preparing statement,sql=" + query.sql());
 				ps = con.prepareStatement(query.sql());
+				log.debug("setting parameters");
 				Util.setParameters(ps, parameters);
 			}
 		}
@@ -107,6 +110,7 @@ final public class QuerySelectAction implements Action0, Cancellable {
 	 * @throws SQLException
 	 */
 	private void executeQuery() throws SQLException {
+		log.info("executing ps");
 		rs = ps.executeQuery();
 		log.debug("executed ps=" + ps);
 	}

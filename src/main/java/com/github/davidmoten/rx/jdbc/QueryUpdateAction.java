@@ -103,6 +103,7 @@ final public class QueryUpdateAction implements Action0, Cancellable {
 	 * Gets the current connection.
 	 */
 	private void getConnection() {
+		log.info("getting connection");
 		con = query.context().connectionProvider().get();
 		log.debug("cp=" + query.context().connectionProvider());
 	}
@@ -130,11 +131,13 @@ final public class QueryUpdateAction implements Action0, Cancellable {
 	 * connection is in autoCommit mode.
 	 */
 	private void performCommit() {
+		log.debug("committing");
 		Conditions.checkTrue(!Util.isAutoCommit(con));
 		synchronized (connectionLock) {
 			Util.commit(con);
 			observer.onNext(Integer.valueOf(1));
 		}
+		log.debug("committed");
 	}
 
 	/**
@@ -142,11 +145,13 @@ final public class QueryUpdateAction implements Action0, Cancellable {
 	 * connection is in autoCommit mode.
 	 */
 	private void performRollback() {
+		log.debug("rolling back");
 		Conditions.checkTrue(!Util.isAutoCommit(con));
 		synchronized (connectionLock) {
 			Util.rollback(con);
 			observer.onNext(Integer.valueOf(0));
 		}
+		log.debug("rolled back");
 	}
 
 	/**
