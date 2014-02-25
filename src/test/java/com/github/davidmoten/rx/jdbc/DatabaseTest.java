@@ -587,6 +587,13 @@ public class DatabaseTest {
 		assertEquals(0, t.getTime());
 	}
 
+	@Test
+	public void testDatabaseBuilder() {
+		Database.builder(DatabaseCreator.connectionProvider())
+				.transactionalSchedulerOnCurrentThread()
+				.nonTransactionalSchedulerOnCurrentThread().build();
+	}
+
 	static class PersonClob {
 		private final String name;
 		private final String document;

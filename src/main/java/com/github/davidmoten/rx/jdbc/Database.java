@@ -7,7 +7,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import rx.Observable;
+import rx.Scheduler;
 import rx.schedulers.Schedulers;
+import rx.util.functions.Func0;
 import rx.util.functions.Func1;
 import rx.util.functions.Functions;
 
@@ -33,6 +35,10 @@ final public class Database {
 
 	private final ConnectionProvider cp;
 
+	private final Func0<Scheduler> nonTransactionalSchedulerFactory;
+
+	private final Func0<Scheduler> transactionalSchedulerFactory;
+
 	/**
 	 * Constructor.
 	 * 
@@ -43,10 +49,42 @@ final public class Database {
 	 */
 	public Database(final ConnectionProvider cp,
 			Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler,
-			Func1<Observable<Integer>, Observable<Integer>> updateHandler) {
+			Func1<Observable<Integer>, Observable<Integer>> updateHandler,
+			Func0<Scheduler> nonTransactionalSchedulerFactory,
+			Func0<Scheduler> transactionalSchedulerFactory) {
 		this.cp = cp;
+		if (nonTransactionalSchedulerFactory != null)
+			this.nonTransactionalSchedulerFactory = nonTransactionalSchedulerFactory;
+		else
+			this.nonTransactionalSchedulerFactory = COMPUTATION_SCHEDULER_FACTORY;
+		if (transactionalSchedulerFactory != null)
+			this.transactionalSchedulerFactory = transactionalSchedulerFactory;
+		else
+			this.transactionalSchedulerFactory = SINGLE_THREAD_POOL_SCHEDULER_FACTORY;
 		this.handlers = new Handlers(selectHandler, updateHandler);
 	}
+
+	private final Func0<Scheduler> COMPUTATION_SCHEDULER_FACTORY = new Func0<Scheduler>() {
+		@Override
+		public Scheduler call() {
+			return Schedulers.computation();
+		}
+	};
+
+	private final Func0<Scheduler> SINGLE_THREAD_POOL_SCHEDULER_FACTORY = new Func0<Scheduler>() {
+		@Override
+		public Scheduler call() {
+			return Schedulers.executor(createSingleThreadExecutor());
+		}
+	};
+
+	private static final Func0<Scheduler> CURRENT_THREAD_SCHEDULER_FACTORY = new Func0<Scheduler>() {
+
+		@Override
+		public Scheduler call() {
+			return Schedulers.currentThread();
+		}
+	};
 
 	/**
 	 * Constructor. Thread pool size defaults to
@@ -60,7 +98,7 @@ final public class Database {
 	 */
 	public Database(ConnectionProvider cp) {
 		this(cp, Functions.<Observable<ResultSet>> identity(), Functions
-				.<Observable<Integer>> identity());
+				.<Observable<Integer>> identity(), null, null);
 	}
 
 	/**
@@ -89,6 +127,8 @@ final public class Database {
 				.identity();
 		private Func1<Observable<Integer>, Observable<Integer>> updateHandler = Functions
 				.identity();
+		private Func0<Scheduler> nonTransactionalSchedulerFactory = null;
+		private Func0<Scheduler> transactionalSchedulerFactory = null;
 
 		private Builder(ConnectionProvider cp) {
 			this.cp = cp;
@@ -103,6 +143,26 @@ final public class Database {
 		public Builder updateHandler(
 				Func1<Observable<Integer>, Observable<Integer>> updateHandler) {
 			this.updateHandler = updateHandler;
+			return this;
+		}
+
+		public Builder nonTransactionalScheduler(Func0<Scheduler> factory) {
+			nonTransactionalSchedulerFactory = factory;
+			return this;
+		}
+
+		public Builder transactionalScheduler(Func0<Scheduler> factory) {
+			transactionalSchedulerFactory = factory;
+			return this;
+		}
+
+		public Builder nonTransactionalSchedulerOnCurrentThread() {
+			nonTransactionalSchedulerFactory = CURRENT_THREAD_SCHEDULER_FACTORY;
+			return this;
+		}
+
+		public Builder transactionalSchedulerOnCurrentThread() {
+			transactionalSchedulerFactory = CURRENT_THREAD_SCHEDULER_FACTORY;
 			return this;
 		}
 
@@ -126,7 +186,9 @@ final public class Database {
 		}
 
 		public Database build() {
-			return new Database(cp, selectHandler, updateHandler);
+			return new Database(cp, selectHandler, updateHandler,
+					transactionalSchedulerFactory,
+					nonTransactionalSchedulerFactory);
 		}
 	}
 
@@ -138,7 +200,7 @@ final public class Database {
 	public QueryContext getQueryContext() {
 		if (context.get() == null) {
 			context.set(QueryContext.newNonTransactionalQueryContext(cp,
-					handlers, Schedulers.computation()));
+					handlers, nonTransactionalSchedulerFactory.call()));
 		}
 		return context.get();
 	}
@@ -175,9 +237,8 @@ final public class Database {
 	 * @return
 	 */
 	public Database beginTransaction() {
-		QueryContext queryContext = QueryContext
-				.newTransactionalQueryContext(cp, handlers,
-						Schedulers.executor(createSingleThreadExecutor()));
+		QueryContext queryContext = QueryContext.newTransactionalQueryContext(
+				cp, handlers, transactionalSchedulerFactory.call());
 		context.set(queryContext);
 		return this;
 	}
