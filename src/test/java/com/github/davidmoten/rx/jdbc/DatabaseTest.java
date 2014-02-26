@@ -594,6 +594,17 @@ public class DatabaseTest {
 				.nonTransactionalSchedulerOnCurrentThread().build();
 	}
 
+	@Test
+	public void testConnectionPool() {
+		ConnectionProviderPooled cp = new ConnectionProviderPooled(
+				DatabaseCreator.nextUrl(), 0, 10);
+		Database db = new Database(cp);
+		DatabaseCreator.createDatabase(cp.get());
+		int count = db.select("select name from person order by name")
+				.getAs(String.class).count().toBlockingObservable().single();
+		assertEquals(3, count);
+	}
+
 	static class PersonClob {
 		private final String name;
 		private final String document;

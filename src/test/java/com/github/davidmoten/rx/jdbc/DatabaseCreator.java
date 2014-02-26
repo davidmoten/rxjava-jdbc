@@ -8,9 +8,13 @@ public class DatabaseCreator {
 
 	private static AtomicInteger dbNumber = new AtomicInteger();
 
+	public static String nextUrl() {
+		return "jdbc:h2:mem:test" + dbNumber.incrementAndGet()
+				+ ";DB_CLOSE_DELAY=-1";
+	}
+
 	public static ConnectionProvider connectionProvider() {
-		return new ConnectionProviderFromUrl("jdbc:h2:mem:test"
-				+ dbNumber.incrementAndGet() + ";DB_CLOSE_DELAY=-1");
+		return new ConnectionProviderFromUrl(nextUrl());
 	}
 
 	public static Database db() {
