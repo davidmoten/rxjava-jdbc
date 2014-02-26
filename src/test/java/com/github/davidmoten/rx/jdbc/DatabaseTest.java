@@ -619,6 +619,11 @@ public class DatabaseTest {
 		assertEquals(100, count);
 	}
 
+	@Test
+	public void testDatabaseBuilderWithPool() {
+		Database db = Database.builder().pooled(nextUrl(), 0, 5).build();
+	}
+
 	static class PersonClob {
 		private final String name;
 		private final String document;
