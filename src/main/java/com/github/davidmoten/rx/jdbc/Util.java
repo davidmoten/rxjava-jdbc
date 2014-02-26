@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Subscription;
 import rx.functions.Func1;
-import rx.functions.Functions;
 
 /**
  * Utility methods.
@@ -716,8 +715,7 @@ public final class Util {
 	@SuppressWarnings("unchecked")
 	static <T> Observable<T> concatButIgnoreFirstSequence(Observable<?> o1,
 			Observable<T> o2) {
-		return Observable.concat(
-				(Observable<T>) o1.filter(Functions.alwaysFalse()), o2);
+		return Observable.concat((Observable<T>) o1.ignoreElements(), o2);
 	}
 
 	/**
