@@ -233,6 +233,9 @@ final public class QuerySelect implements Query {
 		 * <li>java.sql.Timestamp -> Long</li>
 		 * <li>java.sql.Time -> java.util.Date</li>
 		 * <li>java.sql.Time -> Long</li>
+		 * <li>java.math.BigInteger -> Integer</li>
+		 * <li>java.math.BigInteger -> Long</li>
+		 * <li>java.math.BigDecimal -> Double</li>
 		 * </p>
 		 * 
 		 * @param cls

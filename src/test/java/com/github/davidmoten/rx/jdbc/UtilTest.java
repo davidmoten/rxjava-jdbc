@@ -159,6 +159,22 @@ public class UtilTest {
 	}
 
 	@Test
+	public void testAutoMapBigIntegerToDouble() {
+		assertEquals(1.0, (Double) autoMap(BigInteger.ONE, Double.class),
+				0.00001);
+	}
+
+	@Test
+	public void testAutoMapBigIntegerToFloat() {
+		assertEquals(1.0, (Float) autoMap(BigInteger.ONE, Float.class), 0.00001);
+	}
+
+	@Test
+	public void testAutoMapBigIntegerToShort() {
+		assertEquals((short) 1, autoMap(BigInteger.ONE, Short.class));
+	}
+
+	@Test
 	public void testAutoMapBigIntegerToInteger() {
 		assertEquals(1, autoMap(BigInteger.ONE, Integer.class));
 	}
@@ -167,6 +183,16 @@ public class UtilTest {
 	public void testAutoMapBigDecimalToDouble() {
 		assertEquals(1.0, (Double) autoMap(BigDecimal.ONE, Double.class),
 				0.00001);
+	}
+
+	@Test
+	public void testAutoMapBigDecimalToFloat() {
+		assertEquals(1.0, (Float) autoMap(BigDecimal.ONE, Float.class), 0.00001);
+	}
+
+	@Test
+	public void testAutoMapBigDecimalToShort() {
+		assertEquals((short) 1, autoMap(BigDecimal.ONE, Short.class));
 	}
 
 	@Test

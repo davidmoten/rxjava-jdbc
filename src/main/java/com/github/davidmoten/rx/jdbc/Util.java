@@ -396,12 +396,27 @@ public final class Util {
 			} else if (o instanceof BigInteger
 					&& cls.isAssignableFrom(Integer.class)) {
 				return ((BigInteger) o).intValue();
+			} else if (o instanceof BigInteger
+					&& cls.isAssignableFrom(Double.class)) {
+				return ((BigInteger) o).doubleValue();
+			} else if (o instanceof BigInteger
+					&& cls.isAssignableFrom(Float.class)) {
+				return ((BigInteger) o).floatValue();
+			} else if (o instanceof BigInteger
+					&& cls.isAssignableFrom(Short.class)) {
+				return ((BigInteger) o).shortValue();
 			} else if (o instanceof BigDecimal
 					&& cls.isAssignableFrom(Double.class)) {
 				return ((BigDecimal) o).doubleValue();
 			} else if (o instanceof BigDecimal
 					&& cls.isAssignableFrom(Integer.class)) {
 				return ((BigDecimal) o).toBigInteger().intValue();
+			} else if (o instanceof BigDecimal
+					&& cls.isAssignableFrom(Float.class)) {
+				return ((BigDecimal) o).floatValue();
+			} else if (o instanceof BigDecimal
+					&& cls.isAssignableFrom(Short.class)) {
+				return ((BigDecimal) o).toBigInteger().shortValue();
 			} else if (o instanceof BigDecimal
 					&& cls.isAssignableFrom(Long.class)) {
 				return ((BigDecimal) o).toBigInteger().longValue();
