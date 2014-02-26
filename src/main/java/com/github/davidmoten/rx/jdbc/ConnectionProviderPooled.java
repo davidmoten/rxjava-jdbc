@@ -2,6 +2,7 @@ package com.github.davidmoten.rx.jdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
@@ -10,7 +11,15 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
  */
 public class ConnectionProviderPooled implements ConnectionProvider {
 
+	/**
+	 * C3p0 connection pool.
+	 */
 	private final ComboPooledDataSource pool;
+
+	/**
+	 * Ensure idempotency of this.close() method.
+	 */
+	private final AtomicBoolean isOpen = new AtomicBoolean(true);
 
 	/**
 	 * Constructor.
@@ -37,7 +46,8 @@ public class ConnectionProviderPooled implements ConnectionProvider {
 
 	@Override
 	public void close() {
-		pool.close();
+		if (isOpen.getAndSet(false))
+			pool.close();
 	}
 
 }

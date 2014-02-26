@@ -16,6 +16,12 @@ public interface ConnectionProvider {
 	 */
 	Connection get();
 
+	/**
+	 * Closes the connection provider and releases its resources. For example, a
+	 * connection pool may need formal closure to release its connections
+	 * because connection.close() is actually just releasing a connection back
+	 * to the pool for reuse. This method should be idempotent.
+	 */
 	void close();
 
 }
