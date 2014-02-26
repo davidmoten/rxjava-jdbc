@@ -733,6 +733,11 @@ public final class Util {
 			public void unsubscribe() {
 				cancellable.cancel();
 			}
+
+			@Override
+			public boolean isUnsubscribed() {
+				return false;
+			}
 		};
 	}
 

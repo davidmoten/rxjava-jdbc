@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import rx.Observable;
+import rx.Scheduler.Inner;
 import rx.Subscription;
+import rx.functions.Action1;
 import rx.subscriptions.Subscriptions;
-import rx.util.functions.Action0;
 
 /**
  * Utility methods for queries.
@@ -83,8 +84,8 @@ final class Queries {
 	 * @param runnable
 	 * @return
 	 */
-	static <T extends Action0 & Cancellable> Subscription schedule(Query query,
-			T action) {
+	static <T extends Action1<Inner> & Cancellable> Subscription schedule(
+			Query query, T action) {
 		Subscription sub = query.context().scheduler().schedule(action);
 		return Subscriptions.from(sub, Util.createSubscription(action));
 	}

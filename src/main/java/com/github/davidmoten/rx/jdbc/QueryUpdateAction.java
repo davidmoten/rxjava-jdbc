@@ -9,12 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rx.Observer;
-import rx.util.functions.Action0;
+import rx.Scheduler.Inner;
+import rx.functions.Action1;
 
 /**
  * Executes an update query.
  */
-final public class QueryUpdateAction implements Action0, Cancellable {
+final public class QueryUpdateAction implements Action1<Inner>, Cancellable {
 
 	/**
 	 * Logger.
@@ -80,7 +81,7 @@ final public class QueryUpdateAction implements Action0, Cancellable {
 	}
 
 	@Override
-	public void call() {
+	public void call(Inner inner) {
 		try {
 
 			getConnection();

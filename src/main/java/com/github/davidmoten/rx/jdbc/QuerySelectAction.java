@@ -11,13 +11,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rx.Observer;
-import rx.util.functions.Action0;
+import rx.Scheduler.Inner;
+import rx.functions.Action1;
 
 /**
  * Executes a select query (sql that returns a ResultSet). Can be cancelled by
  * calling the cancel() method.
  */
-final public class QuerySelectAction implements Action0, Cancellable {
+final public class QuerySelectAction implements Action1<Inner>, Cancellable {
 
 	private static final Logger log = LoggerFactory
 			.getLogger(QuerySelectAction.class);
@@ -66,7 +67,7 @@ final public class QuerySelectAction implements Action0, Cancellable {
 	}
 
 	@Override
-	public void call() {
+	public void call(Inner inner) {
 		try {
 
 			connectAndPrepareStatement();

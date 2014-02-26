@@ -46,6 +46,11 @@ public class LogOnErrorOperator {
 					public void unsubscribe() {
 						sub.unsubscribe();
 					}
+
+					@Override
+					public boolean isUnsubscribed() {
+						return false;
+					}
 				};
 			}
 		};
