@@ -193,7 +193,7 @@ static class Person {
 		private final Long dateOfBirth;
 		private final Long registered;
 
-		Person(String name, double score, Long dateOfBirth,
+		Person(String name, Double score, Long dateOfBirth,
 				Long registered) {
 				...
 ```
