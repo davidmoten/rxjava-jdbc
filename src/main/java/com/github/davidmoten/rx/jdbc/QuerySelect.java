@@ -1,15 +1,11 @@
 package com.github.davidmoten.rx.jdbc;
 
 import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
-import static com.github.davidmoten.rx.jdbc.Queries.schedule;
 
 import java.sql.ResultSet;
 import java.util.List;
 
 import rx.Observable;
-import rx.Observable.OnSubscribeFunc;
-import rx.Observer;
-import rx.Subscription;
 import rx.functions.Func1;
 
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
@@ -108,14 +104,16 @@ final public class QuerySelect implements Query {
 	 * @return
 	 */
 	private Observable<ResultSet> executeOnce(final List<Parameter> params) {
-		return Observable.create(new OnSubscribeFunc<ResultSet>() {
-			@Override
-			public Subscription onSubscribe(Observer<? super ResultSet> o) {
-				final QuerySelectAction action = new QuerySelectAction(
-						QuerySelect.this, params, o);
-				return schedule(QuerySelect.this, action);
-			}
-		});
+		return OperationQuerySelect.executeOnce(this, params).subscribeOn(
+				context.scheduler());
+		// return Observable.create(new OnSubscribeFunc<ResultSet>() {
+		// @Override
+		// public Subscription onSubscribe(Observer<? super ResultSet> o) {
+		// final QuerySelectAction action = new QuerySelectAction(
+		// QuerySelect.this, params, o);
+		// return schedule(QuerySelect.this, action);
+		// }
+		// });
 	}
 
 	/**
