@@ -589,8 +589,19 @@ public final class Util {
 				} else if (java.sql.Date.class.isAssignableFrom(cls)) {
 					Calendar cal = Calendar.getInstance();
 					ps.setDate(i, (java.sql.Date) o, cal);
+				} else if (java.util.Date.class.isAssignableFrom(cls)) {
+					Calendar cal = Calendar.getInstance();
+					java.util.Date date = (java.util.Date) o;
+					ps.setDate(i, new java.sql.Date(date.getTime()), cal);
 				} else
-					ps.setObject(i, o);
+					try {
+						ps.setObject(i, o);
+					} catch (SQLException e) {
+						log.debug(e.getMessage()
+								+ " when setting ps.setObject(" + i + "," + o
+								+ ")");
+						throw e;
+					}
 			}
 		}
 	}

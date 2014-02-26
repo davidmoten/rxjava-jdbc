@@ -123,7 +123,7 @@ final public class QuerySelectAction implements Action0, Cancellable {
 	private void processRow() throws SQLException {
 		synchronized (connectionLock) {
 			if (rs.next()) {
-				log.debug("onNext");
+				log.trace("onNext");
 				o.onNext(rs);
 			} else
 				keepGoing.set(false);
