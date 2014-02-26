@@ -411,6 +411,9 @@ public final class Util {
 			} else if (o instanceof BigInteger
 					&& cls.isAssignableFrom(Short.class)) {
 				return ((BigInteger) o).shortValue();
+			} else if (o instanceof BigInteger
+					&& cls.isAssignableFrom(BigDecimal.class)) {
+				return new BigDecimal((BigInteger) o);
 			} else if (o instanceof BigDecimal
 					&& cls.isAssignableFrom(Double.class)) {
 				return ((BigDecimal) o).doubleValue();
@@ -426,6 +429,9 @@ public final class Util {
 			} else if (o instanceof BigDecimal
 					&& cls.isAssignableFrom(Long.class)) {
 				return ((BigDecimal) o).toBigInteger().longValue();
+			} else if (o instanceof BigDecimal
+					&& cls.isAssignableFrom(BigInteger.class)) {
+				return ((BigDecimal) o).toBigInteger();
 			}
 
 			else

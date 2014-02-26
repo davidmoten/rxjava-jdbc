@@ -192,9 +192,12 @@ automatically mapped to the types in the constructor.
 Auto mappings
 ------------------
 The automatic mappings below of objects are used in the ```autoMap()``` method and for typed ```getAs()``` calls.
-* ```java.sql.Date```,```java.sql.Time```,```java.sql.Timestamp``` <==> ```java.util.Date```, ```java.lang.Long```
+* ```java.sql.Date```,```java.sql.Time```,```java.sql.Timestamp``` <==> ```java.util.Date```
+* ```java.sql.Date```,```java.sql.Time```,```java.sql.Timestamp```  ==> ```java.lang.Long```
 * ```java.sql.Blob``` <==> ```java.io.InputStream```, ```byte[]```
 * ```java.sql.Clob``` <==> ```java.io.Reader```, ```String```
+* ```java.math.BigInteger ==> Long, Integer, Decimal, Float, Short, BigDecimal
+* ```java.math.BigDecimal ==> Long, Integer, Decimal, Float, Short, BigInteger
 
 Note that automappings do not occur to primitives so use Long instead of long.
 
