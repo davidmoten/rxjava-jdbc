@@ -606,6 +606,19 @@ public class DatabaseTest {
 		assertEquals(3, count);
 	}
 
+	@Test
+	public void testConnectionPoolDoesNotRunOutOfConnectionsWhenQueryRunRepeatedly() {
+		ConnectionProviderPooled cp = new ConnectionProviderPooled(nextUrl(),
+				0, 1);
+		Database db = new Database(cp);
+		DatabaseCreator.createDatabase(cp.get());
+		int count = db
+				.select("select name from person where name=?")
+				.parameters(Observable.range(0, 100).map(Util.constant("FRED")))
+				.getAs(String.class).count().toBlockingObservable().single();
+		assertEquals(100, count);
+	}
+
 	static class PersonClob {
 		private final String name;
 		private final String document;

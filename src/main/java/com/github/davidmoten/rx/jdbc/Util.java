@@ -99,6 +99,8 @@ public final class Util {
 			}
 		} catch (SQLException e) {
 			log.debug(e.getMessage(), e);
+		} catch (RuntimeException e) {
+			log.debug(e.getMessage(), e);
 		}
 	}
 
@@ -115,6 +117,8 @@ public final class Util {
 				log.debug("closed " + connection);
 			}
 		} catch (SQLException e) {
+			log.debug(e.getMessage(), e);
+		} catch (RuntimeException e) {
 			log.debug(e.getMessage(), e);
 		}
 	}
@@ -177,6 +181,8 @@ public final class Util {
 				log.debug("closed " + rs);
 			}
 		} catch (SQLException e) {
+			log.debug(e.getMessage(), e);
+		} catch (RuntimeException e) {
 			log.debug(e.getMessage(), e);
 		}
 	}

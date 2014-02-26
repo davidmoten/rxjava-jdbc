@@ -96,15 +96,21 @@
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-jdk14</artifactId>
-			<version>${slf4j.version}</version>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>c3p0</groupId>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.mchange</groupId>
 			<artifactId>c3p0</artifactId>
-			<version>0.9.1.2</version>
+			<version>0.9.5-pre6</version>
 			<optional>true</optional>
 		</dependency>
 

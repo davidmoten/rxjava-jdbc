@@ -156,9 +156,13 @@ final public class QuerySelectAction implements Action0, Cancellable {
 	 * set).
 	 */
 	private void close() {
+		log.debug("closing rs");
 		Util.closeQuietly(rs);
+		log.debug("closing ps");
 		Util.closeQuietly(ps);
+		log.debug("closing con");
 		Util.closeQuietlyIfAutoCommit(con);
+		log.debug("closed");
 	}
 
 	@Override
