@@ -22,4 +22,9 @@ final class ConnectionProviderAutoCommitting implements ConnectionProvider {
 		return con;
 	}
 
+	@Override
+	public void close() {
+		cp.close();
+	}
+
 }

@@ -26,4 +26,9 @@ final class ConnectionProviderSingletonManualCommit implements
 		return con;
 	}
 
+	@Override
+	public void close() {
+		cp.close();
+	}
+
 }

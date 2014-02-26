@@ -16,4 +16,6 @@ public interface ConnectionProvider {
 	 */
 	Connection get();
 
+	void close();
+
 }

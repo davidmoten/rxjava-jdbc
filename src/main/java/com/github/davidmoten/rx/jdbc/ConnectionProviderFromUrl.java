@@ -20,4 +20,9 @@ public class ConnectionProviderFromUrl implements ConnectionProvider {
 			throw new RuntimeException(e);
 		}
 	}
+
+	@Override
+	public void close() {
+		// nothing to do
+	}
 }

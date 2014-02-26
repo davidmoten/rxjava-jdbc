@@ -363,4 +363,16 @@ final public class Database {
 		context.set(null);
 	}
 
+	/**
+	 * Close the database in particular closes the {@link ConnectionProvider}
+	 * for the database. For a {@link ConnectionProviderPooled} this will be a
+	 * required call for cleanup.
+	 * 
+	 * @return
+	 */
+	public Database close() {
+		cp.close();
+		return this;
+	}
+
 }

@@ -35,4 +35,9 @@ public class ConnectionProviderPooled implements ConnectionProvider {
 		}
 	}
 
+	@Override
+	public void close() {
+		pool.close();
+	}
+
 }
