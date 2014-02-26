@@ -320,3 +320,23 @@ Database db = Database.builder(url).handler(Handlers.LOG_ON_ERROR_HANDLER).build
 db.select("seeeelect name from person")
   .getAs(String.class).first().toBlockingObservable().single();
 ``` 
+
+Database Connection Pools
+----------------------------
+Include the dependency below:
+```xml
+<dependency>
+	<groupId>com.mchange</groupId>
+	<artifactId>c3p0</artifactId>
+	<version>0.9.5-pre6</version>
+</dependency>
+```
+and you can use a database connection pool like so:
+```java
+Database db = Database.builder().pooled(url,minPoolSize,maxPoolSize).build();
+```
+Once finished with a ```Database`` that has used a connection pool you should call 
+```java
+db.close();
+```
+This will close the connection pool and  release its resources.
