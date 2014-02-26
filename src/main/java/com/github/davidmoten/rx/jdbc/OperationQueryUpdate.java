@@ -65,6 +65,12 @@ class OperationQueryUpdate {
 		 */
 		private PreparedStatement ps;
 
+		/**
+		 * Constructor.
+		 * 
+		 * @param query
+		 * @param parameters
+		 */
 		private QueryUpdateOnSubscribe(QueryUpdate query,
 				List<Parameter> parameters) {
 			this.query = query;

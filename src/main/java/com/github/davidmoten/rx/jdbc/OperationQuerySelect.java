@@ -41,6 +41,12 @@ class OperationQuerySelect {
 		private PreparedStatement ps;
 		private ResultSet rs;
 
+		/**
+		 * Constructor.
+		 * 
+		 * @param query
+		 * @param parameters
+		 */
 		private QuerySelectOnSubscribe(QuerySelect query,
 				List<Parameter> parameters) {
 			this.query = query;
@@ -50,18 +56,15 @@ class OperationQuerySelect {
 		@Override
 		public void call(Subscriber<? super ResultSet> subscriber) {
 			try {
-
 				connectAndPrepareStatement(subscriber);
 				executeQuery(subscriber);
 				while (keepGoing) {
 					processRow(subscriber);
 				}
 				complete(subscriber);
-
 			} catch (Exception e) {
 				handleException(e, subscriber);
 			}
-
 		}
 
 		/**
