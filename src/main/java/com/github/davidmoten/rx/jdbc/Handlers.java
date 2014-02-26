@@ -3,7 +3,7 @@ package com.github.davidmoten.rx.jdbc;
 import java.sql.ResultSet;
 
 import rx.Observable;
-import rx.util.functions.Func1;
+import rx.functions.Func1;
 
 import com.github.davidmoten.rx.jdbc.operators.LogOnErrorOperator;
 

@@ -69,7 +69,8 @@ final public class QuerySelect implements Query {
 	}
 
 	/**
-	 * Returns the results of running a select query.
+	 * Returns the results of running a select query with all sets of
+	 * parameters.
 	 * 
 	 * @return
 	 */
@@ -104,16 +105,8 @@ final public class QuerySelect implements Query {
 	 * @return
 	 */
 	private Observable<ResultSet> executeOnce(final List<Parameter> params) {
-		return OperationQuerySelect.executeOnce(this, params).subscribeOn(
+		return OperationQuerySelect.execute(this, params).subscribeOn(
 				context.scheduler());
-		// return Observable.create(new OnSubscribeFunc<ResultSet>() {
-		// @Override
-		// public Subscription onSubscribe(Observer<? super ResultSet> o) {
-		// final QuerySelectAction action = new QuerySelectAction(
-		// QuerySelect.this, params, o);
-		// return schedule(QuerySelect.this, action);
-		// }
-		// });
 	}
 
 	/**

@@ -1,6 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
-import rx.util.functions.Func1;
+import rx.functions.Func1;
 
 /**
  * Encapsulate a query parameter.

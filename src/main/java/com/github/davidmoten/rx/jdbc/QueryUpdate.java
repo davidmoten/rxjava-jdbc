@@ -1,15 +1,11 @@
 package com.github.davidmoten.rx.jdbc;
 
 import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
-import static com.github.davidmoten.rx.jdbc.Queries.schedule;
 
 import java.util.List;
 
 import rx.Observable;
-import rx.Observable.OnSubscribeFunc;
-import rx.Observer;
-import rx.Subscription;
-import rx.util.functions.Func1;
+import rx.functions.Func1;
 
 /**
  * Always emits an Observable<Integer> of size 1 containing the number of
@@ -101,14 +97,7 @@ final public class QueryUpdate implements Query {
 	 * @return
 	 */
 	private Observable<Integer> executeOnce(final List<Parameter> parameters) {
-		return Observable.create(new OnSubscribeFunc<Integer>() {
-			@Override
-			public Subscription onSubscribe(Observer<? super Integer> o) {
-				final QueryUpdateAction action = new QueryUpdateAction(
-						QueryUpdate.this, parameters, o);
-				return schedule(QueryUpdate.this, action);
-			}
-		});
+		return OperationQueryUpdate.execute(this, parameters);
 	}
 
 	/**

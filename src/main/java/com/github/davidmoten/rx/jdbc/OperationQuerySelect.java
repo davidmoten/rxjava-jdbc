@@ -26,7 +26,7 @@ class OperationQuerySelect {
 	 *            one set of parameters to be run with the query
 	 * @return
 	 */
-	static Observable<ResultSet> executeOnce(QuerySelect query,
+	static Observable<ResultSet> execute(QuerySelect query,
 			List<Parameter> parameters) {
 		return Observable.create(new QuerySelectOnSubscribe(query, parameters));
 	}
@@ -47,46 +47,35 @@ class OperationQuerySelect {
 		}
 
 		@Override
-		public void call(Subscriber<? super ResultSet> o) {
+		public void call(Subscriber<? super ResultSet> subscriber) {
 			try {
 
-				checkSubscription(o);
-				connectAndPrepareStatement(o);
-
-				checkSubscription(o);
-				executeQuery();
-
-				checkSubscription(o);
+				connectAndPrepareStatement(subscriber);
+				executeQuery(subscriber);
 				while (keepGoing) {
-					processRow(o);
-					checkSubscription(o);
+					processRow(subscriber);
 				}
-
-				complete(o);
+				complete(subscriber);
 
 			} catch (Exception e) {
-				handleException(e, o);
+				handleException(e, subscriber);
 			}
 
-		}
-
-		private void checkSubscription(Subscriber<? super ResultSet> o) {
-			if (o.isUnsubscribed())
-				keepGoing = false;
 		}
 
 		/**
 		 * Obtains connection, creates prepared statement and assigns parameters
 		 * to the prepared statement.
 		 * 
-		 * @param o
+		 * @param subscriber
 		 * 
 		 * @throws SQLException
 		 */
-		private void connectAndPrepareStatement(Subscriber<? super ResultSet> o)
-				throws SQLException {
+		private void connectAndPrepareStatement(
+				Subscriber<? super ResultSet> subscriber) throws SQLException {
 			log.debug("connectionProvider="
 					+ query.context().connectionProvider());
+			checkSubscription(subscriber);
 			if (keepGoing) {
 				log.debug("getting connection");
 				con = query.context().connectionProvider().get();
@@ -100,26 +89,35 @@ class OperationQuerySelect {
 		/**
 		 * Executes the prepared statement.
 		 * 
+		 * @param subscriber
+		 * 
 		 * @throws SQLException
 		 */
-		private void executeQuery() throws SQLException {
-			log.debug("executing ps");
-			rs = ps.executeQuery();
-			log.debug("executed ps=" + ps);
+		private void executeQuery(Subscriber<? super ResultSet> subscriber)
+				throws SQLException {
+			checkSubscription(subscriber);
+			if (keepGoing) {
+				log.debug("executing ps");
+				rs = ps.executeQuery();
+				log.debug("executed ps=" + ps);
+			}
 		}
 
 		/**
 		 * Processes each row of the {@link ResultSet}.
 		 * 
-		 * @param o
+		 * @param subscriber
 		 * 
 		 * @throws SQLException
 		 */
-		private void processRow(Subscriber<? super ResultSet> o)
+		private void processRow(Subscriber<? super ResultSet> subscriber)
 				throws SQLException {
+			checkSubscription(subscriber);
+			if (!keepGoing)
+				return;
 			if (rs.next()) {
 				log.trace("onNext");
-				o.onNext(rs);
+				subscriber.onNext(rs);
 			} else
 				keepGoing = false;
 		}
@@ -127,11 +125,11 @@ class OperationQuerySelect {
 		/**
 		 * Tells observer that stream is complete and closes resources.
 		 * 
-		 * @param o
+		 * @param subscriber
 		 */
-		private void complete(Subscriber<? super ResultSet> o) {
+		private void complete(Subscriber<? super ResultSet> subscriber) {
 			log.debug("onCompleted");
-			o.onCompleted();
+			subscriber.onCompleted();
 			close();
 		}
 
@@ -139,12 +137,12 @@ class OperationQuerySelect {
 		 * Tells observer about exception.
 		 * 
 		 * @param e
-		 * @param o
+		 * @param subscriber
 		 */
 		private void handleException(Exception e,
-				Subscriber<? super ResultSet> o) {
+				Subscriber<? super ResultSet> subscriber) {
 			log.debug("onError: " + e.getMessage());
-			o.onError(e);
+			subscriber.onError(e);
 			close();
 		}
 
@@ -160,6 +158,13 @@ class OperationQuerySelect {
 			log.debug("closing con");
 			Util.closeQuietlyIfAutoCommit(con);
 			log.debug("closed");
+		}
+
+		private void checkSubscription(Subscriber<? super ResultSet> subscriber) {
+			if (subscriber.isUnsubscribed()) {
+				keepGoing = false;
+				log.debug("unsubscribing");
+			}
 		}
 
 	}

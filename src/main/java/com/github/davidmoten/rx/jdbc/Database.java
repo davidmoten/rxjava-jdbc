@@ -8,10 +8,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import rx.Observable;
 import rx.Scheduler;
+import rx.functions.Func0;
+import rx.functions.Func1;
+import rx.functions.Functions;
 import rx.schedulers.Schedulers;
-import rx.util.functions.Func0;
-import rx.util.functions.Func1;
-import rx.util.functions.Functions;
 
 /**
  * Main entry point for manipulations of a database using rx-java-jdbc style
@@ -83,7 +83,7 @@ final public class Database {
 
 		@Override
 		public Scheduler call() {
-			return Schedulers.currentThread();
+			return Schedulers.trampoline();
 		}
 	};
 
