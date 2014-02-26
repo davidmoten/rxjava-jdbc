@@ -32,8 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import rx.Observable;
 import rx.Subscription;
-import rx.util.functions.Func1;
-import rx.util.functions.Functions;
+import rx.functions.Func1;
+import rx.functions.Functions;
 
 /**
  * Utility methods.
