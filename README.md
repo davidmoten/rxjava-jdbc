@@ -24,8 +24,26 @@ Continuous integration with Jenkins for this project is [here](https://xuml-tool
 
 Maven site reports are [here](http://davidmoten.github.io/rxjava-jdbc/index.html).
 
+Build instructions
+-------------------
+
+```
+git clone https://github.com/davidmoten/rxjava-jdbc.git
+cd rxjava-jdbc
+mvn clean install
+```
+
 Getting started
 --------------------
+Include this maven dependency in your pom:
+```xml
+<dependency>
+    <groupId>com.github.davidmoten</groupId>
+    <artifactId>rxjava-jdbc</artifactId>
+    <version>0.1-SNAPSHOT</version>
+</dependency>
+```
+
 After using [RxJava](https://github.com/Netflix/RxJava/wiki) on a work project and being very impressed with 
 it (even without Java 8 lambdas!), I wondered what it could offer for JDBC usage. The answer is lots!
 
