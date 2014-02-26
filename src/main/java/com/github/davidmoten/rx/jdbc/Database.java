@@ -113,17 +113,13 @@ final public class Database {
 		this(new ConnectionProviderFromUrl(url));
 	}
 
-	public static Builder builder(ConnectionProvider cp) {
-		return new Builder(cp);
-	}
-
-	public static Builder builder(String url) {
-		return builder(new ConnectionProviderFromUrl(url));
+	public static Builder builder() {
+		return new Builder();
 	}
 
 	public final static class Builder {
 
-		private final ConnectionProvider cp;
+		private ConnectionProvider cp;
 		private Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler = Functions
 				.identity();
 		private Func1<Observable<Integer>, Observable<Integer>> updateHandler = Functions
@@ -131,8 +127,28 @@ final public class Database {
 		private Func0<Scheduler> nonTransactionalSchedulerFactory = null;
 		private Func0<Scheduler> transactionalSchedulerFactory = null;
 
-		private Builder(ConnectionProvider cp) {
+		private Builder() {
+		}
+
+		public Builder connectionProvider(ConnectionProvider cp) {
 			this.cp = cp;
+			return this;
+		}
+
+		public Builder url(String url) {
+			this.cp = new ConnectionProviderFromUrl(url);
+			return this;
+		}
+
+		public Builder pooled(String url, int minPoolSize, int maxPoolSize) {
+			this.cp = new ConnectionProviderPooled(url, minPoolSize,
+					maxPoolSize);
+			return this;
+		}
+
+		public Builder pooled(String url) {
+			this.cp = new ConnectionProviderPooled(url, 0, 10);
+			return this;
 		}
 
 		public Builder selectHandler(

@@ -3,6 +3,7 @@ package com.github.davidmoten.rx.jdbc;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.connectionProvider;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.createDatabase;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.db;
+import static com.github.davidmoten.rx.jdbc.DatabaseCreator.nextUrl;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -589,15 +590,15 @@ public class DatabaseTest {
 
 	@Test
 	public void testDatabaseBuilder() {
-		Database.builder(DatabaseCreator.connectionProvider())
+		Database.builder().connectionProvider(connectionProvider())
 				.transactionalSchedulerOnCurrentThread()
 				.nonTransactionalSchedulerOnCurrentThread().build();
 	}
 
 	@Test
 	public void testConnectionPool() {
-		ConnectionProviderPooled cp = new ConnectionProviderPooled(
-				DatabaseCreator.nextUrl(), 0, 10);
+		ConnectionProviderPooled cp = new ConnectionProviderPooled(nextUrl(),
+				0, 10);
 		Database db = new Database(cp);
 		DatabaseCreator.createDatabase(cp.get());
 		int count = db.select("select name from person order by name")
