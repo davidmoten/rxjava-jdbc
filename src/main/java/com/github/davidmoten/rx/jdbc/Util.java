@@ -592,7 +592,8 @@ public final class Util {
 				} else if (java.util.Date.class.isAssignableFrom(cls)) {
 					Calendar cal = Calendar.getInstance();
 					java.util.Date date = (java.util.Date) o;
-					ps.setDate(i, new java.sql.Date(date.getTime()), cal);
+					ps.setTimestamp(i, new java.sql.Timestamp(date.getTime()),
+							cal);
 				} else
 					try {
 						ps.setObject(i, o);
