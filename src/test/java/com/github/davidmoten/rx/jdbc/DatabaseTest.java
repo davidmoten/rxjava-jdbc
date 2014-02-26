@@ -621,7 +621,7 @@ public class DatabaseTest {
 
 	@Test
 	public void testDatabaseBuilderWithPool() {
-		Database db = Database.builder().pooled(nextUrl(), 0, 5).build();
+		Database.builder().pooled(nextUrl(), 0, 5).build();
 	}
 
 	static class PersonClob {
