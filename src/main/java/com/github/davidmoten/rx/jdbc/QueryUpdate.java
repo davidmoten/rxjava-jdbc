@@ -83,7 +83,7 @@ final public class QueryUpdate implements Query {
 		return new Func1<List<Parameter>, Observable<Integer>>() {
 			@Override
 			public Observable<Integer> call(final List<Parameter> params) {
-				return executeOnce(params);
+				return executeOnce(params).subscribeOn(context.scheduler());
 			}
 		};
 	}

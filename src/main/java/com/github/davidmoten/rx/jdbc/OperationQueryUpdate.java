@@ -94,7 +94,7 @@ class OperationQueryUpdate {
 		 * Gets the current connection.
 		 */
 		private void getConnection() {
-			log.info("getting connection");
+			log.debug("getting connection");
 			con = query.context().connectionProvider().get();
 			log.debug("cp=" + query.context().connectionProvider());
 		}
