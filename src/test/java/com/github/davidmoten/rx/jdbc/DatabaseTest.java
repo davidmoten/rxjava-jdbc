@@ -280,7 +280,7 @@ public class DatabaseTest {
 	@Test
 	public void testInstantiateDatabaseWithUrl() throws SQLException {
 		Database db = new Database("jdbc:h2:mem:testa1");
-		Connection con = db.getQueryContext().connectionProvider().get();
+		Connection con = db.queryContext().connectionProvider().get();
 		con.close();
 	}
 

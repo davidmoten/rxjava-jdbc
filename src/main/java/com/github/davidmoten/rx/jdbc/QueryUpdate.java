@@ -67,7 +67,7 @@ final public class QueryUpdate implements Query {
 	 * @param query
 	 * @return
 	 */
-	public Observable<Integer> getCount() {
+	public Observable<Integer> count() {
 		return context.handlers().updateHandler()
 				.call(bufferedParameters(this).flatMap(executeOnce()));
 	}
@@ -192,7 +192,7 @@ final public class QueryUpdate implements Query {
 		 */
 		public Observable<Integer> getCount() {
 			return new QueryUpdate(builder.sql(), builder.parameters(),
-					builder.depends(), builder.context()).getCount();
+					builder.depends(), builder.context()).count();
 		}
 	}
 }

@@ -22,7 +22,7 @@ final public class QueryBuilder {
 	public QueryBuilder(String sql, Database db) {
 		this.sql = sql;
 		this.db = db;
-		this.context = db.getQueryContext();
+		this.context = db.queryContext();
 	}
 
 	/**

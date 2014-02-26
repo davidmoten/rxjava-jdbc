@@ -214,7 +214,7 @@ final public class Database {
 	 * 
 	 * @return
 	 */
-	public QueryContext getQueryContext() {
+	public QueryContext queryContext() {
 		if (context.get() == null) {
 			context.set(QueryContext.newNonTransactionalQueryContext(cp,
 					handlers, nonTransactionalSchedulerFactory.call()));
