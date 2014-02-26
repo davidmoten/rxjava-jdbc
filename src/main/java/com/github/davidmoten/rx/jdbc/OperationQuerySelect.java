@@ -41,7 +41,8 @@ class OperationQuerySelect {
 		private PreparedStatement ps;
 		private ResultSet rs;
 
-		QuerySelectOnSubscribe(QuerySelect query, List<Parameter> parameters) {
+		private QuerySelectOnSubscribe(QuerySelect query,
+				List<Parameter> parameters) {
 			this.query = query;
 			this.parameters = parameters;
 		}

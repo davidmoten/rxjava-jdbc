@@ -65,7 +65,8 @@ class OperationQueryUpdate {
 		 */
 		private PreparedStatement ps;
 
-		QueryUpdateOnSubscribe(QueryUpdate query, List<Parameter> parameters) {
+		private QueryUpdateOnSubscribe(QueryUpdate query,
+				List<Parameter> parameters) {
 			this.query = query;
 			this.parameters = parameters;
 		}
