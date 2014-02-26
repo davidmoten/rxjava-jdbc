@@ -110,7 +110,7 @@ final public class QuerySelectAction implements Action0, Cancellable {
 	 * @throws SQLException
 	 */
 	private void executeQuery() throws SQLException {
-		log.info("executing ps");
+		log.debug("executing ps");
 		rs = ps.executeQuery();
 		log.debug("executed ps=" + ps);
 	}
