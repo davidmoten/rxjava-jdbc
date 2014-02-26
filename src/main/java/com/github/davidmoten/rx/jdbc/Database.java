@@ -322,7 +322,7 @@ final public class Database {
 		QueryUpdate.Builder u = update(action);
 		for (Observable<?> dep : depends)
 			u = u.dependsOn(dep);
-		Observable<Boolean> result = u.getCount().map(IS_NON_ZERO);
+		Observable<Boolean> result = u.count().map(IS_NON_ZERO);
 		lastTransactionResult.set(result);
 		resetQueryContext();
 		return result;

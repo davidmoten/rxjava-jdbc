@@ -190,7 +190,7 @@ final public class QueryUpdate implements Query {
 		 * 
 		 * @return
 		 */
-		public Observable<Integer> getCount() {
+		public Observable<Integer> count() {
 			return new QueryUpdate(builder.sql(), builder.parameters(),
 					builder.depends(), builder.context()).count();
 		}

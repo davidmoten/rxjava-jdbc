@@ -112,7 +112,7 @@ public class DatabaseTest {
 				.select("select name from person where name=?")
 				.parameter("FRED").get().count().filter(isZero);
 		db.update("insert into person(name,score) values(?,0)")
-				.parameters(existingRows.map(Util.constant("FRED"))).getCount();
+				.parameters(existingRows.map(Util.constant("FRED"))).count();
 		boolean committed = db.commit().toBlockingObservable().single();
 		assertTrue(committed);
 	}
@@ -121,7 +121,7 @@ public class DatabaseTest {
 	public void testTransactionOnCommit() {
 		Database db = db().beginTransaction();
 		Observable<Integer> updateCount = db
-				.update("update person set score=?").parameter(99).getCount();
+				.update("update person set score=?").parameter(99).count();
 		db.commit(updateCount);
 		long count = db.select("select count(*) from person where score=?")
 				.parameter(99).dependsOnLastTransaction().getAs(Long.class)
@@ -134,7 +134,7 @@ public class DatabaseTest {
 		Database db = db();
 		db.beginTransaction();
 		Observable<Integer> u = db.update("update person set score=?")
-				.parameter(99).getCount();
+				.parameter(99).count();
 		db.commit(u);
 		// note that last transaction was not listed as a dependency of the next
 		// query
@@ -149,7 +149,7 @@ public class DatabaseTest {
 		Database db = db();
 		db.beginTransaction();
 		Observable<Integer> updateCount = db
-				.update("update person set score=?").parameter(99).getCount();
+				.update("update person set score=?").parameter(99).count();
 		db.rollback(updateCount);
 		long count = db.select("select count(*) from person where score=?")
 				.parameter(99).dependsOnLastTransaction().getAs(Long.class)
@@ -255,7 +255,7 @@ public class DatabaseTest {
 				.parameter("FRED").getAs(String.class).count().filter(isZero);
 		List<Integer> counts = db
 				.update("insert into person(name,score) values(?,?)")
-				.parameters(existingRows).getCount().toList()
+				.parameters(existingRows).count().toList()
 				.toBlockingObservable().single();
 		assertEquals(0, counts.size());
 	}
@@ -339,7 +339,7 @@ public class DatabaseTest {
 		Observable<Integer> insert = db
 				.update("insert into person(name,score) values(?,?)")
 				.parameters("JOHN", 45)
-				.getCount()
+				.count()
 				.zip(Observable.interval(100, TimeUnit.MILLISECONDS),
 						new Func2<Integer, Long, Integer>() {
 							@Override
@@ -376,7 +376,7 @@ public class DatabaseTest {
 		java.sql.Timestamp registered = new java.sql.Timestamp(100);
 		Observable<Integer> u = db
 				.update("update person set registered=? where name=?")
-				.parameter(registered).parameter("FRED").getCount();
+				.parameter(registered).parameter("FRED").count();
 		Date regTime = db.select("select registered from person order by name")
 				.dependsOn(u).getAs(Date.class).first().toBlockingObservable()
 				.single();
@@ -399,7 +399,7 @@ public class DatabaseTest {
 				.parameter("FRED")
 				.parameter(
 						"A description about Fred that is rather long and needs a Clob to store it")
-				.getCount().toBlockingObservable().single();
+				.count().toBlockingObservable().single();
 		assertEquals(1, count);
 	}
 
@@ -409,7 +409,7 @@ public class DatabaseTest {
 				.parameter("FRED")
 				.parameter(
 						"A description about Fred that is rather long and needs a Clob to store it"
-								.getBytes()).getCount().toBlockingObservable()
+								.getBytes()).count().toBlockingObservable()
 				.single();
 		assertEquals(1, count);
 	}
@@ -439,7 +439,7 @@ public class DatabaseTest {
 	public void testInsertNull() {
 		int count = db()
 				.update("insert into person(name,score,dob) values(?,?,?)")
-				.parameters("JACK", 42, null).getCount().toBlockingObservable()
+				.parameters("JACK", 42, null).count().toBlockingObservable()
 				.single();
 		assertEquals(1, count);
 	}
@@ -456,7 +456,7 @@ public class DatabaseTest {
 			Observable<Integer> u = db
 					.update("update person set dob=?, registered=? where name=?")
 					.parameter(dob).parameter(registered).parameter("FRED")
-					.getCount();
+					.count();
 			Person person = db
 					.select("select name,score,dob,registered from person order by name")
 					.dependsOn(u).autoMap(Person.class).first()
@@ -581,7 +581,7 @@ public class DatabaseTest {
 		cal.setTimeInMillis(0);
 		Observable<Integer> update = db
 				.update("update person set registered=? where name=?")
-				.parameters(cal, "FRED").getCount();
+				.parameters(cal, "FRED").count();
 		Timestamp t = db.select("select registered from person where name=?")
 				.parameter("FRED").dependsOn(update).getAs(Timestamp.class)
 				.first().toBlockingObservable().single();
