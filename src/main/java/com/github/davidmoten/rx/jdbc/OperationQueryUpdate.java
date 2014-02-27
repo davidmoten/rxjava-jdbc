@@ -205,18 +205,24 @@ class OperationQueryUpdate {
 				observer.onCompleted();
 			} else
 				log.debug("unsubscribed");
+			close();
 		}
 
 		/**
 		 * Notify observer of an error.
 		 * 
 		 * @param e
-		 * @param observer
+		 * @param subscriber
 		 */
 		private void handleException(Exception e,
-				Subscriber<? super Integer> observer) {
+				Subscriber<? super Integer> subscriber) {
 			log.debug("onError: " + e.getMessage());
-			observer.onError(e);
+			if (subscriber.isUnsubscribed())
+				log.debug("unsubscribed");
+			else {
+				subscriber.onError(e);
+			}
+			close();
 		}
 
 		/**

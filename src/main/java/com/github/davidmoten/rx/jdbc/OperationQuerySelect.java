@@ -132,11 +132,12 @@ class OperationQuerySelect {
 		 * @param subscriber
 		 */
 		private void complete(Subscriber<? super ResultSet> subscriber) {
-			if (!subscriber.isUnsubscribed()) {
+			if (subscriber.isUnsubscribed()) {
+				log.debug("unsubscribed");
+			} else {
 				log.debug("onCompleted");
 				subscriber.onCompleted();
-			} else
-				log.debug("unsubscribed");
+			}
 			close();
 		}
 
@@ -149,7 +150,11 @@ class OperationQuerySelect {
 		private void handleException(Exception e,
 				Subscriber<? super ResultSet> subscriber) {
 			log.debug("onError: " + e.getMessage());
-			subscriber.onError(e);
+			if (subscriber.isUnsubscribed())
+				log.debug("unsubscribed");
+			else {
+				subscriber.onError(e);
+			}
 			close();
 		}
 
