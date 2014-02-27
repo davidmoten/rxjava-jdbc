@@ -64,6 +64,8 @@ class OperationQuerySelect {
 				complete(subscriber);
 			} catch (Exception e) {
 				handleException(e, subscriber);
+			} finally {
+				close();
 			}
 		}
 
@@ -138,7 +140,6 @@ class OperationQuerySelect {
 				log.debug("onCompleted");
 				subscriber.onCompleted();
 			}
-			close();
 		}
 
 		/**
@@ -155,7 +156,6 @@ class OperationQuerySelect {
 			else {
 				subscriber.onError(e);
 			}
-			close();
 		}
 
 		/**

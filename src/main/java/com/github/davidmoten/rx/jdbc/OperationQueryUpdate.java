@@ -33,6 +33,7 @@ class OperationQueryUpdate {
 	private static class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
 
 		private boolean keepGoing = true;
+
 		/**
 		 * Special sql command that brings about a rollback.
 		 */
@@ -94,6 +95,8 @@ class OperationQueryUpdate {
 
 			} catch (Exception e) {
 				handleException(e, subscriber);
+			} finally {
+				close();
 			}
 		}
 
@@ -191,7 +194,6 @@ class OperationQueryUpdate {
 				return;
 
 			subscriber.onNext((count));
-			close();
 		}
 
 		/**
@@ -205,7 +207,6 @@ class OperationQueryUpdate {
 				subscriber.onCompleted();
 			} else
 				log.debug("unsubscribed");
-			close();
 		}
 
 		/**
@@ -222,7 +223,6 @@ class OperationQueryUpdate {
 			else {
 				subscriber.onError(e);
 			}
-			close();
 		}
 
 		/**
