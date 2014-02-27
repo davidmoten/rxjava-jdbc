@@ -5,6 +5,7 @@ import static com.github.davidmoten.rx.jdbc.DatabaseCreator.createDatabase;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.db;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.nextUrl;
 import static java.util.Arrays.asList;
+import static org.easymock.EasyMock.createMock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -612,16 +613,51 @@ public class DatabaseTest {
 				0, 1);
 		Database db = new Database(cp);
 		DatabaseCreator.createDatabase(cp.get());
-		int count = db
-				.select("select name from person where name=?")
-				.parameters(Observable.range(0, 100).map(Util.constant("FRED")))
-				.getAs(String.class).count().toBlockingObservable().single();
-		assertEquals(100, count);
+		assertCountIs(
+				100,
+				db.select("select name from person where name=?")
+						.parameters(
+								Observable.range(0, 100).map(
+										Util.constant("FRED"))).get());
 	}
 
 	@Test
 	public void testDatabaseBuilderWithPool() {
-		Database.builder().pooled(nextUrl(), 0, 5).build();
+		Database.builder().pooled(nextUrl(), 0, 5).build().close();
+	}
+
+	private static void assertCountIs(int count, Observable<?> o) {
+		assertEquals(count, (int) o.count().toBlockingObservable().single());
+	}
+
+	@Test
+	public void testConnectionClosed() {
+		ConnectionProvider cp = connectionProvider();
+		DatabaseCreator.createDatabase(cp.get());
+		Database db = new Database(cp);
+		int count = db.select("select name from person order by name")
+				.getAs(String.class).count().toBlockingObservable().single();
+
+	}
+
+	private static class CountingConnectionProvider implements
+			ConnectionProvider {
+		private final ConnectionProvider cp;
+
+		CountingConnectionProvider(ConnectionProvider cp) {
+			this.cp = cp;
+		}
+
+		@Override
+		public Connection get() {
+			Connection con = cp.get();
+			Connection con2 = createMock(Connection.class);
+		}
+
+		@Override
+		public void close() {
+
+		}
 	}
 
 	static class PersonClob {
