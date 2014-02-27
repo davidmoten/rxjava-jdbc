@@ -78,22 +78,22 @@ class OperationQueryUpdate {
 		}
 
 		@Override
-		public void call(Subscriber<? super Integer> observer) {
+		public void call(Subscriber<? super Integer> subscriber) {
 			try {
 
 				getConnection();
 
 				if (isCommit())
-					performCommit(observer);
+					performCommit(subscriber);
 				else if (isRollback())
-					performRollback(observer);
+					performRollback(subscriber);
 				else
-					performUpdate(observer);
+					performUpdate(subscriber);
 
-				complete(observer);
+				complete(subscriber);
 
 			} catch (Exception e) {
-				handleException(e, observer);
+				handleException(e, subscriber);
 			}
 		}
 
@@ -128,10 +128,10 @@ class OperationQueryUpdate {
 		 * Commits the current transaction. Throws {@link RuntimeException} if
 		 * connection is in autoCommit mode.
 		 * 
-		 * @param observer
+		 * @param subscriber
 		 */
-		private void performCommit(Subscriber<? super Integer> observer) {
-			checkSubscription(observer);
+		private void performCommit(Subscriber<? super Integer> subscriber) {
+			checkSubscription(subscriber);
 			if (!keepGoing)
 				return;
 
@@ -139,11 +139,11 @@ class OperationQueryUpdate {
 			Conditions.checkTrue(!Util.isAutoCommit(con));
 			Util.commit(con);
 
-			checkSubscription(observer);
+			checkSubscription(subscriber);
 			if (!keepGoing)
 				return;
 
-			observer.onNext(Integer.valueOf(1));
+			subscriber.onNext(Integer.valueOf(1));
 			log.debug("committed");
 		}
 
@@ -151,33 +151,33 @@ class OperationQueryUpdate {
 		 * Rolls back the current transaction. Throws {@link RuntimeException}
 		 * if connection is in autoCommit mode.
 		 * 
-		 * @param observer
+		 * @param subscriber
 		 */
-		private void performRollback(Subscriber<? super Integer> observer) {
+		private void performRollback(Subscriber<? super Integer> subscriber) {
 			log.debug("rolling back");
 			Conditions.checkTrue(!Util.isAutoCommit(con));
 			Util.rollback(con);
-			observer.onNext(Integer.valueOf(0));
+			subscriber.onNext(Integer.valueOf(0));
 			log.debug("rolled back");
 		}
 
 		/**
 		 * Executes the prepared statement.
 		 * 
-		 * @param observer
+		 * @param subscriber
 		 * 
 		 * @throws SQLException
 		 */
-		private void performUpdate(Subscriber<? super Integer> observer)
+		private void performUpdate(Subscriber<? super Integer> subscriber)
 				throws SQLException {
-			checkSubscription(observer);
+			checkSubscription(subscriber);
 			if (!keepGoing)
 				return;
 
 			ps = con.prepareStatement(query.sql());
 			Util.setParameters(ps, parameters);
 
-			checkSubscription(observer);
+			checkSubscription(subscriber);
 			if (!keepGoing)
 				return;
 
@@ -186,23 +186,23 @@ class OperationQueryUpdate {
 			log.debug("executed ps=" + ps);
 			log.debug("onNext");
 
-			checkSubscription(observer);
+			checkSubscription(subscriber);
 			if (!keepGoing)
 				return;
 
-			observer.onNext((count));
+			subscriber.onNext((count));
 			close();
 		}
 
 		/**
 		 * Notify observer that sequence is complete.
 		 * 
-		 * @param observer
+		 * @param subscriber
 		 */
-		private void complete(Subscriber<? super Integer> observer) {
-			if (!observer.isUnsubscribed()) {
+		private void complete(Subscriber<? super Integer> subscriber) {
+			if (!subscriber.isUnsubscribed()) {
 				log.debug("onCompleted");
-				observer.onCompleted();
+				subscriber.onCompleted();
 			} else
 				log.debug("unsubscribed");
 			close();
@@ -234,8 +234,8 @@ class OperationQueryUpdate {
 			Util.closeQuietlyIfAutoCommit(con);
 		}
 
-		private void checkSubscription(Subscriber<? super Integer> o) {
-			if (o.isUnsubscribed()) {
+		private void checkSubscription(Subscriber<? super Integer> subscriber) {
+			if (subscriber.isUnsubscribed()) {
 				keepGoing = false;
 				log.debug("unsubscribing");
 			}
