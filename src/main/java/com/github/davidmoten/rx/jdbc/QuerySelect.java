@@ -208,8 +208,8 @@ final public class QuerySelect implements Query {
 		 * Transforms each row of the ResultSet into an instance of
 		 * <code>T</code> using <i>automapping</i> of the ResultSet columns into
 		 * corresponding constructor parameters that are assignable. Beyond
-		 * normal assignable criteria other conversions exist to facilitate the
-		 * automapping.
+		 * normal assignable criteria (for example Integer 123 is assignable to
+		 * a Double) other conversions exist to facilitate the automapping:
 		 * </p>
 		 * <p>
 		 * They are:
