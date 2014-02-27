@@ -431,7 +431,7 @@ public final class Util {
 			} else if (o instanceof BigDecimal
 					&& cls.isAssignableFrom(BigInteger.class)) {
 				return ((BigDecimal) o).toBigInteger();
-			} else if (o instanceof Number
+			} else if ((o instanceof Short || o instanceof Integer || o instanceof Long)
 					&& cls.isAssignableFrom(BigInteger.class)) {
 				return new BigInteger(o.toString());
 			} else if (o instanceof Number

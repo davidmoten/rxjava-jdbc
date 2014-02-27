@@ -216,6 +216,40 @@ public class UtilTest {
 	}
 
 	@Test
+	public void testAutoMapOfDoubleToBigDecimal() {
+		assertEquals(BigDecimal.ONE.doubleValue(),
+				((BigDecimal) autoMap(1.0, BigDecimal.class)).doubleValue(),
+				0.0001);
+	}
+
+	@Test
+	public void testAutoMapOfIntegerToBigDecimal() {
+		assertEquals(BigDecimal.ONE.doubleValue(),
+				((BigDecimal) autoMap(1, BigDecimal.class)).doubleValue(),
+				0.0001);
+	}
+
+	@Test
+	public void testAutoMapOfDoubleToBigInteger() {
+		assertEquals(1.2, (Double) autoMap(1.2, BigInteger.class), 0.0001);
+	}
+
+	@Test
+	public void testAutoMapOfShortToBigInteger() {
+		assertEquals(BigInteger.ONE, autoMap((short) 1, BigInteger.class));
+	}
+
+	@Test
+	public void testAutoMapOfIntegerToBigInteger() {
+		assertEquals(BigInteger.ONE, autoMap(1, BigInteger.class));
+	}
+
+	@Test
+	public void testAutoMapOfLongToBigInteger() {
+		assertEquals(BigInteger.ONE, autoMap(1L, BigInteger.class));
+	}
+
+	@Test
 	public void testClose1() throws SQLException {
 		Connection con = createMock(Connection.class);
 		expect(con.isClosed()).andThrow(new SQLException());
