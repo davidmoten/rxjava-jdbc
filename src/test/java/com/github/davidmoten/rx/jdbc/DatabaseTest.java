@@ -652,6 +652,7 @@ public class DatabaseTest {
 		public Connection get() {
 			Connection con = cp.get();
 			Connection con2 = createMock(Connection.class);
+			return con;
 		}
 
 		@Override
