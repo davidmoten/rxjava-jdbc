@@ -214,19 +214,20 @@ final public class QuerySelect implements Query {
 		 * <p>
 		 * They are:
 		 * <ul>
-		 * <li>java.sql.Blob -> byte[]</li>
-		 * <li>java.sql.Blob -> java.io.InputStream</li>
-		 * <li>java.sql.Clob -> String</li>
-		 * <li>java.sql.Clob -> java.io.Reader</li>
-		 * <li>java.sql.Date -> java.util.Date</li>
-		 * <li>java.sql.Date -> Long</li>
-		 * <li>java.sql.Timestamp -> java.util.Date</li>
-		 * <li>java.sql.Timestamp -> Long</li>
-		 * <li>java.sql.Time -> java.util.Date</li>
-		 * <li>java.sql.Time -> Long</li>
-		 * <li>java.math.BigInteger -> Integer</li>
-		 * <li>java.math.BigInteger -> Long</li>
-		 * <li>java.math.BigDecimal -> Double</li>
+		 * <li>java.sql.Blob &#10143; byte[]</li>
+		 * <li>java.sql.Blob &#10143; java.io.InputStream</li>
+		 * <li>java.sql.Clob &#10143; String</li>
+		 * <li>java.sql.Clob &#10143; java.io.Reader</li>
+		 * <li>java.sql.Date &#10143; java.util.Date</li>
+		 * <li>java.sql.Date &#10143; Long</li>
+		 * <li>java.sql.Timestamp &#10143; java.util.Date</li>
+		 * <li>java.sql.Timestamp &#10143; Long</li>
+		 * <li>java.sql.Time &#10143; java.util.Date</li>
+		 * <li>java.sql.Time &#10143; Long</li>
+		 * <li>java.math.BigInteger &#10143;
+		 * Short,Integer,Long,Float,Double,BigDecimal</li>
+		 * <li>java.math.BigDecimal &#10143;
+		 * Short,Integer,Long,Float,Double,BigInteger</li>
 		 * </p>
 		 * 
 		 * @param cls
