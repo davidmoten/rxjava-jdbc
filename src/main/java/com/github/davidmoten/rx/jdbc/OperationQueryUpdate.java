@@ -231,7 +231,10 @@ class OperationQueryUpdate {
 		 */
 		private void close() {
 			Util.closeQuietly(ps);
-			Util.closeQuietlyIfAutoCommit(con);
+			if (isCommit() || isRollback())
+				Util.closeQuietly(con);
+			else
+				Util.closeQuietlyIfAutoCommit(con);
 		}
 
 		private void checkSubscription(Subscriber<? super Integer> subscriber) {

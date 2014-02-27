@@ -5,7 +5,6 @@ import static com.github.davidmoten.rx.jdbc.DatabaseCreator.createDatabase;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.db;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.nextUrl;
 import static java.util.Arrays.asList;
-import static org.easymock.EasyMock.createMock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -22,6 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -602,8 +602,8 @@ public class DatabaseTest {
 				0, 10);
 		Database db = new Database(cp);
 		DatabaseCreator.createDatabase(cp.get());
-		int count = db.select("select name from person order by name")
-				.getAs(String.class).count().toBlockingObservable().single();
+		int count = db.select("select name from person order by name").get()
+				.count().toBlockingObservable().single();
 		assertEquals(3, count);
 	}
 
@@ -631,33 +631,124 @@ public class DatabaseTest {
 	}
 
 	@Test
-	public void testConnectionClosed() {
-		ConnectionProvider cp = connectionProvider();
-		DatabaseCreator.createDatabase(cp.get());
+	public void testOneConnectionOpenAndClosedAfterOneSelect()
+			throws InterruptedException {
+		CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
 		Database db = new Database(cp);
-		int count = db.select("select name from person order by name")
-				.getAs(String.class).count().toBlockingObservable().single();
-
+		db.select("select name from person").get().count()
+				.toBlockingObservable().single();
+		cp.closesLatch().await();
+		cp.getsLatch().await();
 	}
 
-	private static class CountingConnectionProvider implements
+	@Test
+	public void testOneConnectionOpenAndClosedAfterOneUpdate()
+			throws InterruptedException {
+		CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
+		Database db = new Database(cp);
+		db.update("update person set score=? where name=?")
+				.parameters(23, "FRED").count().toBlockingObservable().single();
+		cp.closesLatch().await(60, TimeUnit.SECONDS);
+		cp.getsLatch().await(60, TimeUnit.SECONDS);
+	}
+
+	@Test
+	public void testTwoConnectionsOpenedAndClosedAfterTwoAsyncSelects()
+			throws InterruptedException {
+		CountDownConnectionProvider cp = new CountDownConnectionProvider(2, 2);
+		Database db = new Database(cp);
+		db.select("select name from person").get().count()
+				.toBlockingObservable().single();
+		db.select("select name from person").get().count()
+				.toBlockingObservable().single();
+		cp.getsLatch().await(60, TimeUnit.SECONDS);
+		cp.closesLatch().await(60, TimeUnit.SECONDS);
+	}
+
+	@Test
+	public void testTwoConnectionsOpenedAndClosedAfterTwoAsyncUpdates()
+			throws InterruptedException {
+		CountDownConnectionProvider cp = new CountDownConnectionProvider(2, 2);
+		Database db = new Database(cp);
+		db.update("update person set score=? where name=?")
+				.parameters(23, "FRED").count().toBlockingObservable().single();
+		db.update("update person set score=? where name=?")
+				.parameters(25, "JOHN").count().toBlockingObservable().single();
+		cp.getsLatch().await(60, TimeUnit.SECONDS);
+		cp.closesLatch().await(60, TimeUnit.SECONDS);
+	}
+
+	@Test
+	public void testOneConnectionOpenedAndClosedAfterTwoSelectsWithinTransaction()
+			throws InterruptedException {
+		CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
+		Database db = new Database(cp);
+		db.beginTransaction();
+		Observable<Integer> count = db.select("select name from person").get()
+				.count();
+		Observable<Integer> count2 = db.select("select name from person").get()
+				.count();
+		int result = db.commit(count, count2).count().toBlockingObservable()
+				.single();
+		log.info("committed " + result);
+		cp.getsLatch().await();
+		log.info("gets ok");
+		cp.closesLatch().await();
+		log.info("closes ok");
+	}
+
+	@Test
+	public void testOneConnectionOpenedAndClosedAfterTwoUpdatesWithinTransaction()
+			throws InterruptedException {
+		CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
+		Database db = new Database(cp);
+		db.beginTransaction();
+		Observable<Integer> count = db
+				.update("update person set score=? where name=?")
+				.parameters(23, "FRED").count();
+		Observable<Integer> count2 = db
+				.update("update person set score=? where name=?")
+				.parameters(25, "JOHN").count();
+		int result = db.commit(count, count2).count().toBlockingObservable()
+				.single();
+		log.info("committed " + result);
+		cp.getsLatch().await();
+		log.info("gets ok");
+		cp.closesLatch().await();
+		log.info("closes ok");
+	}
+
+	private static class CountDownConnectionProvider implements
 			ConnectionProvider {
 		private final ConnectionProvider cp;
+		private final CountDownLatch closesLatch;
+		private final CountDownLatch getsLatch;
 
-		CountingConnectionProvider(ConnectionProvider cp) {
-			this.cp = cp;
+		CountDownConnectionProvider(int expectedGets, int expectedCloses) {
+			this.cp = connectionProvider();
+			DatabaseCreator.createDatabase(cp.get());
+			this.closesLatch = new CountDownLatch(expectedCloses);
+			this.getsLatch = new CountDownLatch(expectedGets);
+		}
+
+		CountDownLatch closesLatch() {
+			return closesLatch;
+		}
+
+		CountDownLatch getsLatch() {
+			return getsLatch;
 		}
 
 		@Override
 		public Connection get() {
-			Connection con = cp.get();
-			Connection con2 = createMock(Connection.class);
-			return con;
+			getsLatch.countDown();
+			Connection inner = cp.get();
+			return new CountingConnection(inner, closesLatch);
 		}
 
 		@Override
 		public void close() {
-
+			cp.close();
 		}
 	}
 
