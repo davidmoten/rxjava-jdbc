@@ -132,8 +132,11 @@ class OperationQuerySelect {
 		 * @param subscriber
 		 */
 		private void complete(Subscriber<? super ResultSet> subscriber) {
-			log.debug("onCompleted");
-			subscriber.onCompleted();
+			if (!subscriber.isUnsubscribed()) {
+				log.debug("onCompleted");
+				subscriber.onCompleted();
+			} else
+				log.debug("unsubscribed");
 			close();
 		}
 

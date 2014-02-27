@@ -200,8 +200,11 @@ class OperationQueryUpdate {
 		 * @param observer
 		 */
 		private void complete(Subscriber<? super Integer> observer) {
-			log.debug("onCompleted");
-			observer.onCompleted();
+			if (!observer.isUnsubscribed()) {
+				log.debug("onCompleted");
+				observer.onCompleted();
+			} else
+				log.debug("unsubscribed");
 		}
 
 		/**
