@@ -667,28 +667,14 @@ public class DatabaseTest {
 	public void testLiftWithParametersAndEnsureIntervalStops()
 			throws InterruptedException {
 		int score = Observable
-				.interval(100, TimeUnit.MILLISECONDS)
+				.range(1, 3)
 				.doOnEach(log())
 				.map(Util.constant("FRED"))
 				.lift(db().select("select score from person where name=?")
-						.getAsOperator(Integer.class)).first()
+						.getAsOperator(Integer.class))
+				.sumInteger(rx.functions.Functions.<Integer> identity())
 				.toBlockingObservable().single();
-		assertEquals(21, score);
-		Thread.sleep(3000);
-	}
-
-	@Test
-	public void testParametersAndEnsureIntervalStops()
-			throws InterruptedException {
-		int score = Observable
-				.interval(100, TimeUnit.MILLISECONDS)
-				.doOnEach(log())
-				.map(Util.constant("FRED"))
-				.lift(db().select("select score from person where name=?")
-						.getAsOperator(Integer.class)).first()
-				.toBlockingObservable().single();
-		assertEquals(21, score);
-		Thread.sleep(3000);
+		assertEquals(3 * 21, score);
 	}
 
 	@Test
