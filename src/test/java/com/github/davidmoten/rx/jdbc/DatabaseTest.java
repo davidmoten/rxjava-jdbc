@@ -664,8 +664,7 @@ public class DatabaseTest {
 	}
 
 	@Test
-	public void testLiftWithParametersAndEnsureIntervalStops()
-			throws InterruptedException {
+	public void testLiftWithManyParameters() {
 		int score = Observable
 				.range(1, 3)
 				.doOnEach(log())
@@ -675,6 +674,18 @@ public class DatabaseTest {
 				.sumInteger(rx.functions.Functions.<Integer> identity())
 				.toBlockingObservable().single();
 		assertEquals(3 * 21, score);
+	}
+
+	@Test
+	public void test() throws InterruptedException {
+		List<Long> list = Observable
+				.interval(100, TimeUnit.MILLISECONDS)
+				.doOnEach(log())
+				.flatMap(
+						Util.constant(Observable.interval(100,
+								TimeUnit.MILLISECONDS))).take(3).toList()
+				.toBlockingObservable().single();
+		// Thread.sleep(10000);
 	}
 
 	@Test
