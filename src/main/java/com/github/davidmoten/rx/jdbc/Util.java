@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rx.Observable;
+import rx.Observer;
 import rx.Subscription;
 import rx.functions.Func1;
 
@@ -739,6 +740,26 @@ public final class Util {
 			@Override
 			public boolean isUnsubscribed() {
 				return false;
+			}
+		};
+	}
+
+	public static <T> Observer<? super T> log() {
+		return new Observer<T>() {
+
+			@Override
+			public void onCompleted() {
+				// do nothing
+			}
+
+			@Override
+			public void onError(Throwable e) {
+				log.error(e.getMessage(), e);
+			}
+
+			@Override
+			public void onNext(T t) {
+				log.info(t + "");
 			}
 		};
 	}

@@ -4,10 +4,12 @@ import static com.github.davidmoten.rx.jdbc.DatabaseCreator.connectionProvider;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.createDatabase;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.db;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.nextUrl;
+import static com.github.davidmoten.rx.jdbc.Util.log;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static rx.Observable.from;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -650,6 +652,43 @@ public class DatabaseTest {
 				.parameters(23, "FRED").count().toBlockingObservable().single();
 		cp.closesLatch().await(60, TimeUnit.SECONDS);
 		cp.getsLatch().await(60, TimeUnit.SECONDS);
+	}
+
+	@Test
+	public void testLiftWithParameters() {
+		int score = from("FRED")
+				.lift(db().select("select score from person where name=?")
+						.getAsOperator(Integer.class)).first()
+				.toBlockingObservable().single();
+		assertEquals(21, score);
+	}
+
+	@Test
+	public void testLiftWithParametersAndEnsureIntervalStops()
+			throws InterruptedException {
+		int score = Observable
+				.interval(100, TimeUnit.MILLISECONDS)
+				.doOnEach(log())
+				.map(Util.constant("FRED"))
+				.lift(db().select("select score from person where name=?")
+						.getAsOperator(Integer.class)).first()
+				.toBlockingObservable().single();
+		assertEquals(21, score);
+		Thread.sleep(3000);
+	}
+
+	@Test
+	public void testParametersAndEnsureIntervalStops()
+			throws InterruptedException {
+		int score = Observable
+				.interval(100, TimeUnit.MILLISECONDS)
+				.doOnEach(log())
+				.map(Util.constant("FRED"))
+				.lift(db().select("select score from person where name=?")
+						.getAsOperator(Integer.class)).first()
+				.toBlockingObservable().single();
+		assertEquals(21, score);
+		Thread.sleep(3000);
 	}
 
 	@Test

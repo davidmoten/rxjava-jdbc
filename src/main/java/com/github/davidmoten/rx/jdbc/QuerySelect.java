@@ -249,13 +249,16 @@ final public class QuerySelect implements Query {
 
 		/**
 		 * Automaps the first column of the ResultSet into the target class
-		 * <code>cls</code> as an operator to use with Observable.lift().
+		 * <code>cls</code> as an operator to use with
+		 * <code>Observable.lift()</code>.
 		 * 
 		 * @param cls
 		 * @return
 		 */
-		public <S> QuerySelectOperator<S> getAsOperator(Class<S> cls) {
-			return new QuerySelectOperator<S>(this, Tuples.single(cls));
+		public <S> QuerySelectFromParametersOperator<S> getAsOperator(
+				Class<S> cls) {
+			return new QuerySelectFromParametersOperator<S>(this,
+					Tuples.single(cls));
 		}
 
 		/**
