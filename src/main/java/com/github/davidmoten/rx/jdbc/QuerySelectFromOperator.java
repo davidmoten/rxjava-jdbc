@@ -27,7 +27,6 @@ public class QuerySelectFromOperator<T> implements Operator<T, Object> {
 	public Subscriber<? super Object> call(Subscriber<? super T> subscriber) {
 		final PublishSubject<Object> subject = PublishSubject.create();
 		final Subscription sub;
-
 		if (operatorType == OperatorType.PARAMETER)
 			sub = builder.parameters(subject).get(function)
 					.subscribe(subscriber);
@@ -54,7 +53,7 @@ public class QuerySelectFromOperator<T> implements Operator<T, Object> {
 			}
 		};
 		subscriber.add(sub);
-		result.add(sub);
+		// result.add(sub);
 		return result;
 	}
 }

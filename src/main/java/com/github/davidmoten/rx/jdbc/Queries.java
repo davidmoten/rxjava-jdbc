@@ -4,13 +4,8 @@ import static com.github.davidmoten.rx.jdbc.Util.TO_EMPTY_PARAMETER_LIST;
 import static com.github.davidmoten.rx.jdbc.Util.concatButIgnoreFirstSequence;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 import rx.Observable;
-import rx.Scheduler.Inner;
-import rx.Subscription;
-import rx.functions.Action1;
-import rx.subscriptions.Subscriptions;
 
 /**
  * Utility methods for queries.
@@ -73,21 +68,6 @@ final class Queries {
 		else
 			return singleIntegerAfterDependencies(query).map(
 					TO_EMPTY_PARAMETER_LIST);
-	}
-
-	/**
-	 * Schedules the runnable for execution using the query context
-	 * {@link ExecutorService} and return a subscription allowing for cancelling
-	 * of the scheduling as well as of a running action.
-	 * 
-	 * @param query
-	 * @param runnable
-	 * @return
-	 */
-	static <T extends Action1<Inner> & Cancellable> Subscription schedule(
-			Query query, T action) {
-		Subscription sub = query.context().scheduler().schedule(action);
-		return Subscriptions.from(sub, Util.createSubscription(action));
 	}
 
 }

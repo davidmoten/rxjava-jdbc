@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import rx.Observable;
 import rx.Observer;
-import rx.Subscription;
 import rx.functions.Func1;
 
 /**
@@ -721,27 +720,6 @@ public final class Util {
 	static <T> Observable<T> concatButIgnoreFirstSequence(Observable<?> o1,
 			Observable<T> o2) {
 		return Observable.concat((Observable<T>) o1.ignoreElements(), o2);
-	}
-
-	/**
-	 * Create an rx {@link Subscription} that cancels the given
-	 * {@link Cancellable} on unsubscribe.
-	 * 
-	 * @param cancellable
-	 * @return
-	 */
-	static Subscription createSubscription(final Cancellable cancellable) {
-		return new Subscription() {
-			@Override
-			public void unsubscribe() {
-				cancellable.cancel();
-			}
-
-			@Override
-			public boolean isUnsubscribed() {
-				return false;
-			}
-		};
 	}
 
 	public static <T> Observer<? super T> log() {
