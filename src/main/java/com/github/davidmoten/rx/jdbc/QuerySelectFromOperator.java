@@ -52,7 +52,7 @@ public class QuerySelectFromOperator<T> implements Operator<T, Object> {
 				subject.onCompleted();
 			}
 		};
-		subscriber.add(sub);
+		// subscriber.add(sub);
 		// result.add(sub);
 		return result;
 	}

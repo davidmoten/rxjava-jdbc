@@ -69,5 +69,4 @@ final class Queries {
 			return singleIntegerAfterDependencies(query).map(
 					TO_EMPTY_PARAMETER_LIST);
 	}
-
 }

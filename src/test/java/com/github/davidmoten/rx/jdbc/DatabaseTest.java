@@ -701,13 +701,24 @@ public class DatabaseTest {
 			throws InterruptedException {
 		UnsubscribeDetector<String> detector = UnsubscribeDetector.detect();
 		Observable
-				.range(1, 2)
+				.interval(100, TimeUnit.MILLISECONDS)
 				.doOnEach(log())
 				.map(Util.constant("FRED"))
 				.lift(detector)
 				.lift(db().select("select score from person where name=?")
 						.parameterOperator().getAs(Integer.class)).take(1)
 				.subscribe(log());
+		assertTrue(detector.latch().await(3, TimeUnit.SECONDS));
+	}
+
+	@Test
+	public void testParametersAreUnsubscribed() throws InterruptedException {
+		UnsubscribeDetector<String> detector = UnsubscribeDetector.detect();
+		Observable<String> params = Observable
+				.interval(100, TimeUnit.MILLISECONDS).doOnEach(log())
+				.map(Util.constant("FRED")).lift(detector);
+		db().select("select score from person where name=?").parameters(params)
+				.getAs(Integer.class).take(1).subscribe(log());
 		assertTrue(detector.latch().await(3, TimeUnit.SECONDS));
 	}
 

@@ -78,7 +78,6 @@ final public class QuerySelect implements Query {
 	public Observable<ResultSet> execute() {
 		return context.handlers().selectHandler()
 				.call(bufferedParameters(this).flatMap(executeOnce()));
-
 	}
 
 	/**
@@ -139,7 +138,8 @@ final public class QuerySelect implements Query {
 		 * @return this
 		 */
 		public <T> Builder parameters(Observable<T> parameters) {
-			builder.parameters(parameters);
+			builder.parameters(parameters.lift(UnsubscribeDetector
+					.<Object> detect()));
 			return this;
 		}
 

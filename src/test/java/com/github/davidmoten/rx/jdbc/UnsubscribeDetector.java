@@ -3,11 +3,17 @@ package com.github.davidmoten.rx.jdbc;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import rx.Observable.Operator;
 import rx.Subscriber;
 import rx.Subscription;
 
 public class UnsubscribeDetector<T> implements Operator<T, T> {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(UnsubscribeDetector.class);
 
 	private final CountDownLatch latch;
 
@@ -25,6 +31,7 @@ public class UnsubscribeDetector<T> implements Operator<T, T> {
 			public void unsubscribe() {
 				latch.countDown();
 				subscribed.set(false);
+				log.info("unsubscribed");
 			}
 
 			@Override
