@@ -683,7 +683,7 @@ public class DatabaseTest {
 				.<Integer> detect();
 		Observable.range(1, 10).lift(detector).take(1).toBlockingObservable()
 				.single();
-		detector.latch().await(30, TimeUnit.SECONDS);
+		assertTrue(detector.latch().await(30, TimeUnit.SECONDS));
 	}
 
 	@Test
@@ -693,25 +693,23 @@ public class DatabaseTest {
 		Observable.interval(10, TimeUnit.MILLISECONDS).lift(detector).buffer(2)
 				.flatMap(constant(Observable.from(1L))).take(6).toList()
 				.toBlockingObservable().single();
-		detector.latch().await(3, TimeUnit.SECONDS);
+		assertTrue(detector.latch().await(3, TimeUnit.SECONDS));
 	}
 
-	// @Test
+	@Test
 	public void testParametersAreUnsubscribedIfUnsubscribedPostParameterOperatorLift()
 			throws InterruptedException {
-		UnsubscribeDetector<Long> detector = UnsubscribeDetector
-				.<Long> detect();
-		int score = Observable
-				.interval(100, TimeUnit.SECONDS)
-				.lift(detector)
+		UnsubscribeDetector<String> detector = UnsubscribeDetector
+				.<String> detect();
+		Observable
+				.range(1, 2)
 				.doOnEach(log())
 				.map(Util.constant("FRED"))
+				.lift(detector)
 				.lift(db().select("select score from person where name=?")
-						.parameterOperator().getAs(Integer.class)).take(3)
-				.sumInteger(rx.functions.Functions.<Integer> identity())
-				.toBlockingObservable().single();
-		assertEquals(3 * 21, score);
-		detector.latch().await(3, TimeUnit.SECONDS);
+						.parameterOperator().getAs(Integer.class)).take(1)
+				.subscribe(log());
+		assertTrue(detector.latch().await(3, TimeUnit.SECONDS));
 	}
 
 	@Test
@@ -741,8 +739,8 @@ public class DatabaseTest {
 				.toBlockingObservable().single();
 		db.select("select name from person").get().count()
 				.toBlockingObservable().single();
-		cp.getsLatch().await(60, TimeUnit.SECONDS);
-		cp.closesLatch().await(60, TimeUnit.SECONDS);
+		assertTrue(cp.getsLatch().await(60, TimeUnit.SECONDS));
+		assertTrue(cp.closesLatch().await(60, TimeUnit.SECONDS));
 	}
 
 	@Test
@@ -754,8 +752,8 @@ public class DatabaseTest {
 				.parameters(23, "FRED").count().toBlockingObservable().single();
 		db.update("update person set score=? where name=?")
 				.parameters(25, "JOHN").count().toBlockingObservable().single();
-		cp.getsLatch().await(60, TimeUnit.SECONDS);
-		cp.closesLatch().await(60, TimeUnit.SECONDS);
+		assertTrue(cp.getsLatch().await(60, TimeUnit.SECONDS));
+		assertTrue(cp.closesLatch().await(60, TimeUnit.SECONDS));
 	}
 
 	@Test
