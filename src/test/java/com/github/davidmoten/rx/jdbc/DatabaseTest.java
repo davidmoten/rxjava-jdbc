@@ -677,14 +677,21 @@ public class DatabaseTest {
 	}
 
 	@Test
+	public void testLiftWithDependencies() {
+		Database db = db();
+		int count = db
+				.update("update person set score=? where name=?")
+				.parameters(4, "FRED")
+				.count()
+				.lift(db.select("select score from person where name=?")
+						.parameters("FRED").dependencyOperator()
+						.getAs(Integer.class)).toBlockingObservable().single();
+		assertEquals(4, count);
+	}
+
+	@Test
 	public void test() throws InterruptedException {
-		List<Long> list = Observable
-				.interval(100, TimeUnit.MILLISECONDS)
-				.doOnEach(log())
-				.flatMap(
-						Util.constant(Observable.interval(100,
-								TimeUnit.MILLISECONDS))).take(3).toList()
-				.toBlockingObservable().single();
+
 	}
 
 	@Test
