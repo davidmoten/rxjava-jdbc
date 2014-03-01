@@ -4,6 +4,7 @@ import static com.github.davidmoten.rx.jdbc.DatabaseCreator.connectionProvider;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.createDatabase;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.db;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.nextUrl;
+import static com.github.davidmoten.rx.jdbc.Util.constant;
 import static com.github.davidmoten.rx.jdbc.Util.log;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
@@ -686,6 +687,16 @@ public class DatabaseTest {
 	}
 
 	@Test
+	public void testUnsubscribeOfBufferAndFlatMap() throws InterruptedException {
+		UnsubscribeDetector<Long> detector = UnsubscribeDetector
+				.<Long> detect();
+		Observable.interval(10, TimeUnit.MILLISECONDS).lift(detector).buffer(2)
+				.flatMap(constant(Observable.from(1L))).take(6).toList()
+				.toBlockingObservable().single();
+		detector.latch().await(3, TimeUnit.SECONDS);
+	}
+
+	// @Test
 	public void testParametersAreUnsubscribedIfUnsubscribedPostParameterOperatorLift()
 			throws InterruptedException {
 		UnsubscribeDetector<Long> detector = UnsubscribeDetector
