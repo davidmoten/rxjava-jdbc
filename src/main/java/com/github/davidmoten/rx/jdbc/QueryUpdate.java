@@ -97,7 +97,7 @@ final public class QueryUpdate implements Query {
 	 * @return
 	 */
 	private Observable<Integer> executeOnce(final List<Parameter> parameters) {
-		return OperationQueryUpdate.execute(this, parameters);
+		return QueryUpdateOperation.execute(this, parameters);
 	}
 
 	/**

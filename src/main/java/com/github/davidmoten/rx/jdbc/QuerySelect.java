@@ -106,7 +106,7 @@ final public class QuerySelect implements Query {
 	 * @return
 	 */
 	private Observable<ResultSet> executeOnce(final List<Parameter> params) {
-		return OperationQuerySelect.execute(this, params).subscribeOn(
+		return QuerySelectOperation.execute(this, params).subscribeOn(
 				context.scheduler());
 	}
 

@@ -13,10 +13,10 @@ import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
 
-class OperationQuerySelect {
+class QuerySelectOperation {
 
 	private static final Logger log = LoggerFactory
-			.getLogger(OperationQuerySelect.class);
+			.getLogger(QuerySelectOperation.class);
 
 	/**
 	 * Returns an Observable of the results of pushing one set of parameters
