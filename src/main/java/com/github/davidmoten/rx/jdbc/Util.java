@@ -764,8 +764,4 @@ public final class Util {
 		};
 	}
 
-	public static enum As {
-		OPERATOR
-	}
-
 }

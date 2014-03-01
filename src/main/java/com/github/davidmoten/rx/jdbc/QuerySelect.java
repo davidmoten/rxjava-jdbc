@@ -9,7 +9,6 @@ import rx.Observable;
 import rx.Observable.Operator;
 import rx.functions.Func1;
 
-import com.github.davidmoten.rx.jdbc.Util.As;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple4;
@@ -251,20 +250,6 @@ final public class QuerySelect implements Query {
 
 		/**
 		 * Automaps the first column of the ResultSet into the target class
-		 * <code>cls</code> as an operator to use with
-		 * <code>Observable.lift()</code>.
-		 * 
-		 * @param cls
-		 * @return
-		 */
-		public <S> QuerySelectFromParametersOperator<S> getAs(Class<S> cls,
-				As as) {
-			return new QuerySelectFromParametersOperator<S>(this,
-					Tuples.single(cls));
-		}
-
-		/**
-		 * Automaps the first column of the ResultSet into the target class
 		 * <code>cls</code>.
 		 * 
 		 * @param cls
@@ -392,17 +377,23 @@ final public class QuerySelect implements Query {
 			return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6, cls7));
 		}
 
-		public OperatorBuilder operator() {
-			return new OperatorBuilder(this);
+		public OperatorBuilder parameterOperator() {
+			return new OperatorBuilder(this, OperatorType.PARAMETER);
+		}
+
+		public OperatorBuilder dependencyOperator() {
+			return new OperatorBuilder(this, OperatorType.DEPENDENCY);
 		}
 	}
 
 	public static class OperatorBuilder {
 
 		private final Builder builder;
+		private final OperatorType operatorType;
 
-		public OperatorBuilder(Builder builder) {
+		public OperatorBuilder(Builder builder, OperatorType operatorType) {
 			this.builder = builder;
+			this.operatorType = operatorType;
 		}
 
 		/**
@@ -412,7 +403,8 @@ final public class QuerySelect implements Query {
 		 * @return
 		 */
 		public <T> Operator<T, Object> get(Func1<ResultSet, T> function) {
-			return new QuerySelectFromParametersOperator<T>(builder, function);
+			return new QuerySelectFromOperator<T>(builder, function,
+					operatorType);
 		}
 
 		/**
