@@ -34,6 +34,7 @@ import rx.Observable;
 import rx.functions.Func1;
 import rx.functions.Func2;
 
+import com.github.davidmoten.rx.jdbc.Util.As;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple4;
@@ -658,7 +659,7 @@ public class DatabaseTest {
 	public void testLiftWithParameters() {
 		int score = from("FRED")
 				.lift(db().select("select score from person where name=?")
-						.getAsOperator(Integer.class)).first()
+						.operator().getAs(Integer.class))
 				.toBlockingObservable().single();
 		assertEquals(21, score);
 	}
@@ -670,7 +671,7 @@ public class DatabaseTest {
 				.doOnEach(log())
 				.map(Util.constant("FRED"))
 				.lift(db().select("select score from person where name=?")
-						.getAsOperator(Integer.class))
+						.getAs(Integer.class, As.OPERATOR))
 				.sumInteger(rx.functions.Functions.<Integer> identity())
 				.toBlockingObservable().single();
 		assertEquals(3 * 21, score);
@@ -685,7 +686,6 @@ public class DatabaseTest {
 						Util.constant(Observable.interval(100,
 								TimeUnit.MILLISECONDS))).take(3).toList()
 				.toBlockingObservable().single();
-		// Thread.sleep(10000);
 	}
 
 	@Test

@@ -49,5 +49,4 @@ public class QuerySelectFromParametersOperator<T> implements
 		result.add(sub);
 		return result;
 	}
-
 }

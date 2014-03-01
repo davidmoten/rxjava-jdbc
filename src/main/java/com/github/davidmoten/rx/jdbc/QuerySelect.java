@@ -6,8 +6,10 @@ import java.sql.ResultSet;
 import java.util.List;
 
 import rx.Observable;
+import rx.Observable.Operator;
 import rx.functions.Func1;
 
+import com.github.davidmoten.rx.jdbc.Util.As;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple4;
@@ -255,8 +257,8 @@ final public class QuerySelect implements Query {
 		 * @param cls
 		 * @return
 		 */
-		public <S> QuerySelectFromParametersOperator<S> getAsOperator(
-				Class<S> cls) {
+		public <S> QuerySelectFromParametersOperator<S> getAs(Class<S> cls,
+				As as) {
 			return new QuerySelectFromParametersOperator<S>(this,
 					Tuples.single(cls));
 		}
@@ -389,6 +391,159 @@ final public class QuerySelect implements Query {
 				Class<T5> cls5, Class<T6> cls6, Class<T7> cls7) {
 			return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6, cls7));
 		}
+
+		public OperatorBuilder operator() {
+			return new OperatorBuilder(this);
+		}
+	}
+
+	public static class OperatorBuilder {
+
+		private final Builder builder;
+
+		public OperatorBuilder(Builder builder) {
+			this.builder = builder;
+		}
+
+		/**
+		 * Transforms the results using the given function.
+		 * 
+		 * @param function
+		 * @return
+		 */
+		public <T> Operator<T, Object> get(Func1<ResultSet, T> function) {
+			return new QuerySelectFromParametersOperator<T>(builder, function);
+		}
+
+		/**
+		 * Automaps the first column of the ResultSet into the target class
+		 * <code>cls</code>.
+		 * 
+		 * @param cls
+		 * @return
+		 */
+		public <S> Operator<S, Object> getAs(Class<S> cls) {
+			return get(Tuples.single(cls));
+		}
+
+		/**
+		 * Automaps all the columns of the {@link ResultSet} into the target
+		 * class <code>cls</code>. See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls
+		 * @return
+		 */
+		public <S> Operator<TupleN<S>, Object> getTupleN(Class<S> cls) {
+			return get(Tuples.tupleN(cls));
+		}
+
+		/**
+		 * Automaps all the columns of the {@link ResultSet} into {@link Object}
+		 * . See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls
+		 * @return
+		 */
+		public <S> Operator<TupleN<Object>, Object> getTupleN() {
+			return get(Tuples.tupleN(Object.class));
+		}
+
+		/**
+		 * Automaps the columns of the {@link ResultSet} into the specified
+		 * classes. See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls1
+		 * @param cls2
+		 * @return
+		 */
+		public <T1, T2> Operator<Tuple2<T1, T2>, Object> getAs(Class<T1> cls1,
+				Class<T2> cls2) {
+			return get(Tuples.tuple(cls1, cls2));
+		}
+
+		/**
+		 * Automaps the columns of the {@link ResultSet} into the specified
+		 * classes. See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls1
+		 * @param cls2
+		 * @param cls3
+		 * @return
+		 */
+		public <T1, T2, T3> Operator<Tuple3<T1, T2, T3>, Object> getAs(
+				Class<T1> cls1, Class<T2> cls2, Class<T3> cls3) {
+			return get(Tuples.tuple(cls1, cls2, cls3));
+		}
+
+		/**
+		 * Automaps the columns of the {@link ResultSet} into the specified
+		 * classes. See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls1
+		 * @param cls2
+		 * @param cls3
+		 * @param cls4
+		 * @return
+		 */
+		public <T1, T2, T3, T4> Operator<Tuple4<T1, T2, T3, T4>, Object> getAs(
+				Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4) {
+			return get(Tuples.tuple(cls1, cls2, cls3, cls4));
+		}
+
+		/**
+		 * Automaps the columns of the {@link ResultSet} into the specified
+		 * classes. See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls1
+		 * @param cls2
+		 * @param cls3
+		 * @param cls4
+		 * @param cls5
+		 * @return
+		 */
+		public <T1, T2, T3, T4, T5> Operator<Tuple5<T1, T2, T3, T4, T5>, Object> getAs(
+				Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4,
+				Class<T5> cls5) {
+			return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5));
+		}
+
+		/**
+		 * Automaps the columns of the {@link ResultSet} into the specified
+		 * classes. See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls1
+		 * @param cls2
+		 * @param cls3
+		 * @param cls4
+		 * @param cls5
+		 * @param cls6
+		 * @return
+		 */
+		public <T1, T2, T3, T4, T5, T6> Operator<Tuple6<T1, T2, T3, T4, T5, T6>, Object> getAs(
+				Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4,
+				Class<T5> cls5, Class<T6> cls6) {
+			return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6));
+		}
+
+		/**
+		 * Automaps the columns of the {@link ResultSet} into the specified
+		 * classes. See {@link #autoMap(Class) autoMap()}.
+		 * 
+		 * @param cls1
+		 * @param cls2
+		 * @param cls3
+		 * @param cls4
+		 * @param cls5
+		 * @param cls6
+		 * @param cls7
+		 * @return
+		 */
+		public <T1, T2, T3, T4, T5, T6, T7> Operator<Tuple7<T1, T2, T3, T4, T5, T6, T7>, Object> getAs(
+				Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4,
+				Class<T5> cls5, Class<T6> cls6, Class<T7> cls7) {
+			return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6, cls7));
+		}
+
 	}
 
 }
