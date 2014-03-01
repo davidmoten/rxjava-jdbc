@@ -699,8 +699,7 @@ public class DatabaseTest {
 	@Test
 	public void testParametersAreUnsubscribedIfUnsubscribedPostParameterOperatorLift()
 			throws InterruptedException {
-		UnsubscribeDetector<String> detector = UnsubscribeDetector
-				.<String> detect();
+		UnsubscribeDetector<String> detector = UnsubscribeDetector.detect();
 		Observable
 				.range(1, 2)
 				.doOnEach(log())
