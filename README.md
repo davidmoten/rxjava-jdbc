@@ -328,7 +328,7 @@ Lift
 -----------------------------------
 
 Using the ```Observable.lift``` method you can get more bang for your buck from method chaining. ```Observable.lift()``` requires an ```Operator``` parameter
-which are available via ```db.select(sql).parameterOperator().etc```,```db.select(sql).dependencyOperator().etc```,```db.update(sql).parameterOperatorCount()``` and ```db.update(sql).dependencyOperatorCount()```.
+which are available via ```db.select(sql).parameterOperator().etc```,```db.select(sql).dependsOnOperator().etc```,```db.update(sql).parameterOperatorCount()``` and ```db.update(sql).dependsOnOperatorCount()```.
 
 Example:   
 ```java
@@ -341,11 +341,11 @@ Observable<Integer> score = Observable
     // update everyone with score of 4 to 14
     .lift(db.update("update person set score=? where score=?")
             .parameters(14, 4)
-            .dependencyOperatorCount())
+            .dependsOnOperatorCount())
     // get Fred's score
     .lift(db.select("select score from person where name=?")
             .parameters("FRED")\
-            .dependencyOperator()
+            .dependsOnOperator()
 			.getAs(Integer.class));
 ```
 

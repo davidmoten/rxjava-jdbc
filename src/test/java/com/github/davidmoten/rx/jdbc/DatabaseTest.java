@@ -732,7 +732,7 @@ public class DatabaseTest {
 				.parameters(4, "FRED")
 				.count()
 				.lift(db.select("select score from person where name=?")
-						.parameters("FRED").dependencyOperator()
+						.parameters("FRED").dependsOnOperator()
 						.getAs(Integer.class)).toBlockingObservable().single();
 		assertEquals(4, count);
 	}
@@ -758,10 +758,10 @@ public class DatabaseTest {
 						.parameterOperatorCount())
 				// update everyone with score of 4 to 14
 				.lift(db.update("update person set score=? where score=?")
-						.parameters(14, 4).dependencyOperatorCount())
+						.parameters(14, 4).dependsOnOperatorCount())
 				// get Fred's score
 				.lift(db.select("select score from person where name=?")
-						.parameters("FRED").dependencyOperator()
+						.parameters("FRED").dependsOnOperator()
 						.getAs(Integer.class));
 		assertIs(14, score);
 	}

@@ -199,7 +199,7 @@ final public class QueryUpdate implements Query {
 			return new QueryUpdateOperator(this, OperatorType.PARAMETER);
 		}
 
-		public QueryUpdateOperator dependencyOperatorCount() {
+		public QueryUpdateOperator dependsOnOperatorCount() {
 			return new QueryUpdateOperator(this, OperatorType.DEPENDENCY);
 		}
 	}

@@ -382,7 +382,7 @@ final public class QuerySelect implements Query {
 			return new OperatorBuilder(this, OperatorType.PARAMETER);
 		}
 
-		public OperatorBuilder dependencyOperator() {
+		public OperatorBuilder dependsOnOperator() {
 			return new OperatorBuilder(this, OperatorType.DEPENDENCY);
 		}
 	}
