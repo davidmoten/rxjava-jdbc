@@ -8,8 +8,6 @@ import static com.github.davidmoten.rx.jdbc.Util.constant;
 import static com.github.davidmoten.rx.jdbc.Util.log;
 import static java.util.Arrays.asList;
 import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -634,9 +632,9 @@ public class DatabaseTest {
 
 	@Test(expected = RuntimeException.class)
 	public void testConnectionPoolWhenExceptionThrown() throws SQLException {
-		ComboPooledDataSource pool = createMock(ComboPooledDataSource.class);
-		expect(pool.getConnection()).andThrow(new SQLException("boo"));
-		replay(pool);
+		ComboPooledDataSource pool = new ComboPooledDataSource();
+		pool.setJdbcUrl("invalid");
+		pool.setAcquireRetryAttempts(0);
 		new ConnectionProviderPooled(pool).get();
 	}
 
