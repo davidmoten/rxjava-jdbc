@@ -6,6 +6,8 @@ using JDBC and [RxJava](https://github.com/Netflix/RxJava/wiki) [Observable](htt
 
 Status: *pre-alpha*
 
+Alpha release likely late March 2014.
+
 Be aware APIs are in major flux at the moment.
 
 Features
@@ -17,6 +19,7 @@ Features
 * All the RxJava goodness!
 * Automatically maps query result rows into typed tuples or your own classes
 * CLOB and BLOB handling is simplified greatly
+* uses rxjava-core 0.17.0
 
 The only runtime dependencies are [rxjava-core](https://github.com/Netflix/RxJava/tree/master/rxjava-core) and apache commons-io.
 
