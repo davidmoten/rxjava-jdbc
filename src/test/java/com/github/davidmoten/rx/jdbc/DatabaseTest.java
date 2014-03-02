@@ -7,6 +7,7 @@ import static com.github.davidmoten.rx.jdbc.DatabaseCreator.nextUrl;
 import static com.github.davidmoten.rx.jdbc.Util.constant;
 import static com.github.davidmoten.rx.jdbc.Util.log;
 import static java.util.Arrays.asList;
+import static org.easymock.EasyMock.createMock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -28,6 +29,7 @@ import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.easymock.EasyMock;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -851,6 +853,16 @@ public class DatabaseTest {
 		log.info("gets ok");
 		cp.closesLatch().await();
 		log.info("closes ok");
+	}
+
+	@Test
+	public void testCloseDatabaseClosesConnectionProvider() {
+		ConnectionProvider cp = createMock(ConnectionProvider.class);
+		cp.close();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(cp);
+		new Database(cp).close();
+		EasyMock.verify(cp);
 	}
 
 	@Test(expected = RuntimeException.class)
