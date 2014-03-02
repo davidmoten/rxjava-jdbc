@@ -853,6 +853,11 @@ public class DatabaseTest {
 		log.info("closes ok");
 	}
 
+	@Test(expected = RuntimeException.class)
+	public void testCannotPassObservableAsSingleParameter() {
+		db().select("anything").parameter(Observable.from(123));
+	}
+
 	private static class CountDownConnectionProvider implements
 			ConnectionProvider {
 		private final ConnectionProvider cp;
