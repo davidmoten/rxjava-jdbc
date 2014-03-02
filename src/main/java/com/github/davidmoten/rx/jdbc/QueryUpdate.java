@@ -194,5 +194,13 @@ final public class QueryUpdate implements Query {
 			return new QueryUpdate(builder.sql(), builder.parameters(),
 					builder.depends(), builder.context()).count();
 		}
+
+		public QueryUpdateOperator parameterOperatorCount() {
+			return new QueryUpdateOperator(this, OperatorType.PARAMETER);
+		}
+
+		public QueryUpdateOperator dependencyOperatorCount() {
+			return new QueryUpdateOperator(this, OperatorType.DEPENDENCY);
+		}
 	}
 }

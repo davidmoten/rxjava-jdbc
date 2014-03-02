@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -724,7 +725,7 @@ public class DatabaseTest {
 	}
 
 	@Test
-	public void testLiftWithDependencies() {
+	public void testLiftSelectWithDependencies() {
 		Database db = db();
 		int count = db
 				.update("update person set score=? where name=?")
@@ -734,6 +735,39 @@ public class DatabaseTest {
 						.parameters("FRED").dependencyOperator()
 						.getAs(Integer.class)).toBlockingObservable().single();
 		assertEquals(4, count);
+	}
+
+	@Test
+	public void testLiftUpdateWithParameters() {
+		Database db = db();
+		Observable<Integer> count = Observable.from(
+				Arrays.<Object> asList(4, "FRED")).lift(
+				db.update("update person set score=? where name=?")
+						.parameterOperatorCount());
+		assertIs(1, count);
+	}
+
+	@Test
+	public void testLiftUpdateWithDependencies() {
+		Database db = db();
+		Observable<Integer> score = Observable
+		// parameters for coming update
+				.from(Arrays.<Object> asList(4, "FRED"))
+				// update Fred's score to 4
+				.lift(db.update("update person set score=? where name=?")
+						.parameterOperatorCount())
+				// update everyone with score of 4 to 14
+				.lift(db.update("update person set score=? where score=?")
+						.parameters(14, 4).dependencyOperatorCount())
+				// get Fred's score
+				.lift(db.select("select score from person where name=?")
+						.parameters("FRED").dependencyOperator()
+						.getAs(Integer.class));
+		assertIs(14, score);
+	}
+
+	private static <T> void assertIs(T t, Observable<T> observable) {
+		assertEquals(t, observable.toBlockingObservable().single());
 	}
 
 	@Test
