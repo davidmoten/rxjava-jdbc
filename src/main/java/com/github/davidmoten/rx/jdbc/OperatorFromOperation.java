@@ -3,7 +3,6 @@ package com.github.davidmoten.rx.jdbc;
 import rx.Observable;
 import rx.Observable.Operator;
 import rx.Subscriber;
-import rx.Subscription;
 import rx.functions.Func1;
 import rx.subjects.PublishSubject;
 
@@ -18,7 +17,7 @@ public class OperatorFromOperation<R, T> implements Operator<R, T> {
 	@Override
 	public Subscriber<? super T> call(Subscriber<? super R> subscriber) {
 		final PublishSubject<T> subject = PublishSubject.create();
-		Subscription sub = operation.call(subject).subscribe(subscriber);
+		operation.call(subject).subscribe(subscriber);
 		Subscriber<T> result = new Subscriber<T>() {
 
 			@Override
@@ -36,7 +35,7 @@ public class OperatorFromOperation<R, T> implements Operator<R, T> {
 				subject.onNext(t);
 			}
 		};
-		subscriber.add(sub);
+		subscriber.add(result);
 		return result;
 	}
 }

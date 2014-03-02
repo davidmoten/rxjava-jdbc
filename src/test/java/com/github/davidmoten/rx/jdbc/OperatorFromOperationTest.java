@@ -25,4 +25,5 @@ public class OperatorFromOperationTest {
 		assertTrue(detector.latch().await(1, TimeUnit.SECONDS));
 
 	}
+
 }

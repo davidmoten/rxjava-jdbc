@@ -403,7 +403,7 @@ final public class QuerySelect implements Query {
 		 * @return
 		 */
 		public <T> Operator<T, Object> get(Func1<ResultSet, T> function) {
-			return new QuerySelectFromOperator<T>(builder, function,
+			return new QuerySelectOperator<T>(builder, function,
 					operatorType);
 		}
 
