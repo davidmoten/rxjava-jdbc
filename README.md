@@ -340,7 +340,7 @@ assertEquals(3, count);
 Lift
 -----------------------------------
 
-Using the ```Observable.lift``` method you can get more bang for your buck from method chaining. ```Observable.lift()``` requires an ```Operator``` parameter
+Using the ```Observable.lift()``` method you can get more bang for your buck from method chaining. ```Observable.lift()``` requires an ```Operator``` parameter
 which are available via ```db.select(sql).parameterOperator().etc```,```db.select(sql).dependsOnOperator().etc```,```db.update(sql).parameterOperatorCount()``` and ```db.update(sql).dependsOnOperatorCount()```.
 
 Example:   
