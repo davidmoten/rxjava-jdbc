@@ -300,11 +300,10 @@ public class DatabaseTest {
 		Observable<Integer> score = db
 				.select("select score from person where name <> ? order by name")
 				.parameter("XAVIER").getAs(Integer.class).last();
-		String name = db
+		Observable<String> name = db
 				.select("select name from person where score < ? order by name")
-				.parameters(score).getAs(String.class).first()
-				.toBlockingObservable().single();
-		assertEquals("FRED", name);
+				.parameters(score).getAs(String.class).first();
+		assertIs("FRED", name);
 	}
 
 	@Test
@@ -372,9 +371,9 @@ public class DatabaseTest {
 							}
 						});
 
-		int count = db.select("select name from person").dependsOn(insert)
-				.get().count().toBlockingObservable().single();
-		assertEquals(4, count);
+		Observable<Integer> count = db.select("select name from person")
+				.dependsOn(insert).get().count();
+		assertIs(4, count);
 	}
 
 	@Test
@@ -418,24 +417,23 @@ public class DatabaseTest {
 	}
 
 	private static void insertClob(Database db) {
-		int count = db
+		Observable<Integer> count = db
 				.update("insert into person_clob(name,document) values(?,?)")
 				.parameter("FRED")
 				.parameter(
 						"A description about Fred that is rather long and needs a Clob to store it")
-				.count().toBlockingObservable().single();
-		assertEquals(1, count);
+				.count();
+		assertIs(1, count);
 	}
 
 	private static void insertBlob(Database db) {
-		int count = db
+		Observable<Integer> count = db
 				.update("insert into person_blob(name,document) values(?,?)")
 				.parameter("FRED")
 				.parameter(
 						"A description about Fred that is rather long and needs a Clob to store it"
-								.getBytes()).count().toBlockingObservable()
-				.single();
-		assertEquals(1, count);
+								.getBytes()).count();
+		assertIs(1, count);
 	}
 
 	@Test
@@ -461,11 +459,10 @@ public class DatabaseTest {
 
 	@Test
 	public void testInsertNull() {
-		int count = db()
+		Observable<Integer> count = db()
 				.update("insert into person(name,score,dob) values(?,?,?)")
-				.parameters("JACK", 42, null).count().toBlockingObservable()
-				.single();
-		assertEquals(1, count);
+				.parameters("JACK", 42, null).count();
+		assertIs(1, count);
 	}
 
 	@Test
@@ -497,10 +494,7 @@ public class DatabaseTest {
 
 	@Test
 	public void testLastTransactionWithoutTransaction() {
-		Database db = db();
-		List<Boolean> list = db.lastTransactionResult().toList()
-				.toBlockingObservable().single();
-		assertTrue(list.isEmpty());
+		assertIs(0, db().lastTransactionResult().count());
 	}
 
 	@Test
@@ -745,14 +739,14 @@ public class DatabaseTest {
 	@Test
 	public void testLiftSelectWithDependencies() {
 		Database db = db();
-		int count = db
+		Observable<Integer> count = db
 				.update("update person set score=? where name=?")
 				.parameters(4, "FRED")
 				.count()
 				.lift(db.select("select score from person where name=?")
 						.parameters("FRED").dependsOnOperator()
-						.getAs(Integer.class)).toBlockingObservable().single();
-		assertEquals(4, count);
+						.getAs(Integer.class));
+		assertIs(4, count);
 	}
 
 	@Test
