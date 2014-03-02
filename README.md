@@ -123,6 +123,19 @@ String name = db
 		.toBlockingObservable().single();
 assertEquals("FRED", name);
 ```
+or alternatively using the ```Observable.lift()``` method to chain everything in one command:
+```java
+String name = db
+    .select("select score from person where name <> ? order by name")
+    .parameter("XAVIER")
+    .getAs(Integer.class)
+    .last()
+    .lift(db.select("select name from person where score < ? order by name")
+            .parameterOperator()
+            .getAs(String.class))
+    .first()
+    .toBlockingObservable().single();
+```
 
 About BlockingObservable
 ----------------------------

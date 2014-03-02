@@ -308,6 +308,24 @@ public class DatabaseTest {
 	}
 
 	@Test
+	public void testCompositionUsingLift() {
+		// use composition to find the first person alphabetically with
+		// a score less than the person with the last name alphabetically
+		// whose name is not XAVIER. Two threads and connections will be used.
+
+		Database db = db();
+		Observable<String> name = db
+				.select("select score from person where name <> ? order by name")
+				.parameter("XAVIER")
+				.getAs(Integer.class)
+				.last()
+				.lift(db.select(
+						"select name from person where score < ? order by name")
+						.parameterOperator().getAs(String.class)).first();
+		assertIs("FRED", name);
+	}
+
+	@Test
 	public void testCompositionTwoLevels() {
 
 		Database db = db();
