@@ -35,6 +35,7 @@ import rx.Observable;
 import rx.functions.Func1;
 import rx.functions.Func2;
 
+import com.github.davidmoten.rx.UnsubscribeDetector;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple4;

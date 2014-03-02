@@ -1,4 +1,4 @@
-package com.github.davidmoten.rx.jdbc;
+package com.github.davidmoten.rx;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;

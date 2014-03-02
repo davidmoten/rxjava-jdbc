@@ -7,6 +7,8 @@ import rx.Observable.Operator;
 import rx.Subscriber;
 import rx.functions.Func1;
 
+import com.github.davidmoten.rx.OperatorFromOperation;
+
 public class QuerySelectOperator<T> implements Operator<T, Object> {
 
 	private final OperatorFromOperation<T, Object> operator;

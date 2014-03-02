@@ -1,4 +1,4 @@
-package com.github.davidmoten.rx.jdbc;
+package com.github.davidmoten.rx;
 
 import rx.Observable;
 import rx.Observable.Operator;

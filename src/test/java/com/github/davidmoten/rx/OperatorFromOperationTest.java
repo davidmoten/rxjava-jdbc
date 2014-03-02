@@ -1,4 +1,4 @@
-package com.github.davidmoten.rx.jdbc;
+package com.github.davidmoten.rx;
 
 import static org.junit.Assert.assertTrue;
 
@@ -8,6 +8,8 @@ import org.junit.Test;
 
 import rx.Observable;
 import rx.functions.Functions;
+
+import com.github.davidmoten.rx.jdbc.Util;
 
 public class OperatorFromOperationTest {
 
