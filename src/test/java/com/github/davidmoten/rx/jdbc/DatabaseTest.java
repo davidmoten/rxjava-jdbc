@@ -46,6 +46,7 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuple5;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple6;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple7;
 import com.github.davidmoten.rx.jdbc.tuple.TupleN;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 public class DatabaseTest {
 
@@ -624,6 +625,16 @@ public class DatabaseTest {
 		int count = db.select("select name from person order by name").get()
 				.count().toBlockingObservable().single();
 		assertEquals(3, count);
+		cp.close();
+		// and again to test idempotentcy
+		cp.close();
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testConnectionPoolWhenExceptionThrown() throws SQLException {
+		ComboPooledDataSource pool = createMock(ComboPooledDataSource.class);
+		EasyMock.expect(pool.getConnection()).andThrow(new SQLException("boo"));
+		new ConnectionProviderPooled(pool).get();
 	}
 
 	@Test
@@ -863,6 +874,21 @@ public class DatabaseTest {
 		EasyMock.replay(cp);
 		new Database(cp).close();
 		EasyMock.verify(cp);
+	}
+
+	@Test
+	public void testCloseAutoCommittingConnectionProviderClosesInternalConnectionProvider() {
+		ConnectionProvider cp = createMock(ConnectionProvider.class);
+		cp.close();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(cp);
+		new ConnectionProviderAutoCommitting(cp).close();
+		EasyMock.verify(cp);
+	}
+
+	@Test
+	public void testCloseConnectionProviderFromUrlClosesInternalConnectionProvider() {
+		db().close();
 	}
 
 	@Test(expected = RuntimeException.class)

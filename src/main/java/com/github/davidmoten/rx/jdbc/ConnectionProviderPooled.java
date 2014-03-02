@@ -29,10 +29,21 @@ public class ConnectionProviderPooled implements ConnectionProvider {
 	 * @param maxPoolSize
 	 */
 	public ConnectionProviderPooled(String url, int minPoolSize, int maxPoolSize) {
-		pool = new ComboPooledDataSource();
+		this(createPool(url, minPoolSize, maxPoolSize));
+	}
+
+	// Visible for testing
+	ConnectionProviderPooled(ComboPooledDataSource pool) {
+		this.pool = pool;
+	}
+
+	private static ComboPooledDataSource createPool(String url,
+			int minPoolSize, int maxPoolSize) {
+		ComboPooledDataSource pool = new ComboPooledDataSource();
 		pool.setJdbcUrl(url);
 		pool.setMinPoolSize(minPoolSize);
 		pool.setMaxPoolSize(maxPoolSize);
+		return pool;
 	}
 
 	@Override
