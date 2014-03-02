@@ -24,6 +24,10 @@ Continuous integration with Jenkins for this project is [here](https://xuml-tool
 
 Maven site reports are [here](http://davidmoten.github.io/rxjava-jdbc/index.html) including [javadoc](http://davidmoten.github.io/rxjava-jdbc/apidocs/index.html).
 
+Todo
+------------
+* Callable statements
+
 Build instructions
 -------------------
 
