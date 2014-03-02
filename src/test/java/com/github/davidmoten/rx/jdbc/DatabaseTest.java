@@ -888,6 +888,16 @@ public class DatabaseTest {
 	}
 
 	@Test
+	public void testCloseSingletonManualCommitConnectionProviderClosesInternalConnectionProvider() {
+		ConnectionProvider cp = createMock(ConnectionProvider.class);
+		cp.close();
+		EasyMock.expectLastCall().once();
+		EasyMock.replay(cp);
+		new ConnectionProviderSingletonManualCommit(cp).close();
+		EasyMock.verify(cp);
+	}
+
+	@Test
 	public void testCloseConnectionProviderFromUrlClosesInternalConnectionProvider() {
 		db().close();
 	}
