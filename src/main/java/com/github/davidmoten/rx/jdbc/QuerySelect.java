@@ -9,7 +9,6 @@ import rx.Observable;
 import rx.Observable.Operator;
 import rx.functions.Func1;
 
-import com.github.davidmoten.rx.UnsubscribeDetector;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple4;
@@ -139,8 +138,7 @@ final public class QuerySelect implements Query {
 		 * @return this
 		 */
 		public <T> Builder parameters(Observable<T> parameters) {
-			builder.parameters(parameters.lift(UnsubscribeDetector
-					.<Object> detect()));
+			builder.parameters(parameters);
 			return this;
 		}
 
@@ -404,8 +402,7 @@ final public class QuerySelect implements Query {
 		 * @return
 		 */
 		public <T> Operator<T, Object> get(Func1<ResultSet, T> function) {
-			return new QuerySelectOperator<T>(builder, function,
-					operatorType);
+			return new QuerySelectOperator<T>(builder, function, operatorType);
 		}
 
 		/**
