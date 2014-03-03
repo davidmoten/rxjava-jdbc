@@ -29,6 +29,9 @@ class QuerySelectOperation {
         return Observable.create(new QuerySelectOnSubscribe(query, parameters));
     }
 
+    /**
+     * OnSubscribe create method for a select query.
+     */
     private static class QuerySelectOnSubscribe implements OnSubscribe<ResultSet> {
 
         private boolean keepGoing = true;
@@ -163,6 +166,11 @@ class QuerySelectOperation {
             log.debug("closed");
         }
 
+        /**
+         * If subscribe unsubscribed sets keepGoing to false.
+         * 
+         * @param subscriber
+         */
         private void checkSubscription(Subscriber<? super ResultSet> subscriber) {
             if (subscriber.isUnsubscribed()) {
                 keepGoing = false;
