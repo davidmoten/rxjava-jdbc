@@ -203,7 +203,7 @@ final public class QuerySelect implements Query {
 
         /**
          * <p>
-         * Transforms each row of the ResultSet into an instance of
+         * Transforms each row of the {@link ResultSet} into an instance of
          * <code>T</code> using <i>automapping</i> of the ResultSet columns into
          * corresponding constructor parameters that are assignable. Beyond
          * normal assignable criteria (for example Integer 123 is assignable to
@@ -368,20 +368,41 @@ final public class QuerySelect implements Query {
             return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6, cls7));
         }
 
+        /**
+         * Returns an {@link Operator} to allow the query to be pushed
+         * parameters via the {@link Observable#lift(Operator)} method.
+         * 
+         * @return operator that acts on parameters
+         */
         public OperatorBuilder parameterOperator() {
             return new OperatorBuilder(this, OperatorType.PARAMETER);
         }
 
+        /**
+         * Returns an {@link Operator} to allow the query to be pushed
+         * dependencies via the {@link Observable#lift(Operator)} method.
+         * 
+         * @return operator that acts on dependencies
+         */
         public OperatorBuilder dependsOnOperator() {
             return new OperatorBuilder(this, OperatorType.DEPENDENCY);
         }
     }
 
+    /**
+     * Builder pattern for select query {@link Operator}.
+     */
     public static class OperatorBuilder {
 
         private final Builder builder;
         private final OperatorType operatorType;
 
+        /**
+         * Constructor.
+         * 
+         * @param builder
+         * @param operatorType
+         */
         public OperatorBuilder(Builder builder, OperatorType operatorType) {
             this.builder = builder;
             this.operatorType = operatorType;
@@ -520,7 +541,6 @@ final public class QuerySelect implements Query {
                 Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5, Class<T6> cls6, Class<T7> cls7) {
             return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6, cls7));
         }
-
     }
 
 }
