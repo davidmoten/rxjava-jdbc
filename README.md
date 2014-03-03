@@ -164,7 +164,7 @@ have been completed use the `dependsOn()` method. Here's an example:
 Observable<Integer> insert = db
 		.update("insert into person(name,score) values(?,?)")
 		.parameters("JOHN", 45)
-		.getCount()
+		.count()
 		.map(Util.<Integer> delay(500));
 int count = db
 		.select("select name from person")
@@ -275,7 +275,7 @@ String document = ...
 Observable<Integer> count = db
 		.update("insert into person_clob(name,document) values(?,?)")
 		.parameter("FRED")
-		.parameter(document).getCount();
+		.parameter(document).count();
 ```
 or using a java.io.Reader:
 ```java
@@ -283,7 +283,7 @@ Reader reader = ...;
 Observable<Integer> count = db
 		.update("insert into person_clob(name,document) values(?,?)")
 		.parameter("FRED")
-		.parameter(reader).getCount();
+		.parameter(reader).count();
 ```
 ### Read a Clob
 ```java
@@ -302,7 +302,7 @@ byte[] bytes = ...
 Observable<Integer> count = db
 		.update("insert into person_blob(name,document) values(?,?)")
 		.parameter("FRED")
-		.parameter(bytes).getCount();
+		.parameter(bytes).count();
 ```
 ### Read a Blob
 ```java
@@ -330,7 +330,7 @@ db.beginTransaction();
 Observable<Integer> updateCount = db
 		.update("update person set score=?")
 		.parameter(99)
-		.getCount();
+		.count();
 // indicate dependency on  updateCount running before commit occurs
 db.commit(updateCount);
 
