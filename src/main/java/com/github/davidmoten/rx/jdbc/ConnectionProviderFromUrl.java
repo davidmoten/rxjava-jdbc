@@ -4,10 +4,23 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+/**
+ * Provides {@link Connection}s from a url (using
+ * DriverManager.getConnection()).
+ */
 public class ConnectionProviderFromUrl implements ConnectionProvider {
 
+	/**
+	 * JDBC url
+	 */
 	private final String url;
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param url
+	 *            the jdbc url
+	 */
 	public ConnectionProviderFromUrl(String url) {
 		this.url = url;
 	}

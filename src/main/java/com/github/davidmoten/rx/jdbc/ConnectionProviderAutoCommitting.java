@@ -3,10 +3,22 @@ package com.github.davidmoten.rx.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * Provides {@link Connection}s with autoCommit set to true.
+ */
 final class ConnectionProviderAutoCommitting implements ConnectionProvider {
 
+	/**
+	 * Underlying connection provider.
+	 */
 	private final ConnectionProvider cp;
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param cp
+	 *            underlying connection provider
+	 */
 	ConnectionProviderAutoCommitting(ConnectionProvider cp) {
 		this.cp = cp;
 	}
