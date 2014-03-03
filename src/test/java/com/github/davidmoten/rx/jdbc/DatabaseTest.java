@@ -670,7 +670,7 @@ public class DatabaseTest {
     public void testLiftUpdateWithParameters() {
         Database db = db();
         Observable<Integer> count = Observable.from(Arrays.<Object> asList(4, "FRED")).lift(
-                db.update("update person set score=? where name=?").parameterOperatorCount());
+                db.update("update person set score=? where name=?").parameterOperator());
         assertIs(1, count);
     }
 
@@ -681,9 +681,9 @@ public class DatabaseTest {
         // parameters for coming update
                 .from(Arrays.<Object> asList(4, "FRED"))
                 // update Fred's score to 4
-                .lift(db.update("update person set score=? where name=?").parameterOperatorCount())
+                .lift(db.update("update person set score=? where name=?").parameterOperator())
                 // update everyone with score of 4 to 14
-                .lift(db.update("update person set score=? where score=?").parameters(14, 4).dependsOnOperatorCount())
+                .lift(db.update("update person set score=? where score=?").parameters(14, 4).dependsOnOperator())
                 // get Fred's score
                 .lift(db.select("select score from person where name=?").parameters("FRED").dependsOnOperator()
                         .getAs(Integer.class));

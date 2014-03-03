@@ -200,7 +200,7 @@ final public class QueryUpdate implements Query {
          * 
          * @return operator that acts on parameters
          */
-        public QueryUpdateOperator parameterOperatorCount() {
+        public QueryUpdateOperator parameterOperator() {
             return new QueryUpdateOperator(this, OperatorType.PARAMETER);
         }
 
@@ -210,7 +210,7 @@ final public class QueryUpdate implements Query {
          * 
          * @return operator that acts on dependencies
          */
-        public QueryUpdateOperator dependsOnOperatorCount() {
+        public QueryUpdateOperator dependsOnOperator() {
             return new QueryUpdateOperator(this, OperatorType.DEPENDENCY);
         }
     }
