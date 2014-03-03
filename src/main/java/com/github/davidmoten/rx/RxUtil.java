@@ -7,26 +7,25 @@ import rx.Observable;
 import rx.Observer;
 import rx.functions.Func1;
 
+/**
+ * Utility methods for use with RxJava library.
+ */
 public class RxUtil {
 
+	/**
+	 * slf4j logger.
+	 */
 	private static final Logger log = LoggerFactory.getLogger(RxUtil.class);
 
-	public static final <T> Func1<T, T> println() {
-		return new Func1<T, T>() {
-			@Override
-			public T call(T t) {
-				System.out.println(t);
-				return t;
-			}
-		};
-	}
-
 	/**
-	 * The first sequence will be emitted in its entirety and ignored before o2
-	 * starts emitting.
+	 * Returns the concatenation of two {@link Observable}s but the first
+	 * sequence will be emitted in its entirety and ignored before o2 starts
+	 * emitting.
 	 * 
 	 * @param o1
+	 *            the sequence to ignore
 	 * @param o2
+	 *            the sequence to emit after o1 ignored
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
