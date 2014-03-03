@@ -31,6 +31,11 @@ final class Conditions {
 		checkTrue(!b);
 	}
 
+	/**
+	 * Throws a {@link NullPointerException} if argument is null.
+	 * 
+	 * @param obj
+	 */
 	static void checkNotNull(Object obj) {
 		if (obj == null)
 			throw new NullPointerException("argument cannot be null");
