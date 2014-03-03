@@ -10,7 +10,7 @@ import com.github.davidmoten.rx.OperatorFromOperation;
 /**
  * {@link Operator} corresonding to {@link QueryUpdateOperation}.
  */
-public class QueryUpdateOperator implements Operator<Integer, Object> {
+class QueryUpdateOperator implements Operator<Integer, Object> {
 
     private final OperatorFromOperation<Integer, Object> operator;
 
@@ -20,7 +20,7 @@ public class QueryUpdateOperator implements Operator<Integer, Object> {
      * @param builder
      * @param operatorType
      */
-    public QueryUpdateOperator(final QueryUpdate.Builder builder, final OperatorType operatorType) {
+    QueryUpdateOperator(final QueryUpdate.Builder builder, final OperatorType operatorType) {
         operator = new OperatorFromOperation<Integer, Object>(new Func1<Observable<Object>, Observable<Integer>>() {
 
             @Override
