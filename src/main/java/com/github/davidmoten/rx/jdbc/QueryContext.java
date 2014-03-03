@@ -3,7 +3,6 @@ package com.github.davidmoten.rx.jdbc;
 import java.sql.Connection;
 
 import rx.Scheduler;
-import rx.schedulers.Schedulers;
 
 /**
  * The threading and database connection context for mutliple jdbc queries.
@@ -14,7 +13,6 @@ final class QueryContext {
     private final ConnectionProvider connectionProvider;
     private final Handlers handlers;
     private final Scheduler scheduler;
-    Scheduler s = Schedulers.computation();
 
     /**
      * Constructor.
@@ -73,6 +71,11 @@ final class QueryContext {
         return new QueryContext(scheduler, new ConnectionProviderAutoCommitting(cp), handlers);
     }
 
+    /**
+     * Returns select/update handlers.
+     * 
+     * @return
+     */
     public Handlers handlers() {
         return handlers;
     }
