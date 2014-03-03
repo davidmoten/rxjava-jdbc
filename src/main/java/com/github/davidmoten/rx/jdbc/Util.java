@@ -550,6 +550,13 @@ public final class Util {
         };
     }
 
+    /**
+     * Sets parameters for the {@link PreparedStatement}.
+     * 
+     * @param ps
+     * @param params
+     * @throws SQLException
+     */
     static void setParameters(PreparedStatement ps, List<Parameter> params) throws SQLException {
         for (int i = 1; i <= params.size(); i++) {
             Object o = params.get(i - 1).getValue();
@@ -589,6 +596,15 @@ public final class Util {
         }
     }
 
+    /**
+     * Sets a blob parameter for the prepared statement.
+     * 
+     * @param ps
+     * @param i
+     * @param o
+     * @param cls
+     * @throws SQLException
+     */
     private static void setBlob(PreparedStatement ps, int i, Object o, Class<?> cls) throws SQLException {
         final InputStream is;
         if (o instanceof byte[]) {
@@ -603,6 +619,15 @@ public final class Util {
         ps.setBlob(i, c);
     }
 
+    /**
+     * Sets the clob parameter for the prepared statement.
+     * 
+     * @param ps
+     * @param i
+     * @param o
+     * @param cls
+     * @throws SQLException
+     */
     private static void setClob(PreparedStatement ps, int i, Object o, Class<?> cls) throws SQLException {
         final Reader r;
         if (o instanceof String)
