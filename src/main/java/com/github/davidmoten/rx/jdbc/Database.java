@@ -19,6 +19,9 @@ import rx.schedulers.Schedulers;
  */
 final public class Database {
 
+	/**
+	 * Optional query execution handlers for logging etc.
+	 */
 	private final Handlers handlers;
 
 	/**
@@ -33,10 +36,19 @@ final public class Database {
 	 */
 	private final ThreadLocal<Observable<Boolean>> lastTransactionResult = new ThreadLocal<Observable<Boolean>>();
 
+	/**
+	 * Connection provider.
+	 */
 	private final ConnectionProvider cp;
 
+	/**
+	 * Schedules non transactional queries.
+	 */
 	private final Func0<Scheduler> nonTransactionalSchedulerFactory;
 
+	/**
+	 * Schedules transactional queries.
+	 */
 	private final Func0<Scheduler> transactionalSchedulerFactory;
 
 	/**
@@ -44,8 +56,14 @@ final public class Database {
 	 * 
 	 * @param cp
 	 *            provides connections
-	 * @param threadPoolSize
-	 *            for asynchronous query context
+	 * @param selectHandler
+	 *            handles select queries
+	 * @param updateHandler
+	 *            handles update queries
+	 * @param nonTransactionalSchedulerFactory
+	 *            schedules non transactional queries
+	 * @param transactionalSchedulerFactory
+	 *            schedules transactional queries
 	 */
 	public Database(final ConnectionProvider cp,
 			Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler,
@@ -65,6 +83,9 @@ final public class Database {
 		this.handlers = new Handlers(selectHandler, updateHandler);
 	}
 
+	/**
+	 * Schedules on {@link Schedulers#io()}.
+	 */
 	private final Func0<Scheduler> IO_SCHEDULER_FACTORY = new Func0<Scheduler>() {
 		@Override
 		public Scheduler call() {
@@ -72,6 +93,9 @@ final public class Database {
 		}
 	};
 
+	/**
+	 * Schedules on a new single thread executor.
+	 */
 	private final Func0<Scheduler> SINGLE_THREAD_POOL_SCHEDULER_FACTORY = new Func0<Scheduler>() {
 		@Override
 		public Scheduler call() {
@@ -79,6 +103,9 @@ final public class Database {
 		}
 	};
 
+	/**
+	 * Schedules using {@link Schedulers}.trampoline().
+	 */
 	private static final Func0<Scheduler> CURRENT_THREAD_SCHEDULER_FACTORY = new Func0<Scheduler>() {
 
 		@Override
@@ -89,7 +116,7 @@ final public class Database {
 
 	/**
 	 * Constructor. Thread pool size defaults to
-	 * <code>{@link Runtime}.getRuntime().availableProcessors()+1</code>. This
+	 * <code>{@link Runtime#getRuntime()}.availableProcessors()+1</code>. This
 	 * may be too conservative if the database is on another server. If that is
 	 * the case then you may want to use a thread pool size equal to the
 	 * available processors + 1 on the database server.
@@ -113,10 +140,18 @@ final public class Database {
 		this(new ConnectionProviderFromUrl(url));
 	}
 
+	/**
+	 * Returns a new {@link Builder}.
+	 * 
+	 * @return
+	 */
 	public static Builder builder() {
 		return new Builder();
 	}
 
+	/**
+	 * Builds a {@link Database}.
+	 */
 	public final static class Builder {
 
 		private ConnectionProvider cp;
@@ -127,62 +162,135 @@ final public class Database {
 		private Func0<Scheduler> nonTransactionalSchedulerFactory = null;
 		private Func0<Scheduler> transactionalSchedulerFactory = null;
 
+		/**
+		 * Constructor.
+		 */
 		private Builder() {
 		}
 
+		/**
+		 * Sets the connection provider.
+		 * 
+		 * @param cp
+		 * @return
+		 */
 		public Builder connectionProvider(ConnectionProvider cp) {
 			this.cp = cp;
 			return this;
 		}
 
+		/**
+		 * Sets the jdbc url.
+		 * 
+		 * @param url
+		 * @return
+		 */
 		public Builder url(String url) {
 			this.cp = new ConnectionProviderFromUrl(url);
 			return this;
 		}
 
+		/**
+		 * Sets the {@link ConnectionProvider} to use a connection pool with the
+		 * given jdbc url and pool size.
+		 * 
+		 * @param url
+		 * @param minPoolSize
+		 * @param maxPoolSize
+		 * @return
+		 */
 		public Builder pooled(String url, int minPoolSize, int maxPoolSize) {
 			this.cp = new ConnectionProviderPooled(url, minPoolSize,
 					maxPoolSize);
 			return this;
 		}
 
+		/**
+		 * Sets the {@link ConnectionProvider} to use a connection pool with the
+		 * given jdbc url and min pool size of 0, max pool size of 10.
+		 * 
+		 * @param url
+		 * @return
+		 */
 		public Builder pooled(String url) {
 			this.cp = new ConnectionProviderPooled(url, 0, 10);
 			return this;
 		}
 
+		/**
+		 * Sets the select handler.
+		 * 
+		 * @param selectHandler
+		 * @return
+		 */
 		public Builder selectHandler(
 				Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler) {
 			this.selectHandler = selectHandler;
 			return this;
 		}
 
+		/**
+		 * Sets the update handler.
+		 * 
+		 * @param updateHandler
+		 * @return
+		 */
 		public Builder updateHandler(
 				Func1<Observable<Integer>, Observable<Integer>> updateHandler) {
 			this.updateHandler = updateHandler;
 			return this;
 		}
 
+		/**
+		 * Sets the non transactional scheduler.
+		 * 
+		 * @param factory
+		 * @return
+		 */
 		public Builder nonTransactionalScheduler(Func0<Scheduler> factory) {
 			nonTransactionalSchedulerFactory = factory;
 			return this;
 		}
 
+		/**
+		 * Sets the transactional scheduler.
+		 * 
+		 * @param factory
+		 * @return
+		 */
 		public Builder transactionalScheduler(Func0<Scheduler> factory) {
 			transactionalSchedulerFactory = factory;
 			return this;
 		}
 
+		/**
+		 * Requests that the non transactional queries are run using
+		 * {@link Schedulers#trampoline()}.
+		 * 
+		 * @return
+		 */
 		public Builder nonTransactionalSchedulerOnCurrentThread() {
 			nonTransactionalSchedulerFactory = CURRENT_THREAD_SCHEDULER_FACTORY;
 			return this;
 		}
 
+		/**
+		 * Request that the transactional queries are run using
+		 * {@link Schedulers#trampoline()}.
+		 * 
+		 * @return
+		 */
 		public Builder transactionalSchedulerOnCurrentThread() {
 			transactionalSchedulerFactory = CURRENT_THREAD_SCHEDULER_FACTORY;
 			return this;
 		}
 
+		/**
+		 * Sets both select and update handlers to the same handler.
+		 * 
+		 * @param handler
+		 * @return
+		 */
 		public Builder handler(
 				final Func1<Observable<Object>, Observable<Object>> handler) {
 			this.selectHandler = new Func1<Observable<ResultSet>, Observable<ResultSet>>() {
@@ -202,6 +310,11 @@ final public class Database {
 			return this;
 		}
 
+		/**
+		 * Returns a {@link Database}.
+		 * 
+		 * @return
+		 */
 		public Database build() {
 			return new Database(cp, selectHandler, updateHandler,
 					transactionalSchedulerFactory,
