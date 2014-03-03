@@ -57,7 +57,7 @@ final public class Database {
 		if (nonTransactionalSchedulerFactory != null)
 			this.nonTransactionalSchedulerFactory = nonTransactionalSchedulerFactory;
 		else
-			this.nonTransactionalSchedulerFactory = COMPUTATION_SCHEDULER_FACTORY;
+			this.nonTransactionalSchedulerFactory = IO_SCHEDULER_FACTORY;
 		if (transactionalSchedulerFactory != null)
 			this.transactionalSchedulerFactory = transactionalSchedulerFactory;
 		else
@@ -65,10 +65,10 @@ final public class Database {
 		this.handlers = new Handlers(selectHandler, updateHandler);
 	}
 
-	private final Func0<Scheduler> COMPUTATION_SCHEDULER_FACTORY = new Func0<Scheduler>() {
+	private final Func0<Scheduler> IO_SCHEDULER_FACTORY = new Func0<Scheduler>() {
 		@Override
 		public Scheduler call() {
-			return Schedulers.computation();
+			return Schedulers.io();
 		}
 	};
 
