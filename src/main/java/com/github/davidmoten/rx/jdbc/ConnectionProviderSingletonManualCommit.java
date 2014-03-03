@@ -3,12 +3,29 @@ package com.github.davidmoten.rx.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * Provides a singleton {@link Connection} sourced from a
+ * {@link ConnectionProvider} that has autoCommit set to false.
+ */
 final class ConnectionProviderSingletonManualCommit implements
 		ConnectionProvider {
 
+	/**
+	 * Singleton connection.
+	 */
 	private Connection con;
+
+	/**
+	 * Provides the singleton connection.
+	 */
 	private final ConnectionProvider cp;
 
+	/**
+	 * Constructor.
+	 * 
+	 * @param cp
+	 *            connection provider.
+	 */
 	ConnectionProviderSingletonManualCommit(ConnectionProvider cp) {
 		this.cp = cp;
 	}
