@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rx.Observable;
+import rx.Observable.Operator;
 import rx.Observer;
 import rx.functions.Func1;
 
@@ -73,4 +74,7 @@ public class RxUtil {
         };
     }
 
+    public static <R, T> Operator<R, T> toOperator(Func1<Observable<T>, Observable<R>> operation) {
+        return OperatorFromOperation.toOperator(operation);
+    }
 }

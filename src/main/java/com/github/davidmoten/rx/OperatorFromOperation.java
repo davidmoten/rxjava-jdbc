@@ -17,6 +17,10 @@ import rx.subjects.PublishSubject;
  */
 public class OperatorFromOperation<R, T> implements Operator<R, T> {
 
+    public static <R, T> Operator<R, T> toOperator(Func1<Observable<T>, Observable<R>> operation) {
+        return new OperatorFromOperation<R, T>(operation);
+    }
+
     /**
      * The operation to convert.
      */

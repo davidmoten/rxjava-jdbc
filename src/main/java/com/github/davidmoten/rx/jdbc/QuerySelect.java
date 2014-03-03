@@ -1,5 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
+import static com.github.davidmoten.rx.RxUtil.toOperator;
 import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
 
 import java.sql.ResultSet;
@@ -75,7 +76,7 @@ final public class QuerySelect implements Query {
      * @return
      */
     public Observable<ResultSet> execute() {
-        return context.handlers().selectHandler().call(bufferedParameters(this).flatMap(executeOnce()));
+        return bufferedParameters(this).flatMap(executeOnce()).lift(toOperator(context.handlers().selectHandler()));
     }
 
     /**

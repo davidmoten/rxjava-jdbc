@@ -1,5 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
+import static com.github.davidmoten.rx.RxUtil.toOperator;
 import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
 
 import java.util.List;
@@ -67,7 +68,7 @@ final public class QueryUpdate implements Query {
      * @return
      */
     public Observable<Integer> count() {
-        return context.handlers().updateHandler().call(bufferedParameters(this).flatMap(executeOnce()));
+        return bufferedParameters(this).flatMap(executeOnce()).lift(toOperator(context.handlers().updateHandler()));
     }
 
     /**
