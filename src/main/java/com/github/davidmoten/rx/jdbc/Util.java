@@ -30,8 +30,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rx.Observable;
-import rx.Observer;
 import rx.functions.Func1;
 
 /**
@@ -209,21 +207,6 @@ public final class Util {
 			return Collections.emptyList();
 		};
 	};
-
-	/**
-	 * Returns a constant value.
-	 * 
-	 * @param s
-	 * @return
-	 */
-	static <R, S> Func1<R, S> constant(final S s) {
-		return new Func1<R, S>() {
-			@Override
-			public S call(R t1) {
-				return s;
-			}
-		};
-	}
 
 	/**
 	 * Returns a function that converts the ResultSet column values into
@@ -697,49 +680,5 @@ public final class Util {
 			}
 		}
 	};
-
-	public static final <T> Func1<T, T> println() {
-		return new Func1<T, T>() {
-			@Override
-			public T call(T t) {
-				System.out.println(t);
-				return t;
-			}
-		};
-	}
-
-	/**
-	 * The first sequence will be emitted in its entirety and ignored before o2
-	 * starts emitting.
-	 * 
-	 * @param o1
-	 * @param o2
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	static <T> Observable<T> concatButIgnoreFirstSequence(Observable<?> o1,
-			Observable<T> o2) {
-		return Observable.concat((Observable<T>) o1.ignoreElements(), o2);
-	}
-
-	public static <T> Observer<? super T> log() {
-		return new Observer<T>() {
-
-			@Override
-			public void onCompleted() {
-				// do nothing
-			}
-
-			@Override
-			public void onError(Throwable e) {
-				log.error(e.getMessage(), e);
-			}
-
-			@Override
-			public void onNext(T t) {
-				log.info(t + "");
-			}
-		};
-	}
 
 }

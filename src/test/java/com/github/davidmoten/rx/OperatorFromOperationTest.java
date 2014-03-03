@@ -9,8 +9,6 @@ import org.junit.Test;
 import rx.Observable;
 import rx.functions.Functions;
 
-import com.github.davidmoten.rx.jdbc.Util;
-
 public class OperatorFromOperationTest {
 
 	@Test
@@ -20,7 +18,7 @@ public class OperatorFromOperationTest {
 		Observable
 				.interval(100, TimeUnit.MILLISECONDS)
 				.lift(detector)
-				.doOnEach(Util.log())
+				.doOnEach(RxUtil.log())
 				.lift(new OperatorFromOperation<Long, Long>(Functions
 						.<Observable<Long>> identity())).take(1).first()
 				.toBlockingObservable().single();

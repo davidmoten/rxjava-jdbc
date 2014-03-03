@@ -1,7 +1,7 @@
 package com.github.davidmoten.rx.jdbc;
 
+import static com.github.davidmoten.rx.RxUtil.concatButIgnoreFirstSequence;
 import static com.github.davidmoten.rx.jdbc.Util.TO_EMPTY_PARAMETER_LIST;
-import static com.github.davidmoten.rx.jdbc.Util.concatButIgnoreFirstSequence;
 
 import java.util.List;
 

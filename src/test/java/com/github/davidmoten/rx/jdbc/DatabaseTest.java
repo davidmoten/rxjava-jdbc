@@ -1,11 +1,11 @@
 package com.github.davidmoten.rx.jdbc;
 
+import static com.github.davidmoten.rx.RxUtil.constant;
+import static com.github.davidmoten.rx.RxUtil.log;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.connectionProvider;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.createDatabase;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.db;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.nextUrl;
-import static com.github.davidmoten.rx.jdbc.Util.constant;
-import static com.github.davidmoten.rx.jdbc.Util.log;
 import static java.util.Arrays.asList;
 import static org.easymock.EasyMock.createMock;
 import static org.junit.Assert.assertEquals;
@@ -121,7 +121,7 @@ public class DatabaseTest {
 				.select("select name from person where name=?")
 				.parameter("FRED").get().count().filter(isZero);
 		db.update("insert into person(name,score) values(?,0)")
-				.parameters(existingRows.map(Util.constant("FRED"))).count();
+				.parameters(existingRows.map(constant("FRED"))).count();
 		boolean committed = db.commit().toBlockingObservable().single();
 		assertTrue(committed);
 	}
@@ -644,12 +644,9 @@ public class DatabaseTest {
 				0, 1);
 		Database db = new Database(cp);
 		DatabaseCreator.createDatabase(cp.get());
-		assertCountIs(
-				100,
-				db.select("select name from person where name=?")
-						.parameters(
-								Observable.range(0, 100).map(
-										Util.constant("FRED"))).get());
+		assertCountIs(100, db.select("select name from person where name=?")
+				.parameters(Observable.range(0, 100).map(constant("FRED")))
+				.get());
 	}
 
 	@Test
@@ -697,7 +694,7 @@ public class DatabaseTest {
 		int score = Observable
 				.range(1, 3)
 				.doOnEach(log())
-				.map(Util.constant("FRED"))
+				.map(constant("FRED"))
 				.lift(db().select("select score from person where name=?")
 						.parameterOperator().getAs(Integer.class))
 				.sumInteger(rx.functions.Functions.<Integer> identity())
@@ -731,7 +728,7 @@ public class DatabaseTest {
 		Observable
 				.interval(100, TimeUnit.MILLISECONDS)
 				.doOnEach(log())
-				.map(Util.constant("FRED"))
+				.map(constant("FRED"))
 				.lift(detector)
 				.lift(db().select("select score from person where name=?")
 						.parameterOperator().getAs(Integer.class)).take(1)
@@ -744,7 +741,7 @@ public class DatabaseTest {
 		UnsubscribeDetector<String> detector = UnsubscribeDetector.detect();
 		Observable<String> params = Observable
 				.interval(100, TimeUnit.MILLISECONDS).doOnEach(log())
-				.map(Util.constant("FRED")).lift(detector);
+				.map(constant("FRED")).lift(detector);
 		db().select("select score from person where name=?").parameters(params)
 				.getAs(Integer.class).take(1).subscribe(log());
 		assertTrue(detector.latch().await(3, TimeUnit.SECONDS));
