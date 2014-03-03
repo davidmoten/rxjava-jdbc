@@ -37,6 +37,14 @@ public class ConnectionProviderPooled implements ConnectionProvider {
 		this.pool = pool;
 	}
 
+	/**
+	 * Returns a new pooled data source based on jdbc url.
+	 * 
+	 * @param url
+	 * @param minPoolSize
+	 * @param maxPoolSize
+	 * @return
+	 */
 	private static ComboPooledDataSource createPool(String url,
 			int minPoolSize, int maxPoolSize) {
 		ComboPooledDataSource pool = new ComboPooledDataSource();
