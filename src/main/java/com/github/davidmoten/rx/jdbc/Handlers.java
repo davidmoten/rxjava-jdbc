@@ -11,41 +11,40 @@ import rx.functions.Func1;
 
 public class Handlers {
 
-	private static final Logger log = LoggerFactory.getLogger(Handlers.class);
+    private static final Logger log = LoggerFactory.getLogger(Handlers.class);
 
-	private final Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler;
-	private final Func1<Observable<Integer>, Observable<Integer>> updateHandler;
+    private final Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler;
+    private final Func1<Observable<Integer>, Observable<Integer>> updateHandler;
 
-	public Handlers(
-			Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler,
-			Func1<Observable<Integer>, Observable<Integer>> updateHandler) {
-		super();
-		this.selectHandler = selectHandler;
-		this.updateHandler = updateHandler;
-	}
+    public Handlers(Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler,
+            Func1<Observable<Integer>, Observable<Integer>> updateHandler) {
+        super();
+        this.selectHandler = selectHandler;
+        this.updateHandler = updateHandler;
+    }
 
-	public Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler() {
-		return selectHandler;
-	}
+    public Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler() {
+        return selectHandler;
+    }
 
-	public Func1<Observable<Integer>, Observable<Integer>> updateHandler() {
-		return updateHandler;
-	}
+    public Func1<Observable<Integer>, Observable<Integer>> updateHandler() {
+        return updateHandler;
+    }
 
-	private static Action1<Throwable> LOG_ON_ERROR_HANDLER_ACTION = new Action1<Throwable>() {
+    private static Action1<Throwable> LOG_ON_ERROR_HANDLER_ACTION = new Action1<Throwable>() {
 
-		@Override
-		public void call(Throwable t) {
-			log.error(t.getMessage(), t);
-		}
-	};
+        @Override
+        public void call(Throwable t) {
+            log.error(t.getMessage(), t);
+        }
+    };
 
-	public static Func1<Observable<Object>, Observable<Object>> LOG_ON_ERROR_HANDLER = new Func1<Observable<Object>, Observable<Object>>() {
+    public static Func1<Observable<Object>, Observable<Object>> LOG_ON_ERROR_HANDLER = new Func1<Observable<Object>, Observable<Object>>() {
 
-		@Override
-		public Observable<Object> call(Observable<Object> source) {
-			return source.doOnError(LOG_ON_ERROR_HANDLER_ACTION);
-		}
-	};
+        @Override
+        public Observable<Object> call(Observable<Object> source) {
+            return source.doOnError(LOG_ON_ERROR_HANDLER_ACTION);
+        }
+    };
 
 }

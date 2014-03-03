@@ -8,35 +8,35 @@ import java.sql.SQLException;
  */
 final class ConnectionProviderAutoCommitting implements ConnectionProvider {
 
-	/**
-	 * Underlying connection provider.
-	 */
-	private final ConnectionProvider cp;
+    /**
+     * Underlying connection provider.
+     */
+    private final ConnectionProvider cp;
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param cp
-	 *            underlying connection provider
-	 */
-	ConnectionProviderAutoCommitting(ConnectionProvider cp) {
-		this.cp = cp;
-	}
+    /**
+     * Constructor.
+     * 
+     * @param cp
+     *            underlying connection provider
+     */
+    ConnectionProviderAutoCommitting(ConnectionProvider cp) {
+        this.cp = cp;
+    }
 
-	@Override
-	public Connection get() {
-		Connection con = cp.get();
-		try {
-			con.setAutoCommit(true);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
-		return con;
-	}
+    @Override
+    public Connection get() {
+        Connection con = cp.get();
+        try {
+            con.setAutoCommit(true);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return con;
+    }
 
-	@Override
-	public void close() {
-		cp.close();
-	}
+    @Override
+    public void close() {
+        cp.close();
+    }
 
 }

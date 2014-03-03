@@ -12,41 +12,40 @@ import rx.Subscription;
 
 public class UnsubscribeDetector<T> implements Operator<T, T> {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(UnsubscribeDetector.class);
+    private static final Logger log = LoggerFactory.getLogger(UnsubscribeDetector.class);
 
-	private final CountDownLatch latch;
+    private final CountDownLatch latch;
 
-	public UnsubscribeDetector() {
-		latch = new CountDownLatch(1);
-	}
+    public UnsubscribeDetector() {
+        latch = new CountDownLatch(1);
+    }
 
-	@Override
-	public Subscriber<? super T> call(Subscriber<? super T> subscriber) {
-		subscriber.add(new Subscription() {
+    @Override
+    public Subscriber<? super T> call(Subscriber<? super T> subscriber) {
+        subscriber.add(new Subscription() {
 
-			private final AtomicBoolean subscribed = new AtomicBoolean(true);
+            private final AtomicBoolean subscribed = new AtomicBoolean(true);
 
-			@Override
-			public void unsubscribe() {
-				latch.countDown();
-				subscribed.set(false);
-				log.info("unsubscribed");
-			}
+            @Override
+            public void unsubscribe() {
+                latch.countDown();
+                subscribed.set(false);
+                log.info("unsubscribed");
+            }
 
-			@Override
-			public boolean isUnsubscribed() {
-				return subscribed.get();
-			}
-		});
-		return subscriber;
-	}
+            @Override
+            public boolean isUnsubscribed() {
+                return subscribed.get();
+            }
+        });
+        return subscriber;
+    }
 
-	public CountDownLatch latch() {
-		return latch;
-	}
+    public CountDownLatch latch() {
+        return latch;
+    }
 
-	public static <T> UnsubscribeDetector<T> detect() {
-		return new UnsubscribeDetector<T>();
-	}
+    public static <T> UnsubscribeDetector<T> detect() {
+        return new UnsubscribeDetector<T>();
+    }
 }

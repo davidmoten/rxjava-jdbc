@@ -6,8 +6,8 @@ import com.github.davidmoten.rx.jdbc.TestingUtil;
 
 public class TuplesTest {
 
-	@Test
-	public void testTuplesInstantiationForCoverage() {
-		TestingUtil.instantiateUsingPrivateConstructor(Tuples.class);
-	}
+    @Test
+    public void testTuplesInstantiationForCoverage() {
+        TestingUtil.instantiateUsingPrivateConstructor(Tuples.class);
+    }
 }

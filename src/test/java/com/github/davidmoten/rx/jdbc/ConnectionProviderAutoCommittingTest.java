@@ -14,22 +14,21 @@ import org.junit.Test;
 
 public class ConnectionProviderAutoCommittingTest {
 
-	@Test
-	public void testSqlExceptionThrowsRuntimeException() throws SQLException {
-		ConnectionProvider cp = createMock(ConnectionProvider.class);
-		Connection connection = createMock(Connection.class);
-		expect(cp.get()).andReturn(connection).once();
-		connection.setAutoCommit(true);
-		expectLastCall().andThrow(new SQLException("boo"));
-		replay(cp, connection);
-		ConnectionProviderAutoCommitting c = new ConnectionProviderAutoCommitting(
-				cp);
-		try {
-			c.get();
-			Assert.fail();
-		} catch (RuntimeException e) {
-			EasyMock.verify(cp, connection);
-		}
-	}
+    @Test
+    public void testSqlExceptionThrowsRuntimeException() throws SQLException {
+        ConnectionProvider cp = createMock(ConnectionProvider.class);
+        Connection connection = createMock(Connection.class);
+        expect(cp.get()).andReturn(connection).once();
+        connection.setAutoCommit(true);
+        expectLastCall().andThrow(new SQLException("boo"));
+        replay(cp, connection);
+        ConnectionProviderAutoCommitting c = new ConnectionProviderAutoCommitting(cp);
+        try {
+            c.get();
+            Assert.fail();
+        } catch (RuntimeException e) {
+            EasyMock.verify(cp, connection);
+        }
+    }
 
 }

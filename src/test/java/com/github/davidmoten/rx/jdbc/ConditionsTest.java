@@ -4,39 +4,39 @@ import org.junit.Test;
 
 public class ConditionsTest {
 
-	@Test
-	public void testCheckTrueDoesNotThrowException() {
-		Conditions.checkTrue(true);
-	}
+    @Test
+    public void testCheckTrueDoesNotThrowException() {
+        Conditions.checkTrue(true);
+    }
 
-	@Test(expected = RuntimeException.class)
-	public void testCheckTrueThrowsException() {
-		Conditions.checkTrue(false);
-	}
+    @Test(expected = RuntimeException.class)
+    public void testCheckTrueThrowsException() {
+        Conditions.checkTrue(false);
+    }
 
-	@Test
-	public void testCheckFalseDoesNotThrowException() {
-		Conditions.checkFalse(false);
-	}
+    @Test
+    public void testCheckFalseDoesNotThrowException() {
+        Conditions.checkFalse(false);
+    }
 
-	@Test(expected = RuntimeException.class)
-	public void testCheckFalseThrowsException() {
-		Conditions.checkFalse(true);
-	}
+    @Test(expected = RuntimeException.class)
+    public void testCheckFalseThrowsException() {
+        Conditions.checkFalse(true);
+    }
 
-	@Test
-	public void testCheckNotNullDoesNotThrowException() {
-		Conditions.checkNotNull(new Object());
-	}
+    @Test
+    public void testCheckNotNullDoesNotThrowException() {
+        Conditions.checkNotNull(new Object());
+    }
 
-	@Test(expected = RuntimeException.class)
-	public void testCheckNotNullThrowsException() {
-		Conditions.checkNotNull(null);
-	}
+    @Test(expected = RuntimeException.class)
+    public void testCheckNotNullThrowsException() {
+        Conditions.checkNotNull(null);
+    }
 
-	@Test
-	public void obtainCoverageOfPrivateConstructor() {
-		TestingUtil.instantiateUsingPrivateConstructor(Conditions.class);
-	}
+    @Test
+    public void obtainCoverageOfPrivateConstructor() {
+        TestingUtil.instantiateUsingPrivateConstructor(Conditions.class);
+    }
 
 }

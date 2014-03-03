@@ -9,28 +9,24 @@ import com.github.davidmoten.rx.OperatorFromOperation;
 
 public class QueryUpdateOperator implements Operator<Integer, Object> {
 
-	private final OperatorFromOperation<Integer, Object> operator;
+    private final OperatorFromOperation<Integer, Object> operator;
 
-	public QueryUpdateOperator(final QueryUpdate.Builder builder,
-			final OperatorType operatorType) {
-		operator = new OperatorFromOperation<Integer, Object>(
-				new Func1<Observable<Object>, Observable<Integer>>() {
+    public QueryUpdateOperator(final QueryUpdate.Builder builder, final OperatorType operatorType) {
+        operator = new OperatorFromOperation<Integer, Object>(new Func1<Observable<Object>, Observable<Integer>>() {
 
-					@Override
-					public Observable<Integer> call(
-							Observable<Object> parameters) {
-						if (operatorType == OperatorType.PARAMETER)
-							return builder.parameters(parameters).count();
-						else
-							// dependency
-							return builder.dependsOn(parameters).count();
-					}
-				});
-	}
+            @Override
+            public Observable<Integer> call(Observable<Object> parameters) {
+                if (operatorType == OperatorType.PARAMETER)
+                    return builder.parameters(parameters).count();
+                else
+                    // dependency
+                    return builder.dependsOn(parameters).count();
+            }
+        });
+    }
 
-	@Override
-	public Subscriber<? super Object> call(
-			Subscriber<? super Integer> subscriber) {
-		return operator.call(subscriber);
-	}
+    @Override
+    public Subscriber<? super Object> call(Subscriber<? super Integer> subscriber) {
+        return operator.call(subscriber);
+    }
 }
