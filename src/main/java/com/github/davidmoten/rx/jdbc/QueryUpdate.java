@@ -6,6 +6,7 @@ import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
 import java.util.List;
 
 import rx.Observable;
+import rx.Observable.Operator;
 import rx.functions.Func1;
 
 /**
@@ -193,10 +194,22 @@ final public class QueryUpdate implements Query {
             return new QueryUpdate(builder.sql(), builder.parameters(), builder.depends(), builder.context()).count();
         }
 
+        /**
+         * Returns an {@link Operator} to allow the query to be pushed
+         * parameters via the {@link Observable#lift(Operator)} method.
+         * 
+         * @return operator that acts on parameters
+         */
         public QueryUpdateOperator parameterOperatorCount() {
             return new QueryUpdateOperator(this, OperatorType.PARAMETER);
         }
 
+        /**
+         * Returns an {@link Operator} to allow the query to be pushed
+         * dependencies via the {@link Observable#lift(Operator)} method.
+         * 
+         * @return operator that acts on dependencies
+         */
         public QueryUpdateOperator dependsOnOperatorCount() {
             return new QueryUpdateOperator(this, OperatorType.DEPENDENCY);
         }
