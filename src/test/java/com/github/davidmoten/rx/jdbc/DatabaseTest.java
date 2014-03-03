@@ -178,22 +178,23 @@ public class DatabaseTest {
 
     @Test
     public void testJdbcObservableCountLettersInAllNames() {
-        Func1<ResultSet, Integer> countLettersInName = new Func1<ResultSet, Integer>() {
-            @Override
-            public Integer call(ResultSet rs) {
-                try {
-                    return rs.getString("name").length();
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        };
         int count = Observable
                 .sumInteger(
-                        db().select("select name from person where name >?").parameter("ALEX").get(countLettersInName))
-                .first().toBlockingObservable().single();
+                        db().select("select name from person where name >?").parameter("ALEX")
+                                .get(COUNT_LETTERS_IN_NAME)).first().toBlockingObservable().single();
         assertEquals(19, count);
     }
+
+    private static final Func1<ResultSet, Integer> COUNT_LETTERS_IN_NAME = new Func1<ResultSet, Integer>() {
+        @Override
+        public Integer call(ResultSet rs) {
+            try {
+                return rs.getString("name").length();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    };
 
     @Test
     public void testTransformToTuple2AndTestActionsPrintln() {
