@@ -12,6 +12,9 @@ import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
 
+/**
+ * Executes the update query.
+ */
 class QueryUpdateOperation {
 
     private static final Logger log = LoggerFactory.getLogger(QueryUpdateOperation.class);

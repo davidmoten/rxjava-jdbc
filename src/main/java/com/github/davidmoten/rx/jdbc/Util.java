@@ -275,6 +275,12 @@ public final class Util {
         }
     }
 
+    /**
+     * Returns debugging info about the types of a list of objects.
+     * 
+     * @param list
+     * @return
+     */
     private static String getTypeInfo(List<Object> list) {
 
         StringBuilder s = new StringBuilder();
