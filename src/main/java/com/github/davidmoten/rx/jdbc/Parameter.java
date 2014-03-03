@@ -3,7 +3,7 @@ package com.github.davidmoten.rx.jdbc;
 import rx.functions.Func1;
 
 /**
- * Encapsulate a query parameter.
+ * Encapsulates a query parameter.
  */
 final class Parameter {
 

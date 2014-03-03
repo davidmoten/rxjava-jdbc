@@ -7,10 +7,29 @@ import rx.Observable;
  */
 final public class QueryBuilder {
 
+    /**
+     * JDBC sql either select/update/insert.
+     */
     private final String sql;
+
+    /**
+     * Parameters for the query corresponding to ? characters in the sql.
+     */
     private Observable<Parameter> parameters = Observable.empty();
+
+    /**
+     * Observables to complete before the query is executed.
+     */
     private Observable<?> depends = Observable.empty();
+
+    /**
+     * {@link Database} to use the query against.
+     */
     private final Database db;
+
+    /**
+     * Execution context to use to run the query.
+     */
     private final QueryContext context;
 
     /**
