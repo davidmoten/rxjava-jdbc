@@ -398,7 +398,7 @@ and you can use a c3p0 database connection pool like so:
 ```java
 Database db = Database.builder().pooled(url,minPoolSize,maxPoolSize).build();
 ```
-Once finished with a ```Database`` that has used a connection pool you should call 
+Once finished with a ``Database`` that has used a connection pool you should call 
 ```java
 db.close();
 ```
