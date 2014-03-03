@@ -10,8 +10,19 @@ import rx.Scheduler;
  */
 final class QueryContext {
 
+    /**
+     * Provides {@link Connection}s.
+     */
     private final ConnectionProvider connectionProvider;
+
+    /**
+     * Select and update handlers.
+     */
     private final Handlers handlers;
+
+    /**
+     * Scheduler to use to execute query.
+     */
     private final Scheduler scheduler;
 
     /**
