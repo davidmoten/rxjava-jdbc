@@ -14,34 +14,35 @@ import com.github.davidmoten.rx.OperatorFromOperation;
  * 
  * @param <T>
  */
-class QuerySelectOperator<T> implements Operator<T, Object> {
+public class QuerySelectOperator<T> implements Operator<T, Object> {
 
-    private final OperatorFromOperation<T, Object> operator;
+	private final OperatorFromOperation<T, Object> operator;
 
-    /**
-     * Constructor.
-     * 
-     * @param builder
-     * @param function
-     * @param operatorType
-     */
-    QuerySelectOperator(final QuerySelect.Builder builder, final Func1<ResultSet, T> function,
-            final OperatorType operatorType) {
-        operator = new OperatorFromOperation<T, Object>(new Func1<Observable<Object>, Observable<T>>() {
+	/**
+	 * Constructor.
+	 * 
+	 * @param builder
+	 * @param function
+	 * @param operatorType
+	 */
+	QuerySelectOperator(final QuerySelect.Builder builder,
+			final Func1<ResultSet, T> function, final OperatorType operatorType) {
+		operator = new OperatorFromOperation<T, Object>(
+				new Func1<Observable<Object>, Observable<T>>() {
 
-            @Override
-            public Observable<T> call(Observable<Object> parameters) {
-                if (operatorType == OperatorType.PARAMETER)
-                    return builder.parameters(parameters).get(function);
-                else
-                    // dependency
-                    return builder.dependsOn(parameters).get(function);
-            }
-        });
-    }
+					@Override
+					public Observable<T> call(Observable<Object> parameters) {
+						if (operatorType == OperatorType.PARAMETER)
+							return builder.parameters(parameters).get(function);
+						else
+							// dependency
+							return builder.dependsOn(parameters).get(function);
+					}
+				});
+	}
 
-    @Override
-    public Subscriber<? super Object> call(Subscriber<? super T> subscriber) {
-        return operator.call(subscriber);
-    }
+	@Override
+	public Subscriber<? super Object> call(Subscriber<? super T> subscriber) {
+		return operator.call(subscriber);
+	}
 }
