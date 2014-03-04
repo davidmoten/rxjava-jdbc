@@ -369,13 +369,18 @@ Observable<Integer> score = Observable
 			.getAs(Integer.class));
 ```
 
+Logging
+-----------------
+Logging is handled by slf4j which bridges to the logging framework of your choice. Add
+the dependency for your logging framework as a maven dependency and you are sorted. See the test scoped log4j example in rxjava-jdbc/pom.xml.
+
 Handlers
 ------------------------
 You can specify a select handler and an update handler individually or one all purpose handler.
 For example you could log all error events for all database queries.
 
 The handlers operate globally for one ```Database``` object. An example is ```Handlers.LOG_ON_ERROR_HANDLER``` which intercepts an ```onError``` event and writes 
-a SEVERE log line using ```java.util.logging``` and then passes the error on. To create handlers use the ```Database``` builder method:
+an Error log line using slf4j and then passes the error on. To create handlers use the ```Database``` builder method:
 
 ```java
 Database db = Database.builder(url).handler(Handlers.LOG_ON_ERROR_HANDLER).build();
