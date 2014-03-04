@@ -1,23 +1,52 @@
 package com.github.davidmoten.rx.jdbc.tuple;
 
+/**
+ * An explicitly typed tuple.
+ * 
+ * @param <T1>
+ * @param <T2>
+ */
 public class Tuple2<T1, T2> {
 
     private final T1 value1;
     private final T2 value2;
 
+    /**
+     * Constructor.
+     * 
+     * @param value1
+     * @param value2
+     */
     public Tuple2(T1 value1, T2 value2) {
         this.value1 = value1;
         this.value2 = value2;
     }
 
+    /**
+     * Returns a new instance.
+     * 
+     * @param r
+     * @param s
+     * @return
+     */
     public static <R, S> Tuple2<R, S> create(R r, S s) {
         return new Tuple2<R, S>(r, s);
     }
 
+    /**
+     * Returns the first memmber of the tuple.
+     * 
+     * @return
+     */
     public T1 value1() {
         return value1;
     }
 
+    /**
+     * Returns the 2nd member of the tuple.
+     * 
+     * @return
+     */
     public T2 value2() {
         return value2;
     }
