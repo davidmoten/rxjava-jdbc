@@ -445,6 +445,16 @@ public final class Util {
                 return createFreeOnCloseInputStream(b, is);
             } else if ((type == Types.DECIMAL || type == Types.NUMERIC) && Long.class.isAssignableFrom(cls)) {
                 return rs.getBigDecimal(i).toBigInteger().longValue();
+            } else if ((type == Types.DECIMAL || type == Types.NUMERIC) && Integer.class.isAssignableFrom(cls)) {
+                return rs.getBigDecimal(i).toBigInteger().intValue();
+            } else if ((type == Types.DECIMAL || type == Types.NUMERIC) && Short.class.isAssignableFrom(cls)) {
+                return rs.getBigDecimal(i).toBigInteger().shortValue();
+            } else if ((type == Types.DECIMAL || type == Types.NUMERIC) && Double.class.isAssignableFrom(cls)) {
+                return rs.getBigDecimal(i).doubleValue();
+            } else if ((type == Types.DECIMAL || type == Types.NUMERIC) && Float.class.isAssignableFrom(cls)) {
+                return rs.getBigDecimal(i).toBigInteger().floatValue();
+            } else if (type == Types.REAL && Float.class.isAssignableFrom(cls)) {
+                return rs.getFloat(i);
             } else
                 return rs.getObject(i);
         } catch (SQLException e) {
@@ -692,4 +702,7 @@ public final class Util {
         }
     };
 
+    public static void main(String[] args) {
+        System.out.println(Integer.class.isAssignableFrom(Long.class));
+    }
 }
