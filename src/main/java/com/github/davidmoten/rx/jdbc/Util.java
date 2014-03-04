@@ -447,8 +447,6 @@ public final class Util {
                 final Blob b = rs.getBlob(i);
                 final InputStream is = rs.getBlob(i).getBinaryStream();
                 return createFreeOnCloseInputStream(b, is);
-            } else if ((type == Types.DECIMAL || type == Types.NUMERIC) && Long.class.isAssignableFrom(cls)) {
-                return rs.getBigDecimal(i).toBigInteger().longValue();
             } else
                 return rs.getObject(i);
         } catch (SQLException e) {
