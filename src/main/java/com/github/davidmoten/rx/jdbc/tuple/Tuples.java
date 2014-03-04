@@ -1,6 +1,6 @@
 package com.github.davidmoten.rx.jdbc.tuple;
 
-import static com.github.davidmoten.rx.jdbc.Util.getObject;
+import static com.github.davidmoten.rx.jdbc.Util.mapObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,7 +21,7 @@ public final class Tuples {
             @SuppressWarnings("unchecked")
             @Override
             public T call(ResultSet rs) {
-                return (T) getObject(rs, cls, 1);
+                return (T) mapObject(rs, cls, 1);
             }
 
         };
@@ -33,7 +33,7 @@ public final class Tuples {
             @SuppressWarnings("unchecked")
             @Override
             public Tuple2<T1, T2> call(ResultSet rs) {
-                return new Tuple2<T1, T2>((T1) getObject(rs, cls1, 1), (T2) getObject(rs, cls2, 2));
+                return new Tuple2<T1, T2>((T1) mapObject(rs, cls1, 1), (T2) mapObject(rs, cls2, 2));
             }
         };
     }
@@ -44,7 +44,7 @@ public final class Tuples {
             @SuppressWarnings("unchecked")
             @Override
             public Tuple3<T1, T2, T3> call(ResultSet rs) {
-                return new Tuple3<T1, T2, T3>((T1) getObject(rs, cls1, 1), (T2) getObject(rs, cls2, 2), (T3) getObject(
+                return new Tuple3<T1, T2, T3>((T1) mapObject(rs, cls1, 1), (T2) mapObject(rs, cls2, 2), (T3) mapObject(
                         rs, cls3, 3));
             }
         };
@@ -56,8 +56,8 @@ public final class Tuples {
             @SuppressWarnings("unchecked")
             @Override
             public Tuple4<T1, T2, T3, T4> call(ResultSet rs) {
-                return new Tuple4<T1, T2, T3, T4>((T1) getObject(rs, cls1, 1), (T2) getObject(rs, cls2, 2),
-                        (T3) getObject(rs, cls3, 3), (T4) getObject(rs, cls4, 4));
+                return new Tuple4<T1, T2, T3, T4>((T1) mapObject(rs, cls1, 1), (T2) mapObject(rs, cls2, 2),
+                        (T3) mapObject(rs, cls3, 3), (T4) mapObject(rs, cls4, 4));
             }
         };
     }
@@ -68,8 +68,8 @@ public final class Tuples {
             @SuppressWarnings("unchecked")
             @Override
             public Tuple5<T1, T2, T3, T4, T5> call(ResultSet rs) {
-                return new Tuple5<T1, T2, T3, T4, T5>((T1) getObject(rs, cls1, 1), (T2) getObject(rs, cls2, 2),
-                        (T3) getObject(rs, cls3, 3), (T4) getObject(rs, cls4, 4), (T5) getObject(rs, cls5, 5));
+                return new Tuple5<T1, T2, T3, T4, T5>((T1) mapObject(rs, cls1, 1), (T2) mapObject(rs, cls2, 2),
+                        (T3) mapObject(rs, cls3, 3), (T4) mapObject(rs, cls4, 4), (T5) mapObject(rs, cls5, 5));
             }
         };
     }
@@ -82,9 +82,9 @@ public final class Tuples {
             @SuppressWarnings("unchecked")
             @Override
             public Tuple6<T1, T2, T3, T4, T5, T6> call(ResultSet rs) {
-                return new Tuple6<T1, T2, T3, T4, T5, T6>((T1) getObject(rs, cls1, 1), (T2) getObject(rs, cls2, 2),
-                        (T3) getObject(rs, cls3, 3), (T4) getObject(rs, cls4, 4), (T5) getObject(rs, cls5, 5),
-                        (T6) getObject(rs, cls6, 6));
+                return new Tuple6<T1, T2, T3, T4, T5, T6>((T1) mapObject(rs, cls1, 1), (T2) mapObject(rs, cls2, 2),
+                        (T3) mapObject(rs, cls3, 3), (T4) mapObject(rs, cls4, 4), (T5) mapObject(rs, cls5, 5),
+                        (T6) mapObject(rs, cls6, 6));
             }
         };
     }
@@ -97,9 +97,9 @@ public final class Tuples {
             @SuppressWarnings("unchecked")
             @Override
             public Tuple7<T1, T2, T3, T4, T5, T6, T7> call(ResultSet rs) {
-                return new Tuple7<T1, T2, T3, T4, T5, T6, T7>((T1) getObject(rs, cls1, 1), (T2) getObject(rs, cls2, 2),
-                        (T3) getObject(rs, cls3, 3), (T4) getObject(rs, cls4, 4), (T5) getObject(rs, cls5, 5),
-                        (T6) getObject(rs, cls6, 6), (T7) getObject(rs, cls7, 7));
+                return new Tuple7<T1, T2, T3, T4, T5, T6, T7>((T1) mapObject(rs, cls1, 1), (T2) mapObject(rs, cls2, 2),
+                        (T3) mapObject(rs, cls3, 3), (T4) mapObject(rs, cls4, 4), (T5) mapObject(rs, cls5, 5),
+                        (T6) mapObject(rs, cls6, 6), (T7) mapObject(rs, cls7, 7));
             }
         };
     }
@@ -119,7 +119,7 @@ public final class Tuples {
             int n = rs.getMetaData().getColumnCount();
             List<T> list = new ArrayList<T>();
             for (int i = 1; i <= n; i++) {
-                list.add((T) getObject(rs, cls, i));
+                list.add((T) mapObject(rs, cls, i));
             }
             return new TupleN<T>(list);
         } catch (SQLException e) {

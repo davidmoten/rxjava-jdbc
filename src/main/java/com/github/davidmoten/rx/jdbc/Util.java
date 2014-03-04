@@ -352,7 +352,7 @@ public final class Util {
      * @param cls
      * @return
      */
-    static Object autoMap(Object o, Class<?> cls) {
+    public static Object autoMap(Object o, Class<?> cls) {
         if (o == null)
             return o;
         else if (cls.isAssignableFrom(o.getClass())) {
@@ -420,7 +420,11 @@ public final class Util {
         }
     }
 
-    public static <T> Object getObject(final ResultSet rs, Class<T> cls, int i) {
+    public static <T> Object mapObject(final ResultSet rs, Class<T> cls, int i) {
+        return autoMap(getObject(rs, cls, i), cls);
+    }
+
+    private static <T> Object getObject(final ResultSet rs, Class<T> cls, int i) {
         try {
             final int type = rs.getMetaData().getColumnType(i);
             // TODO java.util.Calendar support
@@ -445,16 +449,6 @@ public final class Util {
                 return createFreeOnCloseInputStream(b, is);
             } else if ((type == Types.DECIMAL || type == Types.NUMERIC) && Long.class.isAssignableFrom(cls)) {
                 return rs.getBigDecimal(i).toBigInteger().longValue();
-            } else if ((type == Types.DECIMAL || type == Types.NUMERIC) && Integer.class.isAssignableFrom(cls)) {
-                return rs.getBigDecimal(i).toBigInteger().intValue();
-            } else if ((type == Types.DECIMAL || type == Types.NUMERIC) && Short.class.isAssignableFrom(cls)) {
-                return rs.getBigDecimal(i).toBigInteger().shortValue();
-            } else if ((type == Types.DECIMAL || type == Types.NUMERIC) && Double.class.isAssignableFrom(cls)) {
-                return rs.getBigDecimal(i).doubleValue();
-            } else if ((type == Types.DECIMAL || type == Types.NUMERIC) && Float.class.isAssignableFrom(cls)) {
-                return rs.getBigDecimal(i).toBigInteger().floatValue();
-            } else if (type == Types.REAL && Float.class.isAssignableFrom(cls)) {
-                return rs.getFloat(i);
             } else
                 return rs.getObject(i);
         } catch (SQLException e) {
