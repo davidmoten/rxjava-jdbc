@@ -315,7 +315,9 @@ Observable<InputStream> document = db.select("select document from person_clob")
 Transactions
 ------------------
 Queries can be surrounded by beginTransaction and commit/rollback calls. The queries eventually run between the calls will 
-use the same Scheduler with a single thread pool and will all use the same Connection object. 
+use the same Scheduler with a single thread pool and will all use the same Connection object. However, ```Database.select()```/```Database.update()``` 
+calls must be called from the same thread as the beginTransaction() method to ensure that those statements are given 
+the same QueryContext (delivered via ThreadLocal).
 
 Queries within a transaction are constructed as normal using dependencies on or parameter lists from other queries
 but the commit/rollback statement must also reference its dependencies.
