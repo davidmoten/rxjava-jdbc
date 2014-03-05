@@ -347,7 +347,7 @@ assertEquals(3, count);
 Lift
 -----------------------------------
 
-Using the ```Observable.lift()``` method you can get more bang for your buck from method chaining. ```Observable.lift()``` requires an ```Operator``` parameter
+Using the ```Observable.lift()``` method you can perform multile queries without breaking method chaining. ```Observable.lift()``` requires an ```Operator``` parameter
 which are available via ```db.select(sql).parameterOperator().etc```,```db.select(sql).dependsOnOperator().etc```,```db.update(sql).parameterOperator()``` and ```db.update(sql).dependsOnOperator()```.
 
 Example:   
@@ -368,6 +368,11 @@ Observable<Integer> score = Observable
             .dependsOnOperator()
 			.getAs(Integer.class));
 ```
+
+Note that conditional evaluation of a query is obtained using 
+the ```parameterOperator()``` method (no parameters means no query run) 
+whereas using ```dependsOnOperator()``` just waits for the 
+dependency to complete and ignores how many items the dependency emits.  
 
 Logging
 -----------------
