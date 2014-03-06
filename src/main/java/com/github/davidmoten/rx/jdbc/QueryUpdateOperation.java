@@ -193,7 +193,7 @@ class QueryUpdateOperation {
 				count = ps.executeUpdate();
 				log.debug("executed ps=" + ps);
 			} catch (SQLException e) {
-				throw new SQLException("failed to execute sql=" + query.sql(),
+				throw new SQLException("failed to execute sql=" + query.sql() + " with parameters "+ parameters,
 						e);
 			}
 

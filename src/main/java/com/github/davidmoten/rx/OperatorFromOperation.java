@@ -39,9 +39,9 @@ public class OperatorFromOperation<R, T> implements Operator<R, T> {
     @Override
     public Subscriber<? super T> call(Subscriber<? super R> subscriber) {
         final PublishSubject<T> subject = PublishSubject.create();
-        operation.call(subject).subscribe(subscriber);
         Subscriber<T> result = createSubscriber(subject);
         subscriber.add(result);
+        operation.call(subject).subscribe(subscriber);
         return result;
     }
 

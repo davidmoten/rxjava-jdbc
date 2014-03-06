@@ -30,8 +30,19 @@ final class Parameter {
     Object getValue() {
         return parameter;
     }
+    
+    
 
-    /**
+    @Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Parameter [parameter=");
+		builder.append(parameter);
+		builder.append("]");
+		return builder.toString();
+	}
+
+	/**
      * A conversion function for use in Observable.map().
      */
     static final Func1<Object, Parameter> TO_PARAMETER = new Func1<Object, Parameter>() {
