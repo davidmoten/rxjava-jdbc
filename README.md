@@ -21,8 +21,6 @@ Features
 * CLOB and BLOB handling is simplified greatly
 * uses rxjava-core 0.17.0
 
-The only runtime dependencies are [rxjava-core](https://github.com/Netflix/RxJava/tree/master/rxjava-core) and apache commons-io.
-
 Continuous integration with Jenkins for this project is [here](https://xuml-tools.ci.cloudbees.com/). <a href="https://xuml-tools.ci.cloudbees.com/"><img  src="http://web-static-cloudfront.s3.amazonaws.com/images/badges/BuiltOnDEV.png"/></a>
 
 Maven site reports are [here](http://davidmoten.github.io/rxjava-jdbc/index.html) including [javadoc](http://davidmoten.github.io/rxjava-jdbc/apidocs/index.html).
@@ -317,7 +315,9 @@ Observable<InputStream> document = db.select("select document from person_clob")
 Transactions
 ------------------
 Queries can be surrounded by beginTransaction and commit/rollback calls. The queries eventually run between the calls will 
-use the same Scheduler with a single thread pool and will all use the same Connection object. 
+use the same Scheduler with a single thread pool and will all use the same Connection object. However, ```Database.select()```/```Database.update()``` 
+calls must be called from the same thread as the beginTransaction() method to ensure that those statements are given 
+the same QueryContext (delivered via ThreadLocal).
 
 Queries within a transaction are constructed as normal using dependencies on or parameter lists from other queries
 but the commit/rollback statement must also reference its dependencies.
@@ -347,7 +347,7 @@ assertEquals(3, count);
 Lift
 -----------------------------------
 
-Using the ```Observable.lift()``` method you can get more bang for your buck from method chaining. ```Observable.lift()``` requires an ```Operator``` parameter
+Using the ```Observable.lift()``` method you can perform multile queries without breaking method chaining. ```Observable.lift()``` requires an ```Operator``` parameter
 which are available via ```db.select(sql).parameterOperator().etc```,```db.select(sql).dependsOnOperator().etc```,```db.update(sql).parameterOperator()``` and ```db.update(sql).dependsOnOperator()```.
 
 Example:   
@@ -369,10 +369,15 @@ Observable<Integer> score = Observable
 			.getAs(Integer.class));
 ```
 
+Note that conditional evaluation of a query is obtained using 
+the ```parameterOperator()``` method (no parameters means no query run) 
+whereas using ```dependsOnOperator()``` just waits for the 
+dependency to complete and ignores how many items the dependency emits.  
+
 Logging
 -----------------
 Logging is handled by slf4j which bridges to the logging framework of your choice. Add
-the dependency for your logging framework as a maven dependency and you are sorted. See the test scoped log4j example in rxjava-jdbc/pom.xml.
+the dependency for your logging framework as a maven dependency and you are sorted. See the test scoped log4j example in [rxjava-jdbc/pom.xml](https://github.com/davidmoten/rxjava-jdbc/blob/master/pom.xml).
 
 Handlers
 ------------------------

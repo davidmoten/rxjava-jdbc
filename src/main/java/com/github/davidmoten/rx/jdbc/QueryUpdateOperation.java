@@ -17,240 +17,235 @@ import rx.Subscriber;
  */
 class QueryUpdateOperation {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(QueryUpdateOperation.class);
 
-	/**
-	 * Returns an Observable of the results of pushing one set of parameters
-	 * through a select query.
-	 * 
-	 * @param params
-	 *            one set of parameters to be run with the query
-	 * @return
-	 */
-	static Observable<Integer> execute(QueryUpdate query,
-			List<Parameter> parameters) {
-		return Observable.create(new QueryUpdateOnSubscribe(query, parameters));
-	}
+    private static final Logger log = LoggerFactory.getLogger(QueryUpdateOperation.class);
 
-	private static class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
+    /**
+     * Returns an Observable of the results of pushing one set of parameters
+     * through a select query.
+     * 
+     * @param params
+     *            one set of parameters to be run with the query
+     * @return
+     */
+    static Observable<Integer> execute(QueryUpdate query, List<Parameter> parameters) {
+        return Observable.create(new QueryUpdateOnSubscribe(query, parameters));
+    }
 
-		private boolean keepGoing = true;
+    private static class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
 
-		/**
-		 * Special sql command that brings about a rollback.
-		 */
-		private static final String ROLLBACK = "rollback";
+        private boolean keepGoing = true;
 
-		/**
-		 * Special sql command that brings about a commit.
-		 */
-		private static final String COMMIT = "commit";
+        /**
+         * Special sql command that brings about a rollback.
+         */
+        private static final String ROLLBACK = "rollback";
 
-		/**
-		 * The query to be executed.
-		 */
-		private final QueryUpdate query;
+        /**
+         * Special sql command that brings about a commit.
+         */
+        private static final String COMMIT = "commit";
 
-		/**
-		 * The parameters to run the query against (may be a subset of the query
-		 * parameters specified in the query because the query may be run
-		 * multiple times with multiple sets of parameters).
-		 */
-		private final List<Parameter> parameters;
+        /**
+         * The query to be executed.
+         */
+        private final QueryUpdate query;
 
-		/**
-		 * Query connection.
-		 */
-		private Connection con;
+        /**
+         * The parameters to run the query against (may be a subset of the query
+         * parameters specified in the query because the query may be run
+         * multiple times with multiple sets of parameters).
+         */
+        private final List<Parameter> parameters;
 
-		/**
-		 * Prepared statement for the query.
-		 */
-		private PreparedStatement ps;
+        /**
+         * Query connection.
+         */
+        private Connection con;
 
-		/**
-		 * Constructor.
-		 * 
-		 * @param query
-		 * @param parameters
-		 */
-		private QueryUpdateOnSubscribe(QueryUpdate query,
-				List<Parameter> parameters) {
-			this.query = query;
-			this.parameters = parameters;
-		}
+        /**
+         * Prepared statement for the query.
+         */
+        private PreparedStatement ps;
 
-		@Override
-		public void call(Subscriber<? super Integer> subscriber) {
-			try {
+        /**
+         * Constructor.
+         * 
+         * @param query
+         * @param parameters
+         */
+        private QueryUpdateOnSubscribe(QueryUpdate query, List<Parameter> parameters) {
+            this.query = query;
+            this.parameters = parameters;
+        }
 
-				getConnection();
+        @Override
+        public void call(Subscriber<? super Integer> subscriber) {
+            try {
 
-				if (isCommit())
-					performCommit(subscriber);
-				else if (isRollback())
-					performRollback(subscriber);
-				else
-					performUpdate(subscriber);
+                getConnection();
 
-				complete(subscriber);
+                if (isCommit())
+                    performCommit(subscriber);
+                else if (isRollback())
+                    performRollback(subscriber);
+                else
+                    performUpdate(subscriber);
 
-			} catch (Exception e) {
-				handleException(e, subscriber);
-			} finally {
-				close();
-			}
-		}
+                complete(subscriber);
 
-		/**
-		 * Gets the current connection.
-		 */
-		private void getConnection() {
-			log.debug("getting connection");
-			con = query.context().connectionProvider().get();
-			log.debug("cp=" + query.context().connectionProvider());
-		}
+            } catch (Exception e) {
+                handleException(e, subscriber);
+            } finally {
+                close();
+            }
+        }
 
-		/**
-		 * Returns true if and only if the sql statement is a commit command.
-		 * 
-		 * @return if is commit
-		 */
-		private boolean isCommit() {
-			return query.sql().equals(COMMIT);
-		}
+        /**
+         * Gets the current connection.
+         */
+        private void getConnection() {
+            log.debug("getting connection");
+            con = query.context().connectionProvider().get();
+            log.debug("cp=" + query.context().connectionProvider());
+        }
 
-		/**
-		 * Returns true if and only if the sql statement is a rollback command.
-		 * 
-		 * @return if is rollback
-		 */
-		private boolean isRollback() {
-			return query.sql().equals(ROLLBACK);
-		}
+        /**
+         * Returns true if and only if the sql statement is a commit command.
+         * 
+         * @return if is commit
+         */
+        private boolean isCommit() {
+            return query.sql().equals(COMMIT);
+        }
 
-		/**
-		 * Commits the current transaction. Throws {@link RuntimeException} if
-		 * connection is in autoCommit mode.
-		 * 
-		 * @param subscriber
-		 */
-		private void performCommit(Subscriber<? super Integer> subscriber) {
-			checkSubscription(subscriber);
-			if (!keepGoing)
-				return;
+        /**
+         * Returns true if and only if the sql statement is a rollback command.
+         * 
+         * @return if is rollback
+         */
+        private boolean isRollback() {
+            return query.sql().equals(ROLLBACK);
+        }
 
-			log.debug("committing");
-			Conditions.checkTrue(!Util.isAutoCommit(con));
-			Util.commit(con);
+        /**
+         * Commits the current transaction. Throws {@link RuntimeException} if
+         * connection is in autoCommit mode.
+         * 
+         * @param subscriber
+         */
+        private void performCommit(Subscriber<? super Integer> subscriber) {
+            checkSubscription(subscriber);
+            if (!keepGoing)
+                return;
 
-			checkSubscription(subscriber);
-			if (!keepGoing)
-				return;
+            log.debug("committing");
+            Conditions.checkTrue(!Util.isAutoCommit(con));
+            Util.commit(con);
 
-			subscriber.onNext(Integer.valueOf(1));
-			log.debug("committed");
-		}
+            checkSubscription(subscriber);
+            if (!keepGoing)
+                return;
 
-		/**
-		 * Rolls back the current transaction. Throws {@link RuntimeException}
-		 * if connection is in autoCommit mode.
-		 * 
-		 * @param subscriber
-		 */
-		private void performRollback(Subscriber<? super Integer> subscriber) {
-			log.debug("rolling back");
-			Conditions.checkTrue(!Util.isAutoCommit(con));
-			Util.rollback(con);
-			subscriber.onNext(Integer.valueOf(0));
-			log.debug("rolled back");
-		}
+            subscriber.onNext(Integer.valueOf(1));
+            log.debug("committed");
+        }
 
-		/**
-		 * Executes the prepared statement.
-		 * 
-		 * @param subscriber
-		 * 
-		 * @throws SQLException
-		 */
-		private void performUpdate(Subscriber<? super Integer> subscriber)
-				throws SQLException {
-			checkSubscription(subscriber);
-			if (!keepGoing)
-				return;
+        /**
+         * Rolls back the current transaction. Throws {@link RuntimeException}
+         * if connection is in autoCommit mode.
+         * 
+         * @param subscriber
+         */
+        private void performRollback(Subscriber<? super Integer> subscriber) {
+            log.debug("rolling back");
+            Conditions.checkTrue(!Util.isAutoCommit(con));
+            Util.rollback(con);
+            subscriber.onNext(Integer.valueOf(0));
+            log.debug("rolled back");
+        }
 
-			ps = con.prepareStatement(query.sql());
-			Util.setParameters(ps, parameters);
+        /**
+         * Executes the prepared statement.
+         * 
+         * @param subscriber
+         * 
+         * @throws SQLException
+         */
+        private void performUpdate(Subscriber<? super Integer> subscriber) throws SQLException {
+            checkSubscription(subscriber);
+            if (!keepGoing)
+                return;
 
-			checkSubscription(subscriber);
-			if (!keepGoing)
-				return;
+            ps = con.prepareStatement(query.sql());
+            Util.setParameters(ps, parameters);
 
-			int count;
-			try {
-				log.debug("executing ps=" + ps);
-				count = ps.executeUpdate();
-				log.debug("executed ps=" + ps);
-			} catch (SQLException e) {
-				throw new SQLException("failed to execute sql=" + query.sql() + " with parameters "+ parameters,
-						e);
-			}
+            checkSubscription(subscriber);
+            if (!keepGoing)
+                return;
 
-			checkSubscription(subscriber);
-			if (!keepGoing)
-				return;
-			log.debug("onNext");
-			subscriber.onNext((count));
-		}
+            int count;
+            try {
+                log.debug("executing ps=" + ps);
+                count = ps.executeUpdate();
+                log.debug("executed ps=" + ps);
+            } catch (SQLException e) {
+                throw new SQLException("failed to execute sql=" + query.sql(), e);
+            }
 
-		/**
-		 * Notify observer that sequence is complete.
-		 * 
-		 * @param subscriber
-		 */
-		private void complete(Subscriber<? super Integer> subscriber) {
-			if (!subscriber.isUnsubscribed()) {
-				log.debug("onCompleted");
-				subscriber.onCompleted();
-			} else
-				log.debug("unsubscribed");
-		}
+            checkSubscription(subscriber);
+            if (!keepGoing)
+                return;
+            log.debug("onNext");
+            subscriber.onNext((count));
+        }
 
-		/**
-		 * Notify observer of an error.
-		 * 
-		 * @param e
-		 * @param subscriber
-		 */
-		private void handleException(Exception e,
-				Subscriber<? super Integer> subscriber) {
-			log.debug("onError: " + e.getMessage());
-			if (subscriber.isUnsubscribed())
-				log.debug("unsubscribed");
-			else {
-				subscriber.onError(e);
-			}
-		}
+        /**
+         * Notify observer that sequence is complete.
+         * 
+         * @param subscriber
+         */
+        private void complete(Subscriber<? super Integer> subscriber) {
+            if (!subscriber.isUnsubscribed()) {
+                log.debug("onCompleted");
+                subscriber.onCompleted();
+            } else
+                log.debug("unsubscribed");
+        }
 
-		/**
-		 * Cancels a running PreparedStatement, closing it and the current
-		 * Connection but only if auto commit mode.
-		 */
-		private void close() {
-			Util.closeQuietly(ps);
-			if (isCommit() || isRollback())
-				Util.closeQuietly(con);
-			else
-				Util.closeQuietlyIfAutoCommit(con);
-		}
+        /**
+         * Notify observer of an error.
+         * 
+         * @param e
+         * @param subscriber
+         */
+        private void handleException(Exception e, Subscriber<? super Integer> subscriber) {
+            log.debug("onError: " + e.getMessage());
+            if (subscriber.isUnsubscribed())
+                log.debug("unsubscribed");
+            else {
+                subscriber.onError(e);
+            }
+        }
 
-		private void checkSubscription(Subscriber<? super Integer> subscriber) {
-			if (subscriber.isUnsubscribed()) {
-				keepGoing = false;
-				log.debug("unsubscribing");
-			}
-		}
+        /**
+         * Cancels a running PreparedStatement, closing it and the current
+         * Connection but only if auto commit mode.
+         */
+        private void close() {
+            Util.closeQuietly(ps);
+            if (isCommit() || isRollback())
+                Util.closeQuietly(con);
+            else
+                Util.closeQuietlyIfAutoCommit(con);
+        }
 
-	}
+        private void checkSubscription(Subscriber<? super Integer> subscriber) {
+            if (subscriber.isUnsubscribed()) {
+                keepGoing = false;
+                log.debug("unsubscribing");
+            }
+        }
+
+    }
 }
