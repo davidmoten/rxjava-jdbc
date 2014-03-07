@@ -196,8 +196,7 @@ public class DatabaseTest {
 		Database t = db.beginTransaction();
 		t.beginTransaction();
 	}
-
-
+	
 	@Test
 	public void testTransactionOnCommitDoesntOccurUnlessSubscribedTo() {
 		Database db = db();

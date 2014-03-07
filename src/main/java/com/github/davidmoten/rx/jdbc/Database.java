@@ -7,11 +7,14 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import rx.Observable;
+import rx.Observable.Operator;
 import rx.Scheduler;
 import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.functions.Functions;
 import rx.schedulers.Schedulers;
+
+import com.github.davidmoten.rx.RxUtil;
 
 /**
  * Main entry point for manipulations of a database using rx-java-jdbc style
@@ -419,6 +422,16 @@ final public class Database {
      */
     public Observable<Boolean> commit(Observable<?>... depends) {
         return commitOrRollback(true, depends);
+    }
+    
+    //TODO get this working?
+    private <T> Operator<Boolean,T> commitOperator() {
+    	return RxUtil.toOperator(new Func1<Observable<T>,Observable<Boolean>>() {
+
+			@Override
+			public Observable<Boolean> call(Observable<T> depends) {
+				return commit(depends);
+			}});
     }
 
     /**

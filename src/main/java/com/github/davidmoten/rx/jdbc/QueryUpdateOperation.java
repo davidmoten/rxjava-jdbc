@@ -186,7 +186,7 @@ class QueryUpdateOperation {
 
             int count;
             try {
-                log.debug("executing ps=" + ps);
+                log.debug("executing sql=" + query.sql() + ", parameters" + parameters);
                 count = ps.executeUpdate();
                 log.debug("executed ps=" + ps);
             } catch (SQLException e) {

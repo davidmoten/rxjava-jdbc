@@ -50,6 +50,8 @@ public class ConnectionProviderPooled implements ConnectionProvider {
         pool.setJdbcUrl(url);
         pool.setMinPoolSize(minPoolSize);
         pool.setMaxPoolSize(maxPoolSize);
+        pool.setAcquireIncrement(1);
+        pool.setInitialPoolSize(0);
         return pool;
     }
 
