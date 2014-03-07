@@ -701,7 +701,7 @@ public class DatabaseTest {
 	@Test
 	public void testConnectionPoolDoesNotRunOutOfConnectionsWhenQueryRunRepeatedly() {
 		ConnectionProviderPooled cp = new ConnectionProviderPooled(nextUrl(),
-				0, 1);
+				0, 2);
 		Database db = new Database(cp);
 		DatabaseCreator.createDatabase(cp.get());
 		assertCountIs(100, db.select("select name from person where name=?")

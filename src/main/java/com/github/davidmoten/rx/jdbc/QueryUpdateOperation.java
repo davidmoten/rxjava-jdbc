@@ -91,14 +91,18 @@ class QueryUpdateOperation {
                     performRollback(subscriber);
                 else
                     performUpdate(subscriber);
-
+                
+                close();
+                
                 complete(subscriber);
 
             } catch (Exception e) {
-                handleException(e, subscriber);
-            } finally {
-                close();
-            }
+            	try {
+            		close();
+            	} finally {
+                    handleException(e, subscriber);
+            	}
+            } 
         }
 
         /**
