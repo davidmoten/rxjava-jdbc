@@ -52,6 +52,9 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 public class DatabaseTest {
 
+    private static final int TIMEOUT_SHORT_SECONDS = 1;
+    private static final int TIMEOUT_LONG_SECONDS = 10;
+
     private static final Logger log = LoggerFactory.getLogger(DatabaseTest.class);
 
     @Test
@@ -325,27 +328,6 @@ public class DatabaseTest {
         Database db = new Database("jdbc:h2:mem:testa1");
         Connection con = db.queryContext().connectionProvider().get();
         con.close();
-    }
-
-    @Test
-    public void testConnectionsReleasedByUpdateStatementBeforeOnNext() throws InterruptedException {
-        final CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
-        Database db = new Database(cp);
-        final CountDownLatch latch = new CountDownLatch(1);
-        db.update("update person set score = 1 where name=?").parameter("FRED").count()
-                .subscribe(new Action1<Integer>() {
-
-                    @Override
-                    public void call(Integer arg0) {
-                        try {
-                            if (cp.closesLatch().await(2, TimeUnit.SECONDS))
-                                latch.countDown();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-        assertTrue(latch.await(2, TimeUnit.SECONDS));
     }
 
     @Test
@@ -688,8 +670,8 @@ public class DatabaseTest {
         Database db = new Database(cp);
         db.update("update person set score=? where name=?").parameters(23, "FRED").count().toBlockingObservable()
                 .single();
-        cp.closesLatch().await(60, TimeUnit.SECONDS);
-        cp.getsLatch().await(60, TimeUnit.SECONDS);
+        cp.closesLatch().await(TIMEOUT_LONG_SECONDS, TimeUnit.SECONDS);
+        cp.getsLatch().await(TIMEOUT_LONG_SECONDS, TimeUnit.SECONDS);
     }
 
     @Test
@@ -712,7 +694,7 @@ public class DatabaseTest {
     public void testDetector() throws InterruptedException {
         UnsubscribeDetector<Integer> detector = UnsubscribeDetector.<Integer> detect();
         Observable.range(1, 10).lift(detector).take(1).toBlockingObservable().single();
-        assertTrue(detector.latch().await(30, TimeUnit.SECONDS));
+        assertTrue(detector.latch().await(TIMEOUT_LONG_SECONDS, TimeUnit.SECONDS));
     }
 
     @Test
@@ -729,7 +711,7 @@ public class DatabaseTest {
         Observable.interval(100, TimeUnit.MILLISECONDS).doOnEach(log()).map(constant("FRED")).lift(detector)
                 .lift(db().select("select score from person where name=?").parameterOperator().getAs(Integer.class))
                 .take(1).subscribe(log());
-        assertTrue(detector.latch().await(3, TimeUnit.SECONDS));
+        assertTrue(detector.latch().await(TIMEOUT_LONG_SECONDS, TimeUnit.SECONDS));
     }
 
     @Test
@@ -739,7 +721,7 @@ public class DatabaseTest {
                 .map(constant("FRED")).lift(detector);
         db().select("select score from person where name=?").parameters(params).getAs(Integer.class).take(1)
                 .subscribe(log());
-        assertTrue(detector.latch().await(3, TimeUnit.SECONDS));
+        assertTrue(detector.latch().await(TIMEOUT_LONG_SECONDS, TimeUnit.SECONDS));
     }
 
     @Test
@@ -780,11 +762,6 @@ public class DatabaseTest {
 
     private static <T> void assertIs(T t, Observable<T> observable) {
         assertEquals(t, observable.toBlockingObservable().single());
-    }
-
-    @Test
-    public void test() throws InterruptedException {
-
     }
 
     @Test
@@ -879,6 +856,51 @@ public class DatabaseTest {
         db().select("anything").parameter(Observable.from(123));
     }
 
+    @Test
+    public void testConnectionsReleasedByUpdateStatementBeforeOnNext() throws InterruptedException {
+        final CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
+        Database db = new Database(cp);
+        Observable<Integer> result = db.update("update person set score = 1 where name=?").parameter("FRED").count();
+
+        checkConnectionsReleased(cp, result);
+    }
+
+    @Test
+    public void testConnectionsReleasedByCommitBeforeOnNext() throws InterruptedException {
+        final CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
+        Database db = new Database(cp);
+        db.beginTransaction();
+        Observable<Integer> result = db.update("update person set score = 1 where name=?").parameter("FRED").count();
+        checkConnectionsReleased(cp, db.commit(result));
+    }
+
+    @Test
+    public void testConnectionsReleasedByRollbackBeforeOnNext() throws InterruptedException {
+        final CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
+        Database db = new Database(cp);
+        db.beginTransaction();
+        Observable<Integer> result = db.update("update person set score = 1 where name=?").parameter("FRED").count();
+        checkConnectionsReleased(cp, db.rollback(result));
+    }
+
+    private void checkConnectionsReleased(final CountDownConnectionProvider cp, Observable<?> result)
+            throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        result.subscribe(new Action1<Object>() {
+
+            @Override
+            public void call(Object obj) {
+                try {
+                    if (cp.closesLatch().await(TIMEOUT_LONG_SECONDS, TimeUnit.SECONDS))
+                        latch.countDown();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        assertTrue(latch.await(TIMEOUT_LONG_SECONDS, TimeUnit.SECONDS));
+    }
+
     private static class CountDownConnectionProvider implements ConnectionProvider {
         private final ConnectionProvider cp;
         private final CountDownLatch closesLatch;
@@ -889,10 +911,6 @@ public class DatabaseTest {
             DatabaseCreator.createDatabase(cp.get());
             this.closesLatch = new CountDownLatch(expectedCloses);
             this.getsLatch = new CountDownLatch(expectedGets);
-        }
-
-        public ConnectionProvider getInner() {
-            return cp;
         }
 
         CountDownLatch closesLatch() {
@@ -991,7 +1009,6 @@ public class DatabaseTest {
             builder.append("]");
             return builder.toString();
         }
-
     }
 
 }
