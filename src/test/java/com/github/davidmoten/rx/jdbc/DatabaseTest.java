@@ -699,11 +699,13 @@ public class DatabaseTest {
 	}
 
 	@Test
-	public void testConnectionPoolDoesNotRunOutOfConnectionsWhenQueryRunRepeatedly() {
+	public void testConnectionPoolDoesNotRunOutOfConnectionsWhenQueryRunRepeatedly() throws SQLException {
 		ConnectionProviderPooled cp = new ConnectionProviderPooled(nextUrl(),
-				0, 2);
+				0, 1);
 		Database db = new Database(cp);
-		DatabaseCreator.createDatabase(cp.get());
+		Connection con = cp.get();
+		DatabaseCreator.createDatabase(con);
+		con.close();
 		assertCountIs(100, db.select("select name from person where name=?")
 				.parameters(Observable.range(0, 100).map(constant("FRED")))
 				.get());
