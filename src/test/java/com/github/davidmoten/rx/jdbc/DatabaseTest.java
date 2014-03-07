@@ -52,8 +52,20 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 public class DatabaseTest {
 
-    private static final int TIMEOUT_SHORT_SECONDS = 1;
-    private static final int TIMEOUT_LONG_SECONDS = 10;
+    /**
+     * <p>
+     * Timeout used for latch.await() and similar. If too short then short
+     * machine lockups on build server (which is known to happen on CloudBees
+     * Jenkins infrastructure) will cause undesired test failures.
+     * </p>
+     * 
+     * <p>
+     * While your test is still failing use a lower value of course so that you
+     * get rapid turnaround. However, once passing switch the timeout to this
+     * standard timeout value.
+     * </p>
+     */
+    private static final int TIMEOUT_SECONDS = 60;
 
     private static final Logger log = LoggerFactory.getLogger(DatabaseTest.class);
 
@@ -670,8 +682,8 @@ public class DatabaseTest {
         Database db = new Database(cp);
         db.update("update person set score=? where name=?").parameters(23, "FRED").count().toBlockingObservable()
                 .single();
-        cp.closesLatch().await(TIMEOUT_LONG_SECONDS, TimeUnit.SECONDS);
-        cp.getsLatch().await(TIMEOUT_LONG_SECONDS, TimeUnit.SECONDS);
+        cp.closesLatch().await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        cp.getsLatch().await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
     @Test
@@ -694,7 +706,7 @@ public class DatabaseTest {
     public void testDetector() throws InterruptedException {
         UnsubscribeDetector<Integer> detector = UnsubscribeDetector.<Integer> detect();
         Observable.range(1, 10).lift(detector).take(1).toBlockingObservable().single();
-        assertTrue(detector.latch().await(TIMEOUT_LONG_SECONDS, TimeUnit.SECONDS));
+        assertTrue(detector.latch().await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
     }
 
     @Test
@@ -711,7 +723,7 @@ public class DatabaseTest {
         Observable.interval(100, TimeUnit.MILLISECONDS).doOnEach(log()).map(constant("FRED")).lift(detector)
                 .lift(db().select("select score from person where name=?").parameterOperator().getAs(Integer.class))
                 .take(1).subscribe(log());
-        assertTrue(detector.latch().await(TIMEOUT_LONG_SECONDS, TimeUnit.SECONDS));
+        assertTrue(detector.latch().await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
     }
 
     @Test
@@ -721,7 +733,7 @@ public class DatabaseTest {
                 .map(constant("FRED")).lift(detector);
         db().select("select score from person where name=?").parameters(params).getAs(Integer.class).take(1)
                 .subscribe(log());
-        assertTrue(detector.latch().await(TIMEOUT_LONG_SECONDS, TimeUnit.SECONDS));
+        assertTrue(detector.latch().await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
     }
 
     @Test
@@ -891,14 +903,14 @@ public class DatabaseTest {
             @Override
             public void call(Object obj) {
                 try {
-                    if (cp.closesLatch().await(TIMEOUT_LONG_SECONDS, TimeUnit.SECONDS))
+                    if (cp.closesLatch().await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
                         latch.countDown();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
         });
-        assertTrue(latch.await(TIMEOUT_LONG_SECONDS, TimeUnit.SECONDS));
+        assertTrue(latch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
     }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {
