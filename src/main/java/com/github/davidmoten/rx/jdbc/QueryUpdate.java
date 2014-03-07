@@ -69,7 +69,11 @@ final public class QueryUpdate implements Query {
      * @return
      */
     public Observable<Integer> count() {
-        return bufferedParameters(this).flatMap(executeOnce()).lift(toOperator(context.handlers().updateHandler()));
+        return bufferedParameters(this)
+        		//execute query for each set of parameters
+        		.flatMap(executeOnce())
+        		//run results through handler
+        		.lift(toOperator(context.handlers().updateHandler()));
     }
 
     /**

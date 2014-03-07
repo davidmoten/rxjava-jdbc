@@ -24,6 +24,7 @@ final class QueryContext {
      * Scheduler to use to execute query.
      */
     private final Scheduler scheduler;
+    
 
     /**
      * Constructor.

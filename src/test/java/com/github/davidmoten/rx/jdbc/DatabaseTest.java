@@ -38,6 +38,7 @@ import rx.Observable;
 import rx.functions.Func1;
 import rx.functions.Func2;
 
+import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.UnsubscribeDetector;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
@@ -152,15 +153,50 @@ public class DatabaseTest {
 
 	@Test
 	public void testTransactionOnCommit() {
-		Database db = db().beginTransaction();
-		Observable<Integer> updateCount = db
+		Database db = db();
+		Database t = db.beginTransaction();
+		Observable<Integer> updateCount = t
 				.update("update person set score=?").parameter(99).count();
 		db.commit(updateCount);
 		long count = db.select("select count(*) from person where score=?")
-				.parameter(99).dependsOnLastTransaction().getAs(Long.class)
+				//set score
+				.parameter(99)
+				//depends on 
+				.dependsOnLastTransaction()
+				//return as Long
+				.getAs(Long.class)
+				//log
+				.doOnEach(RxUtil.log())
+				//get answer
 				.toBlockingObservable().single();
 		assertEquals(3, count);
 	}
+	
+	@Test(expected=RuntimeException.class)
+	public void testTransactionOnCommitThrowsErrorWhenQueryContextOverridden() {
+		Database db = db();
+		Database t = db.beginTransaction();
+		Observable<Integer> updateCount = t
+				.update("update person set score=?").parameter(99).count();
+		t.commit(updateCount);
+	}
+	
+	@Test(expected=RuntimeException.class)
+	public void testTransactionOnRollbackThrowsErrorWhenQueryContextOverridden() {
+		Database db = db();
+		Database t = db.beginTransaction();
+		Observable<Integer> updateCount = t
+				.update("update person set score=?").parameter(99).count();
+		t.rollback(updateCount);
+	}
+	
+	@Test(expected=RuntimeException.class)
+	public void testTransactionOnBeginTransactionThrowsErrorWhenQueryContextOverridden() {
+		Database db = db();
+		Database t = db.beginTransaction();
+		t.beginTransaction();
+	}
+
 
 	@Test
 	public void testTransactionOnCommitDoesntOccurUnlessSubscribedTo() {
