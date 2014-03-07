@@ -710,6 +710,8 @@ public class DatabaseTest {
 				.parameters(Observable.range(0, 100).map(constant("FRED")))
 				.get());
 	}
+	
+	//TODO add unit test to check that resources closed (connection etc) before onComplete or onError called on either select or update
 
 	@Test
 	public void testDatabaseBuilderWithPool() {
