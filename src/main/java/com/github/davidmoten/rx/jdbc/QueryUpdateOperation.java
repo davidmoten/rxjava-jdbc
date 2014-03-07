@@ -17,7 +17,6 @@ import rx.Subscriber;
  */
 class QueryUpdateOperation {
 
-
     private static final Logger log = LoggerFactory.getLogger(QueryUpdateOperation.class);
 
     /**
@@ -91,18 +90,18 @@ class QueryUpdateOperation {
                     performRollback(subscriber);
                 else
                     performUpdate(subscriber);
-                
+
                 close();
-                
+
                 complete(subscriber);
 
             } catch (Exception e) {
-            	try {
-            		close();
-            	} finally {
+                try {
+                    close();
+                } finally {
                     handleException(e, subscriber);
-            	}
-            } 
+                }
+            }
         }
 
         /**
@@ -146,6 +145,7 @@ class QueryUpdateOperation {
             log.debug("committing");
             Conditions.checkTrue(!Util.isAutoCommit(con));
             Util.commit(con);
+            close();
 
             checkSubscription(subscriber);
             if (!keepGoing)
@@ -165,6 +165,7 @@ class QueryUpdateOperation {
             log.debug("rolling back");
             Conditions.checkTrue(!Util.isAutoCommit(con));
             Util.rollback(con);
+            close();
             subscriber.onNext(Integer.valueOf(0));
             log.debug("rolled back");
         }
@@ -196,7 +197,7 @@ class QueryUpdateOperation {
             } catch (SQLException e) {
                 throw new SQLException("failed to execute sql=" + query.sql(), e);
             }
-
+            close();
             checkSubscription(subscriber);
             if (!keepGoing)
                 return;
