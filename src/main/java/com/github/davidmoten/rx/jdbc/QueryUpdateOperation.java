@@ -145,6 +145,8 @@ class QueryUpdateOperation {
             log.debug("committing");
             Conditions.checkTrue(!Util.isAutoCommit(con));
             Util.commit(con);
+            // must close before onNext so that connection is released and is
+            // available to a query that might process the onNext
             close();
 
             checkSubscription(subscriber);
@@ -165,6 +167,8 @@ class QueryUpdateOperation {
             log.debug("rolling back");
             Conditions.checkTrue(!Util.isAutoCommit(con));
             Util.rollback(con);
+            // must close before onNext so that connection is released and is
+            // available to a query that might process the onNext
             close();
             subscriber.onNext(Integer.valueOf(0));
             log.debug("rolled back");
@@ -197,6 +201,8 @@ class QueryUpdateOperation {
             } catch (SQLException e) {
                 throw new SQLException("failed to execute sql=" + query.sql(), e);
             }
+            // must close before onNext so that connection is released and is
+            // available to a query that might process the onNext
             close();
             checkSubscription(subscriber);
             if (!keepGoing)
