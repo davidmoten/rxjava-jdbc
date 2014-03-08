@@ -929,7 +929,7 @@ public class DatabaseTest {
         db.commit(updates).toBlockingObservable().single();
     }
 
-    // @Test
+    @Test
     // TODO get working
     public void testCommitOperator() {
         Database db = db();

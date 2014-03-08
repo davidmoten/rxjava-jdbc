@@ -427,13 +427,20 @@ final public class Database {
         return commitOrRollback(true, depends);
     }
 
-    // TODO get this working?
     public <T> Operator<Boolean, T> commitOperator() {
-        return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
+        return commitOrRollbackOperator(true);
+    }
 
+    public <T> Operator<Boolean, T> rollbackOperator() {
+        return commitOrRollbackOperator(false);
+    }
+
+    private <T> Operator<Boolean, T> commitOrRollbackOperator(final boolean commit) {
+        final QueryUpdate.Builder updateBuilder = createCommitOrRollbackQuery(commit);
+        return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
             @Override
-            public Observable<Boolean> call(Observable<T> depends) {
-                return commit(depends);
+            public Observable<Boolean> call(Observable<T> dependency) {
+                return updateBuilder.dependsOn(dependency).count().map(IS_NON_ZERO);
             }
         });
     }
@@ -450,6 +457,16 @@ final public class Database {
      */
     private Observable<Boolean> commitOrRollback(boolean commit, Observable<?>... depends) {
 
+        QueryUpdate.Builder u = createCommitOrRollbackQuery(commit);
+        resetQueryContext();
+        for (Observable<?> dep : depends)
+            u = u.dependsOn(dep);
+        Observable<Boolean> result = u.count().map(IS_NON_ZERO);
+        lastTransactionResult.set(result);
+        return result;
+    }
+
+    private QueryUpdate.Builder createCommitOrRollbackQuery(boolean commit) {
         if (contextOverride != null)
             throw new RuntimeException(
                     "cannot commit or rollback when query context is override (don't call this method on the result of db.beginTransaction()).");
@@ -459,12 +476,8 @@ final public class Database {
         else
             action = "rollback";
         QueryUpdate.Builder u = update(action);
-        for (Observable<?> dep : depends)
-            u = u.dependsOn(dep);
-        Observable<Boolean> result = u.count().map(IS_NON_ZERO);
-        lastTransactionResult.set(result);
         resetQueryContext();
-        return result;
+        return u;
     }
 
     /**
