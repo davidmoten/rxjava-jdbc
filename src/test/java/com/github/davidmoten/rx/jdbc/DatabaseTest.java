@@ -934,13 +934,15 @@ public class DatabaseTest {
     public void testCommitOperator() {
         Database db = db();
         db.beginTransaction();
-        Observable
+        String name = Observable
         // set name parameter
                 .from("FRED")
                 // push into update
                 .lift(db.update("update person set score=1 where name=?").parameterOperator())
                 // map num rows affected to JOHN
-                .lift(db.commitOperator()).lift(db.select("select name from person where score=1")
+                .lift(db.commitOperator())
+                // select query
+                .lift(db.select("select name from person where score=1")
                 // depends on commit
                         .dependsOnOperator()
                         // return names
@@ -949,6 +951,7 @@ public class DatabaseTest {
                 .first()
                 // block to get make everything run
                 .toBlockingObservable().single();
+        assertEquals("FRED", name);
     }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {
