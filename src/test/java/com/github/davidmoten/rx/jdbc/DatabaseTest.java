@@ -65,7 +65,7 @@ public class DatabaseTest {
      * standard timeout value.
      * </p>
      */
-    private static final int TIMEOUT_SECONDS = 60;
+    private static final int TIMEOUT_SECONDS = 3;
 
     private static final Logger log = LoggerFactory.getLogger(DatabaseTest.class);
 
@@ -911,6 +911,22 @@ public class DatabaseTest {
             }
         });
         assertTrue(latch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
+    }
+
+    @Test
+    public void testCanChainUpdateStatementsWithinTransaction() {
+        Database db = db();
+        db.beginTransaction();
+        Observable<Integer> updates = Observable
+        // set name parameter
+                .from("FRED")
+                // push into update
+                .lift(db.update("update person set score=1 where name=?").parameterOperator())
+                // map num rows affected to JOHN
+                .map(constant("JOHN"))
+                // push into second update
+                .lift(db.update("update person set score=2 where name=?").parameterOperator());
+        db.commit(updates).toBlockingObservable().single();
     }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {
