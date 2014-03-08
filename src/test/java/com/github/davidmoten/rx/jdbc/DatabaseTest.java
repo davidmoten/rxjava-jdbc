@@ -929,6 +929,28 @@ public class DatabaseTest {
         db.commit(updates).toBlockingObservable().single();
     }
 
+    // @Test
+    // TODO get working
+    public void testCommitOperator() {
+        Database db = db();
+        db.beginTransaction();
+        Observable
+        // set name parameter
+                .from("FRED")
+                // push into update
+                .lift(db.update("update person set score=1 where name=?").parameterOperator())
+                // map num rows affected to JOHN
+                .lift(db.commitOperator()).lift(db.select("select name from person where score=1")
+                // depends on commit
+                        .dependsOnOperator()
+                        // return names
+                        .getAs(String.class))
+                // return first name
+                .first()
+                // block to get make everything run
+                .toBlockingObservable().single();
+    }
+
     private static class CountDownConnectionProvider implements ConnectionProvider {
         private final ConnectionProvider cp;
         private final CountDownLatch closesLatch;
