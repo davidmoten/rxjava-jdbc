@@ -19,13 +19,25 @@ public class DatabaseCreator {
     public static Database db() {
         ConnectionProvider cp = connectionProvider();
         Connection con = cp.get();
-		createDatabase(con);
-		try {
-			con.close();
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+        createDatabase(con);
+        try {
+            con.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         return new Database(cp);
+    }
+
+    public static Database createDatabase(ConnectionProvider cp) {
+        Database db = new Database(cp);
+        Connection con = cp.get();
+        createDatabase(con);
+        try {
+            con.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return db;
     }
 
     public static void createDatabase(Connection c) {

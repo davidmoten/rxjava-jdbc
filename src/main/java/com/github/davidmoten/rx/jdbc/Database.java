@@ -458,7 +458,6 @@ final public class Database {
     private Observable<Boolean> commitOrRollback(boolean commit, Observable<?>... depends) {
 
         QueryUpdate.Builder u = createCommitOrRollbackQuery(commit);
-        resetQueryContext();
         for (Observable<?> dep : depends)
             u = u.dependsOn(dep);
         Observable<Boolean> result = u.count().map(IS_NON_ZERO);

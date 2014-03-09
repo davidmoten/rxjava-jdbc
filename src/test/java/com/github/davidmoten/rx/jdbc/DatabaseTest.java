@@ -625,8 +625,7 @@ public class DatabaseTest {
     @Test
     public void testConnectionPool() {
         ConnectionProviderPooled cp = new ConnectionProviderPooled(nextUrl(), 0, 10);
-        Database db = new Database(cp);
-        DatabaseCreator.createDatabase(cp.get());
+        Database db = createDatabase(cp);
         int count = db.select("select name from person order by name").get().count().toBlockingObservable().single();
         assertEquals(3, count);
         cp.close();
@@ -930,7 +929,6 @@ public class DatabaseTest {
     }
 
     @Test
-    // TODO get working
     public void testCommitOperator() {
         Database db = db();
         db.beginTransaction();
@@ -952,6 +950,27 @@ public class DatabaseTest {
                 // block to get make everything run
                 .toBlockingObservable().single();
         assertEquals("FRED", name);
+    }
+
+    @Test
+    public void testChainSelectUsingOperators() {
+        Database db = db();
+        List<Integer> scores = db.select("select name from person")
+        // get name
+                .getAs(String.class)
+                // push name as parameter to next select
+                .lift(db
+                // select scores
+                .select("select score from person where name=?")
+                // parameters are pushed
+                        .parameterOperator()
+                        // get score as integer
+                        .getAs(Integer.class))
+                // sort scores
+                .toSortedList()
+                // block to get result
+                .toBlockingObservable().single();
+        assertEquals(asList(21, 25, 34), scores);
     }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {
