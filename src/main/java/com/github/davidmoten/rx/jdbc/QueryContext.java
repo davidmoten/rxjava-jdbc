@@ -16,15 +16,9 @@ final class QueryContext {
     private final ConnectionProvider connectionProvider;
 
     /**
-     * Select and update handlers.
-     */
-    private final Handlers handlers;
-
-    /**
      * Scheduler to use to execute query.
      */
     private final Scheduler scheduler;
-    
 
     /**
      * Constructor.
@@ -32,10 +26,9 @@ final class QueryContext {
      * @param executor
      * @param connectionProvider
      */
-    QueryContext(Scheduler scheduler, ConnectionProvider connectionProvider, Handlers handlers) {
+    QueryContext(Scheduler scheduler, ConnectionProvider connectionProvider) {
         this.scheduler = scheduler;
         this.connectionProvider = connectionProvider;
-        this.handlers = handlers;
     }
 
     /**
@@ -65,9 +58,8 @@ final class QueryContext {
      * @param connectionProvider
      * @return
      */
-    static QueryContext newTransactionalQueryContext(ConnectionProvider connectionProvider, Handlers handlers,
-            Scheduler scheduler) {
-        return new QueryContext(scheduler, new ConnectionProviderSingletonManualCommit(connectionProvider), handlers);
+    static QueryContext newTransactionalQueryContext(ConnectionProvider connectionProvider, Scheduler scheduler) {
+        return new QueryContext(scheduler, new ConnectionProviderSingletonManualCommit(connectionProvider));
     }
 
     /**
@@ -78,18 +70,9 @@ final class QueryContext {
      * @param threadPoolSize
      * @return
      */
-    static QueryContext newNonTransactionalQueryContext(ConnectionProvider cp, Handlers handlers, Scheduler scheduler) {
+    static QueryContext newNonTransactionalQueryContext(ConnectionProvider cp, Scheduler scheduler) {
 
-        return new QueryContext(scheduler, new ConnectionProviderAutoCommitting(cp), handlers);
-    }
-
-    /**
-     * Returns select/update handlers.
-     * 
-     * @return
-     */
-    public Handlers handlers() {
-        return handlers;
+        return new QueryContext(scheduler, new ConnectionProviderAutoCommitting(cp));
     }
 
 }

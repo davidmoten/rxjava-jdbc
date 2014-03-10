@@ -23,11 +23,6 @@ import com.github.davidmoten.rx.RxUtil;
 final public class Database {
 
     /**
-     * Optional query execution handlers for logging etc.
-     */
-    private final Handlers handlers;
-
-    /**
      * Records the current query context which will be set against a new query
      * at create time (not at runtime).
      */
@@ -73,10 +68,8 @@ final public class Database {
      * @param transactionalSchedulerFactory
      *            schedules transactional queries
      */
-    public Database(final ConnectionProvider cp, Func1<Observable<ResultSet>, Observable<ResultSet>> selectHandler,
-            Func1<Observable<Integer>, Observable<Integer>> updateHandler,
-            Func0<Scheduler> nonTransactionalSchedulerFactory, Func0<Scheduler> transactionalSchedulerFactory,
-            QueryContext contextOverride) {
+    public Database(final ConnectionProvider cp, Func0<Scheduler> nonTransactionalSchedulerFactory,
+            Func0<Scheduler> transactionalSchedulerFactory, QueryContext contextOverride) {
         Conditions.checkNotNull(cp);
         this.cp = cp;
         if (nonTransactionalSchedulerFactory != null)
@@ -87,13 +80,11 @@ final public class Database {
             this.transactionalSchedulerFactory = transactionalSchedulerFactory;
         else
             this.transactionalSchedulerFactory = SINGLE_THREAD_POOL_SCHEDULER_FACTORY;
-        this.handlers = new Handlers(selectHandler, updateHandler);
         this.contextOverride = contextOverride;
     }
 
     private Database overrideContext(QueryContext context) {
-        return new Database(cp, handlers.selectHandler(), handlers.updateHandler(), nonTransactionalSchedulerFactory,
-                transactionalSchedulerFactory, context);
+        return new Database(cp, nonTransactionalSchedulerFactory, transactionalSchedulerFactory, context);
     }
 
     /**
@@ -138,8 +129,7 @@ final public class Database {
      *            provides connections
      */
     public Database(ConnectionProvider cp) {
-        this(cp, Functions.<Observable<ResultSet>> identity(), Functions.<Observable<Integer>> identity(), null, null,
-                null);
+        this(cp, null, null, null);
     }
 
     /**
@@ -321,8 +311,7 @@ final public class Database {
          * @return
          */
         public Database build() {
-            return new Database(cp, selectHandler, updateHandler, transactionalSchedulerFactory,
-                    nonTransactionalSchedulerFactory, null);
+            return new Database(cp, transactionalSchedulerFactory, nonTransactionalSchedulerFactory, null);
         }
     }
 
@@ -338,8 +327,7 @@ final public class Database {
             return contextOverride;
 
         if (context.get() == null) {
-            context.set(QueryContext.newNonTransactionalQueryContext(cp, handlers,
-                    nonTransactionalSchedulerFactory.call()));
+            context.set(QueryContext.newNonTransactionalQueryContext(cp, nonTransactionalSchedulerFactory.call()));
         }
         return context.get();
     }
@@ -379,8 +367,7 @@ final public class Database {
         if (contextOverride != null)
             throw new RuntimeException(
                     "cannot begin transaction when query context is overriden (don't call this method on the Database return of db.beginTransaction()).");
-        QueryContext queryContext = QueryContext.newTransactionalQueryContext(cp, handlers,
-                transactionalSchedulerFactory.call());
+        QueryContext queryContext = QueryContext.newTransactionalQueryContext(cp, transactionalSchedulerFactory.call());
         context.set(queryContext);
         return overrideContext(queryContext);
         // return this;

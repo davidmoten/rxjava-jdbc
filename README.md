@@ -380,21 +380,6 @@ Logging
 Logging is handled by slf4j which bridges to the logging framework of your choice. Add
 the dependency for your logging framework as a maven dependency and you are sorted. See the test scoped log4j example in [rxjava-jdbc/pom.xml](https://github.com/davidmoten/rxjava-jdbc/blob/master/pom.xml).
 
-Handlers
-------------------------
-You can specify a select handler and an update handler individually or one all purpose handler.
-For example you could log all error events for all database queries.
-
-The handlers operate globally for one ```Database``` object. An example is ```Handlers.LOG_ON_ERROR_HANDLER``` which intercepts an ```onError``` event and writes 
-an Error log line using slf4j and then passes the error on. To create handlers use the ```Database``` builder method:
-
-```java
-Database db = Database.builder(url).handler(Handlers.LOG_ON_ERROR_HANDLER).build();
-//The call below will throw a RuntimeException but will also log the exception before throwing.
-db.select("seeeelect name from person")
-  .getAs(String.class).first().toBlockingObservable().single();
-``` 
-
 Database Connection Pools
 ----------------------------
 Include the dependency below:
