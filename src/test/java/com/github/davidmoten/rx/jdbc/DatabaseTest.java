@@ -141,12 +141,14 @@ public class DatabaseTest {
                 return t1 == 0;
             }
         };
-        db.beginTransaction();
+        Observable<Boolean> begin = db.beginTransaction();
         Observable<Integer> existingRows = db
         // select names
                 .select("select name from person where name=?")
                 // set name parameter
                 .parameter("FRED")
+                // is part of transaction
+                .dependsOn(begin)
                 // get results
                 .get()
                 // get result count
@@ -168,8 +170,8 @@ public class DatabaseTest {
     @Test
     public void testTransactionOnCommit() {
         Database db = db();
-        Database t = db.beginTransaction();
-        Observable<Integer> updateCount = t.update("update person set score=?").parameter(99).count();
+        Observable<Boolean> begin = db.beginTransaction();
+        Observable<Integer> updateCount = db.update("update person set score=?").dependsOn(begin).parameter(99).count();
         db.commit(updateCount);
         long count = db.select("select count(*) from person where score=?")
         // set score
@@ -185,34 +187,11 @@ public class DatabaseTest {
         assertEquals(3, count);
     }
 
-    @Test(expected = RuntimeException.class)
-    public void testTransactionOnCommitThrowsErrorWhenQueryContextOverridden() {
-        Database db = db();
-        Database t = db.beginTransaction();
-        Observable<Integer> updateCount = t.update("update person set score=?").parameter(99).count();
-        t.commit(updateCount);
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void testTransactionOnRollbackThrowsErrorWhenQueryContextOverridden() {
-        Database db = db();
-        Database t = db.beginTransaction();
-        Observable<Integer> updateCount = t.update("update person set score=?").parameter(99).count();
-        t.rollback(updateCount);
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void testTransactionOnBeginTransactionThrowsErrorWhenQueryContextOverridden() {
-        Database db = db();
-        Database t = db.beginTransaction();
-        t.beginTransaction();
-    }
-
     @Test
     public void testTransactionOnCommitDoesntOccurUnlessSubscribedTo() {
         Database db = db();
-        db.beginTransaction();
-        Observable<Integer> u = db.update("update person set score=?").parameter(99).count();
+        Observable<Boolean> begin = db.beginTransaction();
+        Observable<Integer> u = db.update("update person set score=?").dependsOn(begin).parameter(99).count();
         db.commit(u);
         // note that last transaction was not listed as a dependency of the next
         // query
@@ -224,8 +203,8 @@ public class DatabaseTest {
     @Test
     public void testTransactionOnRollback() {
         Database db = db();
-        db.beginTransaction();
-        Observable<Integer> updateCount = db.update("update person set score=?").parameter(99).count();
+        Observable<Boolean> begin = db.beginTransaction();
+        Observable<Integer> updateCount = db.update("update person set score=?").dependsOn(begin).parameter(99).count();
         db.rollback(updateCount);
         long count = db.select("select count(*) from person where score=?").parameter(99).dependsOnLastTransaction()
                 .getAs(Long.class).toBlockingObservable().single();
@@ -801,9 +780,9 @@ public class DatabaseTest {
     public void testOneConnectionOpenedAndClosedAfterTwoSelectsWithinTransaction() throws InterruptedException {
         CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
         Database db = new Database(cp);
-        db.beginTransaction();
-        Observable<Integer> count = db.select("select name from person").get().count();
-        Observable<Integer> count2 = db.select("select name from person").get().count();
+        Observable<Boolean> begin = db.beginTransaction();
+        Observable<Integer> count = db.select("select name from person").dependsOn(begin).get().count();
+        Observable<Integer> count2 = db.select("select name from person").dependsOn(begin).get().count();
         int result = db.commit(count, count2).count().toBlockingObservable().single();
         log.info("committed " + result);
         cp.getsLatch().await();
@@ -816,9 +795,11 @@ public class DatabaseTest {
     public void testOneConnectionOpenedAndClosedAfterTwoUpdatesWithinTransaction() throws InterruptedException {
         CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
         Database db = new Database(cp);
-        db.beginTransaction();
-        Observable<Integer> count = db.update("update person set score=? where name=?").parameters(23, "FRED").count();
-        Observable<Integer> count2 = db.update("update person set score=? where name=?").parameters(25, "JOHN").count();
+        Observable<Boolean> begin = db.beginTransaction();
+        Observable<Integer> count = db.update("update person set score=? where name=?").dependsOn(begin)
+                .parameters(23, "FRED").count();
+        Observable<Integer> count2 = db.update("update person set score=? where name=?").dependsOn(begin)
+                .parameters(25, "JOHN").count();
         int result = db.commit(count, count2).count().toBlockingObservable().single();
         log.info("committed " + result);
         cp.getsLatch().await();
@@ -880,8 +861,9 @@ public class DatabaseTest {
     public void testConnectionsReleasedByCommitBeforeOnNext() throws InterruptedException {
         final CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
         Database db = new Database(cp);
-        db.beginTransaction();
-        Observable<Integer> result = db.update("update person set score = 1 where name=?").parameter("FRED").count();
+        Observable<Boolean> begin = db.beginTransaction();
+        Observable<Integer> result = db.update("update person set score = 1 where name=?").dependsOn(begin)
+                .parameter("FRED").count();
         checkConnectionsReleased(cp, db.commit(result));
     }
 
@@ -889,8 +871,9 @@ public class DatabaseTest {
     public void testConnectionsReleasedByRollbackBeforeOnNext() throws InterruptedException {
         final CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
         Database db = new Database(cp);
-        db.beginTransaction();
-        Observable<Integer> result = db.update("update person set score = 1 where name=?").parameter("FRED").count();
+        Observable<Boolean> begin = db.beginTransaction();
+        Observable<Integer> result = db.update("update person set score = 1 where name=?").dependsOn(begin)
+                .parameter("FRED").count();
         checkConnectionsReleased(cp, db.rollback(result));
     }
 
@@ -915,12 +898,12 @@ public class DatabaseTest {
     @Test
     public void testCanChainUpdateStatementsWithinTransaction() {
         Database db = db();
-        db.beginTransaction();
+        Observable<Boolean> begin = db.beginTransaction();
         Observable<Integer> updates = Observable
         // set name parameter
                 .from("FRED")
                 // push into update
-                .lift(db.update("update person set score=1 where name=?").parameterOperator())
+                .lift(db.update("update person set score=1 where name=?").dependsOn(begin).parameterOperator())
                 // map num rows affected to JOHN
                 .map(constant("JOHN"))
                 // push into second update
@@ -931,12 +914,12 @@ public class DatabaseTest {
     @Test
     public void testCommitOperator() {
         Database db = db();
-        db.beginTransaction();
+        Observable<Boolean> begin = db.beginTransaction();
         String name = Observable
         // set name parameter
                 .from("FRED")
                 // push into update
-                .lift(db.update("update person set score=1 where name=?").parameterOperator())
+                .lift(db.update("update person set score=1 where name=?").dependsOn(begin).parameterOperator())
                 // map num rows affected to JOHN
                 .lift(db.commitOperator())
                 // select query

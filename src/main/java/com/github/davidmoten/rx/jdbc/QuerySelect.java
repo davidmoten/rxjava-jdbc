@@ -1,5 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
+import static com.github.davidmoten.rx.jdbc.Conditions.checkNotNull;
 import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
 
 import java.sql.ResultSet;
@@ -37,6 +38,10 @@ final public class QuerySelect implements Query {
      * @param context
      */
     private QuerySelect(String sql, Observable<Parameter> parameters, Observable<?> depends, QueryContext context) {
+        checkNotNull(sql);
+        checkNotNull(parameters);
+        checkNotNull(depends);
+        checkNotNull(context);
         this.sql = sql;
         this.parameters = parameters;
         this.depends = depends;

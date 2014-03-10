@@ -1,5 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
+import static com.github.davidmoten.rx.jdbc.Conditions.checkNotNull;
 import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
 
 import java.util.List;
@@ -28,6 +29,10 @@ final public class QueryUpdate implements Query {
      * @param context
      */
     private QueryUpdate(String sql, Observable<Parameter> parameters, Observable<?> depends, QueryContext context) {
+        checkNotNull(sql);
+        checkNotNull(parameters);
+        checkNotNull(depends);
+        checkNotNull(context);
         this.sql = sql;
         this.parameters = parameters;
         this.depends = depends;
@@ -84,7 +89,12 @@ final public class QueryUpdate implements Query {
         return new Func1<List<Parameter>, Observable<Integer>>() {
             @Override
             public Observable<Integer> call(final List<Parameter> params) {
-                return executeOnce(params).subscribeOn(context.scheduler());
+                if (sql.equals(QueryUpdateOperation.BEGIN_TRANSACTION))
+                    context.beginTransactionSubscribe();
+                Observable<Integer> result = executeOnce(params).subscribeOn(context.scheduler());
+                if (sql.equals(QueryUpdateOperation.COMMIT) || sql.equals(QueryUpdateOperation.ROLLBACK))
+                    context.endTransactionSubscribe();
+                return result;
             }
         };
     }

@@ -314,6 +314,8 @@ Observable<InputStream> document = db.select("select document from person_clob")
 ```
 Transactions
 ------------------
+NOTICE: being completely reworked to be more rx.
+
 Queries can be surrounded by ```db.beginTransaction()``` and ```db.commit()```/```db.rollback()``` calls. The queries eventually run between the calls will use the same Scheduler with a single thread pool and will all use the same Connection object. Note that
 
 * ```Database.select()```/```Database.update()``` 

@@ -1,7 +1,5 @@
 package com.github.davidmoten.rx.jdbc;
 
-import java.sql.Connection;
-
 import rx.Scheduler;
 
 /**
@@ -10,15 +8,7 @@ import rx.Scheduler;
  */
 final class QueryContext {
 
-    /**
-     * Provides {@link Connection}s.
-     */
-    private final ConnectionProvider connectionProvider;
-
-    /**
-     * Scheduler to use to execute query.
-     */
-    private final Scheduler scheduler;
+    private final Database db;
 
     /**
      * Constructor.
@@ -26,9 +16,8 @@ final class QueryContext {
      * @param executor
      * @param connectionProvider
      */
-    QueryContext(Scheduler scheduler, ConnectionProvider connectionProvider) {
-        this.scheduler = scheduler;
-        this.connectionProvider = connectionProvider;
+    QueryContext(Database db) {
+        this.db = db;
     }
 
     /**
@@ -37,7 +26,7 @@ final class QueryContext {
      * @return
      */
     Scheduler scheduler() {
-        return scheduler;
+        return db.currentScheduler();
     }
 
     /**
@@ -46,33 +35,24 @@ final class QueryContext {
      * @return
      */
     ConnectionProvider connectionProvider() {
-        return connectionProvider;
+        return db.connectionProvider();
     }
 
-    /**
-     * Returns a {@link QueryContext} suitable for running with a sequence of
-     * queries bounded by a database transaction. All queries running within a
-     * transaction should use the same {@link Connection} and the same
-     * {@link Thread} to execute on.
-     * 
-     * @param connectionProvider
-     * @return
-     */
-    static QueryContext newTransactionalQueryContext(ConnectionProvider connectionProvider, Scheduler scheduler) {
-        return new QueryContext(scheduler, new ConnectionProviderSingletonManualCommit(connectionProvider));
+    public void beginTransactionObserve() {
+        db.beginTransactionObserve();
+
     }
 
-    /**
-     * Returns an asynchronous (outside database transactions)
-     * {@link QueryContext}.
-     * 
-     * @param cp
-     * @param threadPoolSize
-     * @return
-     */
-    static QueryContext newNonTransactionalQueryContext(ConnectionProvider cp, Scheduler scheduler) {
+    public void beginTransactionSubscribe() {
+        db.beginTransactionSubscribe();
+    }
 
-        return new QueryContext(scheduler, new ConnectionProviderAutoCommitting(cp));
+    public void endTransactionSubscribe() {
+        db.endTransactionSubscribe();
+    }
+
+    public void endTransactionObserve() {
+        db.endTransactionObserve();
     }
 
 }

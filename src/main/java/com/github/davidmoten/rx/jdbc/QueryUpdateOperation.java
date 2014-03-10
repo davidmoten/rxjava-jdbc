@@ -19,6 +19,18 @@ class QueryUpdateOperation {
 
     private static final Logger log = LoggerFactory.getLogger(QueryUpdateOperation.class);
 
+    static final String BEGIN_TRANSACTION = "begin";
+
+    /**
+     * Special sql command that brings about a rollback.
+     */
+    static final String ROLLBACK = "rollback";
+
+    /**
+     * Special sql command that brings about a commit.
+     */
+    static final String COMMIT = "commit";
+
     /**
      * Returns an Observable of the results of pushing one set of parameters
      * through a select query.
@@ -34,16 +46,6 @@ class QueryUpdateOperation {
     private static class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
 
         private boolean keepGoing = true;
-
-        /**
-         * Special sql command that brings about a rollback.
-         */
-        private static final String ROLLBACK = "rollback";
-
-        /**
-         * Special sql command that brings about a commit.
-         */
-        private static final String COMMIT = "commit";
 
         /**
          * The query to be executed.
@@ -83,8 +85,9 @@ class QueryUpdateOperation {
             try {
 
                 getConnection();
-
-                if (isCommit())
+                if (isBeginTransaction())
+                    performBeginTransaction();
+                else if (isCommit())
                     performCommit(subscriber);
                 else if (isRollback())
                     performRollback(subscriber);
@@ -102,6 +105,14 @@ class QueryUpdateOperation {
                     handleException(e, subscriber);
                 }
             }
+        }
+
+        private boolean isBeginTransaction() {
+            return query.sql().equals(BEGIN_TRANSACTION);
+        }
+
+        private void performBeginTransaction() {
+            query.context().beginTransactionObserve();
         }
 
         /**
@@ -144,6 +155,7 @@ class QueryUpdateOperation {
 
             log.debug("committing");
             Conditions.checkTrue(!Util.isAutoCommit(con));
+            query.context().endTransactionObserve();
             Util.commit(con);
             // must close before onNext so that connection is released and is
             // available to a query that might process the onNext
@@ -259,4 +271,5 @@ class QueryUpdateOperation {
         }
 
     }
+
 }
