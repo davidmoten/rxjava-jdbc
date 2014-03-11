@@ -38,6 +38,8 @@ import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.functions.Func2;
+import rx.functions.Functions;
+import rx.observables.MathObservable;
 
 import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.UnsubscribeDetector;
@@ -266,10 +268,17 @@ public class DatabaseTest {
 
     @Test
     public void testJdbcObservableCountLettersInAllNames() {
-        int count = Observable
-                .sumInteger(
-                        db().select("select name from person where name >?").parameter("ALEX")
-                                .get(COUNT_LETTERS_IN_NAME)).first().toBlockingObservable().single();
+        int count = MathObservable.sumInteger(db()
+        // select
+                .select("select name from person where name >?")
+                // set name
+                .parameter("ALEX")
+                // count letters
+                .get(COUNT_LETTERS_IN_NAME))
+        // first result
+                .first()
+                // block and get result
+                .toBlockingObservable().single();
         assertEquals(19, count);
     }
 
@@ -705,9 +714,23 @@ public class DatabaseTest {
 
     @Test
     public void testLiftWithManyParameters() {
-        int score = Observable.range(1, 3).doOnEach(log()).map(constant("FRED"))
-                .lift(db().select("select score from person where name=?").parameterOperator().getAs(Integer.class))
-                .sumInteger(rx.functions.Functions.<Integer> identity()).toBlockingObservable().single();
+        int score = Observable
+        // range
+                .range(1, 3)
+                // log
+                .doOnEach(log())
+                // to parameter
+                .map(constant("FRED")).lift(db()
+                // select
+                        .select("select score from person where name=?")
+                        // push parameters
+                        .parameterOperator()
+                        // get score as integer
+                        .getAs(Integer.class))
+                // sum values
+                .sumInteger(Functions.<Integer> identity())
+                // block and get
+                .toBlockingObservable().single();
         assertEquals(3 * 21, score);
     }
 
