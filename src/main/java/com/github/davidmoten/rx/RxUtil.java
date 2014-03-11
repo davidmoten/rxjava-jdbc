@@ -1,16 +1,18 @@
 package com.github.davidmoten.rx;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rx.Observable;
+import rx.Observable.OnSubscribe;
 import rx.Observable.Operator;
 import rx.Observer;
+import rx.Subscriber;
+import rx.functions.Action1;
 import rx.functions.Func1;
 
-/**
- * Utility methods for use with RxJava library.
- */
 public class RxUtil {
 
     /**
@@ -81,4 +83,37 @@ public class RxUtil {
     public static <T> UnsubscribeDetector<T> detectUnsubscribe() {
     	return UnsubscribeDetector.detect();
     }
+
+	public static <T> CounterAction<T> counter() {
+		return new CounterAction<T>();
+	}
+	
+	public static class CounterAction<T> implements Action1<T> {
+		private final AtomicLong count = new AtomicLong(0);
+		
+		public Observable<Long> count() {
+			return Observable.create(new OnSubscribe<Long>() {
+
+				@Override
+				public void call(Subscriber<? super Long> subscriber) {
+					subscriber.onNext(count.get());
+					subscriber.onCompleted();
+				}}); 
+		}
+
+		@Override
+		public void call(T t) {
+			count.incrementAndGet();
+		}
+	}
+	
+	public static <T extends Number> Func1<T,Boolean> greaterThanZero() {
+		return new Func1<T,Boolean>() {
+
+			@Override
+			public Boolean call(T t) {
+				return t.doubleValue()>0;
+			}
+		};
+	}	
 }

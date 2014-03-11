@@ -987,6 +987,33 @@ public class DatabaseTest {
                 .toBlockingObservable().single();
         assertEquals(asList(21, 25, 34), scores);
     }
+    
+    @Test
+    public void testCommitOnLastOperator() {
+    	Database db = db();
+    	long count = db
+    			//start transaction
+    			.beginTransaction()
+    		//push parameters
+    			.flatMap(constant(from(asList(99,88))))
+    			//log
+    			.doOnEach(log())
+    	  //update twice
+    	  .lift(db.update("update person set score=?")
+    			  //push parameters
+    			  .parameterOperator())
+    	  //commit on last
+    	  .lift(db.commitOnCompleteOperator())
+    	  //get count of 88s
+    	  .lift(db.select("select count(*) from person where score=88")
+    			  //depends on previous
+    			  .dependsOnOperator()
+    			  //count as Long
+    			  .getAs(Long.class))
+    			  //block and get result
+    	  .toBlockingObservable().single();
+    	assertEquals(3,count);
+    }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {
         private final ConnectionProvider cp;

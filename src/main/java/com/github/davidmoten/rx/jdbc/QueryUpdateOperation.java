@@ -86,7 +86,7 @@ class QueryUpdateOperation {
 
                 getConnection();
                 if (isBeginTransaction())
-                    performBeginTransaction();
+                    performBeginTransaction(subscriber);
                 else if (isCommit())
                     performCommit(subscriber);
                 else if (isRollback())
@@ -111,8 +111,9 @@ class QueryUpdateOperation {
             return query.sql().equals(BEGIN_TRANSACTION);
         }
 
-        private void performBeginTransaction() {
+        private void performBeginTransaction(Subscriber<? super Integer> subscriber) {
             query.context().beginTransactionObserve();
+            subscriber.onNext(Integer.valueOf(1));
         }
 
         /**

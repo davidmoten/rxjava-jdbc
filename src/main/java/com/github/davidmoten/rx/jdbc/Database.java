@@ -1,5 +1,7 @@
 package com.github.davidmoten.rx.jdbc;
 
+import static com.github.davidmoten.rx.RxUtil.greaterThanZero;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -17,6 +19,7 @@ import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 import com.github.davidmoten.rx.RxUtil;
+import com.github.davidmoten.rx.RxUtil.CounterAction;
 
 /**
  * Main entry point for manipulations of a database using rx-java-jdbc style
@@ -332,7 +335,7 @@ final public class Database {
 	public Observable<Boolean> beginTransaction() {
 		return beginTransaction(Observable.empty());
 	}
-
+	
 	/**
 	 * Creates a {@link ScheduledExecutorService} based on a single thread pool.
 	 * 
@@ -508,6 +511,22 @@ final public class Database {
 
 	public boolean transactionIsOpen() {
 		return currentIsTransactionOpen.get();
+	}
+	
+	public <T> Operator<Boolean,T> commitOnCompleteOperator(final Observable<?>... dependencies) {
+		return RxUtil.toOperator(new Func1<Observable<T>,Observable<Boolean>>() {
+
+			@Override
+			public Observable<Boolean> call( Observable<T> source) {
+				return commitOnCompleteOperatorIfAtLeastOneValue(Database.this,source,dependencies);
+			}});		
+	}
+	
+	private static final <T> Observable<Boolean> commitOnCompleteOperatorIfAtLeastOneValue(final Database db, 
+			Observable<T> source,final Observable<?>... dependencies) {
+		CounterAction<T> counter = RxUtil.counter();
+		Observable<Boolean> commit = counter.count().filter(greaterThanZero()).lift(db.commitOperator());
+		return Observable.concat(source.doOnNext(counter).ignoreElements().cast(Boolean.class),commit);
 	}
 
 }
