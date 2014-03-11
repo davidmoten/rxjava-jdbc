@@ -88,9 +88,10 @@ final public class QueryUpdate implements Query {
     private Func1<List<Parameter>, Observable<Integer>> executeOnce() {
         return new Func1<List<Parameter>, Observable<Integer>>() {
             @Override
-            public Observable<Integer> call(final List<Parameter> params) {
-                if (sql.equals(QueryUpdateOperation.BEGIN_TRANSACTION))
+            public Observable<Integer> call(final List<Parameter> params) { 
+                if (sql.equals(QueryUpdateOperation.BEGIN_TRANSACTION)) {
                     context.beginTransactionSubscribe();
+                }
                 Observable<Integer> result = executeOnce(params).subscribeOn(context.scheduler());
                 if (sql.equals(QueryUpdateOperation.COMMIT) || sql.equals(QueryUpdateOperation.ROLLBACK))
                     context.endTransactionSubscribe();

@@ -3,7 +3,11 @@ package com.github.davidmoten.rx.jdbc;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import rx.Observable;
 import rx.Observable.Operator;
@@ -20,11 +24,13 @@ import com.github.davidmoten.rx.RxUtil;
  */
 final public class Database {
 
+	private static final Logger log = LoggerFactory.getLogger(Database.class);
+	
     /**
      * Records the current query context which will be set against a new query
      * at create time (not at runtime).
      */
-    private final ThreadLocal<QueryContext> context = new ThreadLocal<QueryContext>();
+    private final QueryContext context ;
 
     private final ThreadLocal<Func0<Scheduler>> currentSchedulerFactory = new ThreadLocal<Func0<Scheduler>>();
 
@@ -78,6 +84,7 @@ final public class Database {
             this.transactionalSchedulerFactory = transactionalSchedulerFactory;
         else
             this.transactionalSchedulerFactory = SINGLE_THREAD_POOL_SCHEDULER_FACTORY;
+        this.context = new QueryContext(this);
     }
 
     /**
@@ -99,6 +106,8 @@ final public class Database {
             return Schedulers.executor(createSingleThreadExecutor());
         }
     };
+
+	private final AtomicBoolean currentIsTransactionOpen = new AtomicBoolean(false);
 
     /**
      * Schedules using {@link Schedulers}.trampoline().
@@ -261,6 +270,7 @@ final public class Database {
             return new Database(cp, transactionalSchedulerFactory, nonTransactionalSchedulerFactory);
         }
     }
+    
 
     /**
      * Returns the thread local current query context (will not return null).
@@ -270,7 +280,7 @@ final public class Database {
      * @return
      */
     public QueryContext queryContext() {
-        return new QueryContext(this);
+        return context;
     }
 
     /**
@@ -394,7 +404,6 @@ final public class Database {
         else
             action = "rollback";
         QueryUpdate.Builder u = update(action);
-        resetQueryContext();
         return u;
     }
 
@@ -426,12 +435,6 @@ final public class Database {
             return o;
     }
 
-    /**
-     * Revert query context to default asynchronous version.
-     */
-    private void resetQueryContext() {
-        context.set(null);
-    }
 
     /**
      * Close the database in particular closes the {@link ConnectionProvider}
@@ -446,7 +449,10 @@ final public class Database {
     }
 
     public Scheduler currentScheduler() {
-        if (currentSchedulerFactory.get() == null)
+    	if (currentIsTransactionOpen.get())
+    		return Schedulers.trampoline();
+    	else 
+    	if (currentSchedulerFactory.get() == null)
             return nonTransactionalSchedulerFactory.call();
         else
             return currentSchedulerFactory.get().call();
@@ -460,18 +466,30 @@ final public class Database {
     }
 
     void beginTransactionObserve() {
-        currentConnectionProvider.set(new ConnectionProviderSingletonManualCommit(cp));
+    	log.debug("beginTransactionObserve");
+    	currentConnectionProvider.set(new ConnectionProviderSingletonManualCommit(cp));
+    	currentIsTransactionOpen .set(true);
     }
 
     void beginTransactionSubscribe() {
+    	log.debug("beginTransactionSubscribe");
         currentSchedulerFactory.set(transactionalSchedulerFactory);
+        currentIsTransactionOpen.set(true);
     }
 
     public void endTransactionSubscribe() {
+    	log.debug("endTransactionSubscribe");
         currentSchedulerFactory.set(null);
+        currentIsTransactionOpen.set(false);
     }
 
     public void endTransactionObserve() {
+    	log.debug("endTransactionObserve");
         currentConnectionProvider.set(cp);
+        currentIsTransactionOpen.set(false);
     }
+
+	public boolean transactionIsOpen() {
+		return currentIsTransactionOpen.get();
+	}
 }

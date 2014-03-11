@@ -46,6 +46,10 @@ final class QueryContext {
     public void beginTransactionSubscribe() {
         db.beginTransactionSubscribe();
     }
+    
+    public boolean transactionIsOpen() {
+    	return db.transactionIsOpen();
+    }
 
     public void endTransactionSubscribe() {
         db.endTransactionSubscribe();

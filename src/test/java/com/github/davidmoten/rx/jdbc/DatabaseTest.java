@@ -171,13 +171,21 @@ public class DatabaseTest {
     public void testTransactionOnCommit() {
         Database db = db();
         Observable<Boolean> begin = db.beginTransaction();
-        Observable<Integer> updateCount = db.update("update person set score=?").dependsOn(begin).parameter(99).count();
-        db.commit(updateCount);
+        Observable<Integer> updateCount = db
+        		//set everyones score to 99
+        		.update("update person set score=?")
+        		//is within transaction
+        		.dependsOn(begin)
+        		//new score
+        		.parameter(99)
+        		//execute
+        		.count();
+        Observable<Boolean> commit = db.commit(updateCount);
         long count = db.select("select count(*) from person where score=?")
         // set score
                 .parameter(99)
                 // depends on
-                .dependsOnLastTransaction()
+                .dependsOn(commit)
                 // return as Long
                 .getAs(Long.class)
                 // log
