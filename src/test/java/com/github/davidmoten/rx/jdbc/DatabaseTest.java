@@ -172,14 +172,14 @@ public class DatabaseTest {
         Database db = db();
         Observable<Boolean> begin = db.beginTransaction();
         Observable<Integer> updateCount = db
-        		//set everyones score to 99
-        		.update("update person set score=?")
-        		//is within transaction
-        		.dependsOn(begin)
-        		//new score
-        		.parameter(99)
-        		//execute
-        		.count();
+        // set everyones score to 99
+                .update("update person set score=?")
+                // is within transaction
+                .dependsOn(begin)
+                // new score
+                .parameter(99)
+                // execute
+                .count();
         Observable<Boolean> commit = db.commit(updateCount);
         long count = db.select("select count(*) from person where score=?")
         // set score
@@ -218,28 +218,28 @@ public class DatabaseTest {
                 .getAs(Long.class).toBlockingObservable().single();
         assertEquals(0, count);
     }
-    
+
     @Test
     public void testUpdateAndSelectWithTransaction() {
         Database db = db();
         Observable<Boolean> begin = db.beginTransaction();
         Observable<Integer> updateCount = db
-        		//update everyone's score to 99
-        		.update("update person set score=?")
-        		//in transaction
-        		.dependsOn(begin)
-        		//new score
-        		.parameter(99)
-        		//execute
-        		.count();
+        // update everyone's score to 99
+                .update("update person set score=?")
+                // in transaction
+                .dependsOn(begin)
+                // new score
+                .parameter(99)
+                // execute
+                .count();
         long count = db.select("select count(*) from person where score=?")
-        		//where score = 99
-        		.parameter(99)
-        		//depends on
-        		.dependsOn(updateCount)
-        		//as long value
-        		.getAs(Long.class).toBlockingObservable().single();
-        		
+        // where score = 99
+                .parameter(99)
+                // depends on
+                .dependsOn(updateCount)
+                // as long value
+                .getAs(Long.class).toBlockingObservable().single();
+
         assertEquals(3, count);
     }
 
@@ -629,8 +629,7 @@ public class DatabaseTest {
 
     @Test
     public void testDatabaseBuilder() {
-        Database.builder().connectionProvider(connectionProvider()).transactionalSchedulerOnCurrentThread()
-                .nonTransactionalSchedulerOnCurrentThread().build();
+        Database.builder().connectionProvider(connectionProvider()).nonTransactionalSchedulerOnCurrentThread().build();
     }
 
     @Test
@@ -832,7 +831,7 @@ public class DatabaseTest {
                 .parameters(23, "FRED").count();
         Observable<Integer> count2 = db.update("update person set score=? where name=?").dependsOn(count)
                 .parameters(25, "JOHN").count();
-        int result = db.commit( count2).count().toBlockingObservable().single();
+        int result = db.commit(count2).count().toBlockingObservable().single();
         log.info("committed " + result);
         cp.getsLatch().await();
         log.info("gets ok");
@@ -987,39 +986,39 @@ public class DatabaseTest {
                 .toBlockingObservable().single();
         assertEquals(asList(21, 25, 34), scores);
     }
-    
+
     @Test
     public void testBeginTransactionEmitsOneItem() {
-    	Database db = db();
-    	Boolean value = db.beginTransaction().toBlockingObservable().single();
-    	assertTrue(value);
+        Database db = db();
+        Boolean value = db.beginTransaction().toBlockingObservable().single();
+        assertTrue(value);
     }
-    
+
     @Test
     public void testCommitOnLastOperator() {
-    	Database db = db();
-    	long count = db
-    			//start transaction
-    			.beginTransaction()
-    		//push parameters
-    			.flatMap(constant(from(asList(99,88))))
-    			//log
-    			.doOnEach(log())
-    	  //update twice
-    	  .lift(db.update("update person set score=?")
-    			  //push parameters
-    			  .parameterOperator())
-    	  //commit on last
-    	  .lift(db.commitOnCompleteOperator())
-    	  //get count of 88s
-    	  .lift(db.select("select count(*) from person where score=88")
-    			  //depends on previous
-    			  .dependsOnOperator()
-    			  //count as Long
-    			  .getAs(Long.class))
-    			  //block and get result
-    	  .toBlockingObservable().single();
-    	assertEquals(3,count);
+        Database db = db();
+        long count = db
+        // start transaction
+                .beginTransaction()
+                // push parameters
+                .flatMap(constant(from(asList(99, 88))))
+                // log
+                .doOnEach(log())
+                // update twice
+                .lift(db.update("update person set score=?")
+                // push parameters
+                        .parameterOperator())
+                // commit on last
+                .lift(db.commitOnCompleteOperator())
+                // get count of 88s
+                .lift(db.select("select count(*) from person where score=88")
+                // depends on previous
+                        .dependsOnOperator()
+                        // count as Long
+                        .getAs(Long.class))
+                // block and get result
+                .toBlockingObservable().single();
+        assertEquals(3, count);
     }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {
