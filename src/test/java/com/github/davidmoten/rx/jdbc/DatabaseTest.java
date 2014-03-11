@@ -1048,9 +1048,9 @@ public class DatabaseTest {
     @Test
     public void testBeginTransactionOnNextForThreePasses() {
         Database db = db();
-        int count = Observable
+        List<Integer> mins = Observable
         // do 3 times
-                .from(asList(1, 2, 3))
+                .from(asList(11, 12, 13))
                 // begin transaction for each item
                 .lift(db.beginTransactionOnNextOperator())
                 // update all scores to the item
@@ -1060,13 +1060,12 @@ public class DatabaseTest {
                 // to empty lists
                 .map(constant(emptyList()))
                 // return count
-                // TODO
-                // .lift(db.select("select min(score) from person").parameterListOperator())
-                // count
-                .count()
+                 .lift(db.select("select min(score) from person").parameterListOperator().getAs(Integer.class))
+                // list the results
+                .toList()
                 // block and get
                 .toBlockingObservable().single();
-        assertEquals(3, count);
+        assertEquals(Arrays.asList(11,12,13), mins);
     }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {

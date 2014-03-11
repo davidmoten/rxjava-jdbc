@@ -17,5 +17,9 @@ public enum OperatorType {
      * A type of operator that consumes an Observable<Object> representing
      * dependencies to be completed before the select or update query.
      */
-    DEPENDENCY;
+    DEPENDENCY,
+    
+    PARAMETER_LIST;
+    
+    
 }

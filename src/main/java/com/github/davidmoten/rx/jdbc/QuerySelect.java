@@ -380,8 +380,8 @@ final public class QuerySelect implements Query {
          * 
          * @return operator that acts on parameters
          */
-        public OperatorBuilder parameterOperator() {
-            return new OperatorBuilder(this, OperatorType.PARAMETER);
+        public OperatorBuilder<Object> parameterOperator() {
+            return new OperatorBuilder<Object>(this, OperatorType.PARAMETER);
         }
 
         /**
@@ -390,16 +390,21 @@ final public class QuerySelect implements Query {
          * 
          * @return operator that acts on dependencies
          */
-        public OperatorBuilder dependsOnOperator() {
-            return new OperatorBuilder(this, OperatorType.DEPENDENCY);
+        public OperatorBuilder<Object> dependsOnOperator() {
+            return new OperatorBuilder<Object>(this, OperatorType.DEPENDENCY);
         }
+
+		public OperatorBuilder<List<Object>> parameterListOperator() {
+			return new OperatorBuilder<List<Object>>(this, OperatorType.PARAMETER_LIST);
+		}
+
 
     }
 
     /**
      * Builder pattern for select query {@link Operator}.
      */
-    public static class OperatorBuilder {
+    public static class OperatorBuilder<R> {
 
         private final Builder builder;
         private final OperatorType operatorType;
@@ -421,8 +426,8 @@ final public class QuerySelect implements Query {
          * @param function
          * @return
          */
-        public <T> Operator<T, Object> get(Func1<ResultSet, T> function) {
-            return new QuerySelectOperator<T>(builder, function, operatorType);
+        public <T> Operator<T, R> get(Func1<ResultSet, T> function) {
+            return new QuerySelectOperator<T,R>(builder, function, operatorType);
         }
 
         /**
@@ -431,7 +436,7 @@ final public class QuerySelect implements Query {
          * @param cls
          * @return
          */
-        public <S> Operator<S, Object> autoMap(Class<S> cls) {
+        public <S> Operator<S, R> autoMap(Class<S> cls) {
             return get(Util.autoMap(cls));
         }
 
@@ -442,7 +447,7 @@ final public class QuerySelect implements Query {
          * @param cls
          * @return
          */
-        public <S> Operator<S, Object> getAs(Class<S> cls) {
+        public <S> Operator<S, R> getAs(Class<S> cls) {
             return get(Tuples.single(cls));
         }
 
@@ -453,7 +458,7 @@ final public class QuerySelect implements Query {
          * @param cls
          * @return
          */
-        public <S> Operator<TupleN<S>, Object> getTupleN(Class<S> cls) {
+        public <S> Operator<TupleN<S>, R> getTupleN(Class<S> cls) {
             return get(Tuples.tupleN(cls));
         }
 
@@ -464,7 +469,7 @@ final public class QuerySelect implements Query {
          * @param cls
          * @return
          */
-        public <S> Operator<TupleN<Object>, Object> getTupleN() {
+        public <S> Operator<TupleN<Object>, R> getTupleN() {
             return get(Tuples.tupleN(Object.class));
         }
 
@@ -476,7 +481,7 @@ final public class QuerySelect implements Query {
          * @param cls2
          * @return
          */
-        public <T1, T2> Operator<Tuple2<T1, T2>, Object> getAs(Class<T1> cls1, Class<T2> cls2) {
+        public <T1, T2> Operator<Tuple2<T1, T2>, R> getAs(Class<T1> cls1, Class<T2> cls2) {
             return get(Tuples.tuple(cls1, cls2));
         }
 
@@ -489,7 +494,7 @@ final public class QuerySelect implements Query {
          * @param cls3
          * @return
          */
-        public <T1, T2, T3> Operator<Tuple3<T1, T2, T3>, Object> getAs(Class<T1> cls1, Class<T2> cls2, Class<T3> cls3) {
+        public <T1, T2, T3> Operator<Tuple3<T1, T2, T3>, R> getAs(Class<T1> cls1, Class<T2> cls2, Class<T3> cls3) {
             return get(Tuples.tuple(cls1, cls2, cls3));
         }
 
@@ -503,7 +508,7 @@ final public class QuerySelect implements Query {
          * @param cls4
          * @return
          */
-        public <T1, T2, T3, T4> Operator<Tuple4<T1, T2, T3, T4>, Object> getAs(Class<T1> cls1, Class<T2> cls2,
+        public <T1, T2, T3, T4> Operator<Tuple4<T1, T2, T3, T4>, R> getAs(Class<T1> cls1, Class<T2> cls2,
                 Class<T3> cls3, Class<T4> cls4) {
             return get(Tuples.tuple(cls1, cls2, cls3, cls4));
         }
@@ -519,7 +524,7 @@ final public class QuerySelect implements Query {
          * @param cls5
          * @return
          */
-        public <T1, T2, T3, T4, T5> Operator<Tuple5<T1, T2, T3, T4, T5>, Object> getAs(Class<T1> cls1, Class<T2> cls2,
+        public <T1, T2, T3, T4, T5> Operator<Tuple5<T1, T2, T3, T4, T5>, R> getAs(Class<T1> cls1, Class<T2> cls2,
                 Class<T3> cls3, Class<T4> cls4, Class<T5> cls5) {
             return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5));
         }
@@ -536,7 +541,7 @@ final public class QuerySelect implements Query {
          * @param cls6
          * @return
          */
-        public <T1, T2, T3, T4, T5, T6> Operator<Tuple6<T1, T2, T3, T4, T5, T6>, Object> getAs(Class<T1> cls1,
+        public <T1, T2, T3, T4, T5, T6> Operator<Tuple6<T1, T2, T3, T4, T5, T6>, R> getAs(Class<T1> cls1,
                 Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5, Class<T6> cls6) {
             return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6));
         }
@@ -554,7 +559,7 @@ final public class QuerySelect implements Query {
          * @param cls7
          * @return
          */
-        public <T1, T2, T3, T4, T5, T6, T7> Operator<Tuple7<T1, T2, T3, T4, T5, T6, T7>, Object> getAs(Class<T1> cls1,
+        public <T1, T2, T3, T4, T5, T6, T7> Operator<Tuple7<T1, T2, T3, T4, T5, T6, T7>, R> getAs(Class<T1> cls1,
                 Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5, Class<T6> cls6, Class<T7> cls7) {
             return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6, cls7));
         }
