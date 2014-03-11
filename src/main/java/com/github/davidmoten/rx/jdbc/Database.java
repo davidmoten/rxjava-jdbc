@@ -513,17 +513,17 @@ final public class Database {
 		return currentIsTransactionOpen.get();
 	}
 	
-	public <T> Operator<Boolean,T> commitOnCompleteOperator(final Observable<?>... dependencies) {
+	public <T> Operator<Boolean,T> commitOnCompleteOperator() {
 		return RxUtil.toOperator(new Func1<Observable<T>,Observable<Boolean>>() {
 
 			@Override
 			public Observable<Boolean> call( Observable<T> source) {
-				return commitOnCompleteOperatorIfAtLeastOneValue(Database.this,source,dependencies);
+				return commitOnCompleteOperatorIfAtLeastOneValue(Database.this,source);
 			}});		
 	}
 	
 	private static final <T> Observable<Boolean> commitOnCompleteOperatorIfAtLeastOneValue(final Database db, 
-			Observable<T> source,final Observable<?>... dependencies) {
+			Observable<T> source) {
 		CounterAction<T> counter = RxUtil.counter();
 		Observable<Boolean> commit = counter.count().filter(greaterThanZero()).lift(db.commitOperator());
 		return Observable.concat(source.doOnNext(counter).ignoreElements().cast(Boolean.class),commit);
