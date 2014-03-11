@@ -1,5 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
+import static com.github.davidmoten.rx.RxUtil.constant;
 import static com.github.davidmoten.rx.RxUtil.greaterThanZero;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -440,10 +441,27 @@ final public class Database {
 
     public <T> Operator<Boolean, T> commitOnCompleteOperator() {
         return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
-
             @Override
             public Observable<Boolean> call(Observable<T> source) {
                 return commitOnCompleteOperatorIfAtLeastOneValue(Database.this, source);
+            }
+        });
+    }
+
+    public <T> Operator<T, T> beginTransactionOnNextOperator() {
+        return RxUtil.toOperator(new Func1<Observable<T>, Observable<T>>() {
+            @Override
+            public Observable<T> call(Observable<T> source) {
+                return beginTransactionOnNext(Database.this, source);
+            }
+        });
+    }
+
+    public <T> Operator<Boolean, T> commitOnNextOperator() {
+        return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
+            @Override
+            public Observable<Boolean> call(Observable<T> source) {
+                return commitOnNext(Database.this, source);
             }
         });
     }
@@ -455,4 +473,21 @@ final public class Database {
         return Observable.concat(source.doOnNext(counter).ignoreElements().cast(Boolean.class), commit);
     }
 
+    private static final <T> Observable<Boolean> commitOnNext(final Database db, Observable<T> source) {
+        return source.flatMap(new Func1<T, Observable<Boolean>>() {
+            @Override
+            public Observable<Boolean> call(T t) {
+                return db.commit();
+            }
+        });
+    }
+
+    private static <T> Observable<T> beginTransactionOnNext(final Database db, Observable<T> source) {
+        return source.flatMap(new Func1<T, Observable<T>>() {
+            @Override
+            public Observable<T> call(T t) {
+                return db.beginTransaction().map(constant(t));
+            }
+        });
+    }
 }

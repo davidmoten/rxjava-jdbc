@@ -1044,6 +1044,25 @@ public class DatabaseTest {
         assertEquals(3, count);
     }
 
+    @Test
+    public void testBeginTransactionOnNextForThreePasses() {
+        Database db = db();
+        int count = Observable
+        // do 3 times
+                .from(asList(1, 2, 3))
+                // begin transaction for each item
+                .lift(db.beginTransactionOnNextOperator())
+                // update all scores to the item
+                .lift(db.update("update person set score=?").parameterOperator())
+                // commit transaction
+                .lift(db.commitOnNextOperator())
+                // return count
+                .count()
+                // block and get
+                .toBlockingObservable().single();
+        assertEquals(3, count);
+    }
+
     private static class CountDownConnectionProvider implements ConnectionProvider {
         private final ConnectionProvider cp;
         private final CountDownLatch closesLatch;
