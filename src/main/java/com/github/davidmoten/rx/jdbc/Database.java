@@ -468,9 +468,7 @@ final public class Database {
 	}
 
 	public Scheduler currentScheduler() {
-		if (currentIsTransactionOpen.get())
-			return Schedulers.trampoline();
-		else if (currentSchedulerFactory.get() == null)
+		 if (currentSchedulerFactory.get() == null)
 			return nonTransactionalSchedulerFactory.call();
 		else
 			return currentSchedulerFactory.get().call();
@@ -492,7 +490,7 @@ final public class Database {
 
 	void beginTransactionSubscribe() {
 		log.debug("beginTransactionSubscribe");
-		currentSchedulerFactory.set(transactionalSchedulerFactory);
+		currentSchedulerFactory.set(CURRENT_THREAD_SCHEDULER_FACTORY);
 		currentIsTransactionOpen.set(true);
 	}
 

@@ -218,6 +218,30 @@ public class DatabaseTest {
                 .getAs(Long.class).toBlockingObservable().single();
         assertEquals(0, count);
     }
+    
+    @Test
+    public void testUpdateAndSelectWithTransaction() {
+        Database db = db();
+        Observable<Boolean> begin = db.beginTransaction();
+        Observable<Integer> updateCount = db
+        		//update everyone's score to 99
+        		.update("update person set score=?")
+        		//in transaction
+        		.dependsOn(begin)
+        		//new score
+        		.parameter(99)
+        		//execute
+        		.count();
+        long count = db.select("select count(*) from person where score=?")
+        		//where score = 99
+        		.parameter(99)
+        		//depends on
+        		.dependsOn(updateCount)
+        		//as long value
+        		.getAs(Long.class).toBlockingObservable().single();
+        		
+        assertEquals(3, count);
+    }
 
     @Test
     public void testUseParameterObservable() {
