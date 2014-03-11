@@ -806,9 +806,9 @@ public class DatabaseTest {
         Observable<Boolean> begin = db.beginTransaction();
         Observable<Integer> count = db.update("update person set score=? where name=?").dependsOn(begin)
                 .parameters(23, "FRED").count();
-        Observable<Integer> count2 = db.update("update person set score=? where name=?").dependsOn(begin)
+        Observable<Integer> count2 = db.update("update person set score=? where name=?").dependsOn(count)
                 .parameters(25, "JOHN").count();
-        int result = db.commit(count, count2).count().toBlockingObservable().single();
+        int result = db.commit( count2).count().toBlockingObservable().single();
         log.info("committed " + result);
         cp.getsLatch().await();
         log.info("gets ok");

@@ -472,6 +472,7 @@ final public class Database {
     }
 
     void beginTransactionSubscribe() {
+    	Thread.dumpStack();
     	log.debug("beginTransactionSubscribe");
         currentSchedulerFactory.set(transactionalSchedulerFactory);
         currentIsTransactionOpen.set(true);
