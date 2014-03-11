@@ -989,6 +989,13 @@ public class DatabaseTest {
     }
     
     @Test
+    public void testBeginTransactionEmitsOneItem() {
+    	Database db = db();
+    	Boolean value = db.beginTransaction().toBlockingObservable().single();
+    	assertTrue(value);
+    }
+    
+    @Test
     public void testCommitOnLastOperator() {
     	Database db = db();
     	long count = db
