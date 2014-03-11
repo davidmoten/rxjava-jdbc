@@ -30,12 +30,12 @@ public class QuerySelectOperator<T> implements Operator<T, Object> {
         operator = new OperatorFromOperation<T, Object>(new Func1<Observable<Object>, Observable<T>>() {
 
             @Override
-            public Observable<T> call(Observable<Object> parameters) {
+            public Observable<T> call(Observable<Object> observable) {
                 if (operatorType == OperatorType.PARAMETER)
-                    return builder.parameters(parameters).get(function);
+                    return builder.parameters(observable).get(function);
                 else
                     // dependency
-                    return builder.dependsOn(parameters).get(function);
+                    return builder.dependsOn(observable).get(function);
             }
         });
     }
