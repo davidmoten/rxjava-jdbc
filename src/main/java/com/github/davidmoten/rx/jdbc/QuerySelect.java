@@ -393,6 +393,7 @@ final public class QuerySelect implements Query {
         public OperatorBuilder dependsOnOperator() {
             return new OperatorBuilder(this, OperatorType.DEPENDENCY);
         }
+
     }
 
     /**

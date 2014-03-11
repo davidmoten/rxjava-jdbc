@@ -7,6 +7,7 @@ import static com.github.davidmoten.rx.jdbc.DatabaseCreator.createDatabase;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.db;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.nextUrl;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.easymock.EasyMock.createMock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -1056,7 +1057,12 @@ public class DatabaseTest {
                 .lift(db.update("update person set score=?").parameterOperator())
                 // commit transaction
                 .lift(db.commitOnNextOperator())
+                // to empty lists
+                .map(constant(emptyList()))
                 // return count
+                // TODO
+                // .lift(db.select("select min(score) from person").parameterListOperator())
+                // count
                 .count()
                 // block and get
                 .toBlockingObservable().single();
