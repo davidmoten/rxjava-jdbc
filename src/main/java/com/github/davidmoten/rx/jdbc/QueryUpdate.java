@@ -212,8 +212,8 @@ final public class QueryUpdate implements Query {
          * 
          * @return operator that acts on parameters
          */
-        public QueryUpdateOperator parameterOperator() {
-            return new QueryUpdateOperator(this, OperatorType.PARAMETER);
+        public QueryUpdateOperator<Object> parameterOperator() {
+            return new QueryUpdateOperator<Object>(this, OperatorType.PARAMETER);
         }
 
         /**
@@ -222,8 +222,8 @@ final public class QueryUpdate implements Query {
          * 
          * @return operator that acts on dependencies
          */
-        public QueryUpdateOperator dependsOnOperator() {
-            return new QueryUpdateOperator(this, OperatorType.DEPENDENCY);
+        public QueryUpdateOperator<Object> dependsOnOperator() {
+            return new QueryUpdateOperator<Object>(this, OperatorType.DEPENDENCY);
         }
     }
 }

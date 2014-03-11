@@ -1,5 +1,7 @@
 package com.github.davidmoten.rx.jdbc;
 
+import java.util.List;
+
 import rx.Observable;
 import rx.Observable.Operator;
 import rx.Subscriber;
@@ -10,9 +12,9 @@ import com.github.davidmoten.rx.OperatorFromOperation;
 /**
  * {@link Operator} corresonding to {@link QueryUpdateOperation}.
  */
-public class QueryUpdateOperator implements Operator<Integer, Object> {
+public class QueryUpdateOperator<R> implements Operator<Integer, R> {
 
-    private final OperatorFromOperation<Integer, Object> operator;
+    private final OperatorFromOperation<Integer, R> operator;
 
     /**
      * Constructor.
@@ -21,21 +23,27 @@ public class QueryUpdateOperator implements Operator<Integer, Object> {
      * @param operatorType
      */
     QueryUpdateOperator(final QueryUpdate.Builder builder, final OperatorType operatorType) {
-        operator = new OperatorFromOperation<Integer, Object>(new Func1<Observable<Object>, Observable<Integer>>() {
+        operator = new OperatorFromOperation<Integer, R>(new Func1<Observable<R>, Observable<Integer>>() {
 
             @Override
-            public Observable<Integer> call(Observable<Object> parameters) {
+            public Observable<Integer> call(Observable<R> observable) {
                 if (operatorType == OperatorType.PARAMETER)
-                    return builder.parameters(parameters).count();
-                else
+                    return builder.parameters(observable).count();
+                else if (operatorType == OperatorType.DEPENDENCY)
                     // dependency
-                    return builder.dependsOn(parameters).count();
+                    return builder.dependsOn(observable).count();
+                else  //PARAMETER_LIST
+                	return observable.cast(List.class).flatMap(new Func1<List,Observable<Integer>>(){
+						@Override
+						public Observable<Integer> call(List parameters) {
+							return builder.parameters(Observable.from(parameters)).count();
+						}});	
             }
         });
     }
 
     @Override
-    public Subscriber<? super Object> call(Subscriber<? super Integer> subscriber) {
+    public Subscriber<? super R> call(Subscriber<? super Integer> subscriber) {
         return operator.call(subscriber);
     }
 }
