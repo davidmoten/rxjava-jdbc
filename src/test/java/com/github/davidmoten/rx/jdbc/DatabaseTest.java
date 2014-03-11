@@ -2,12 +2,12 @@ package com.github.davidmoten.rx.jdbc;
 
 import static com.github.davidmoten.rx.RxUtil.constant;
 import static com.github.davidmoten.rx.RxUtil.log;
+import static com.github.davidmoten.rx.RxUtil.toEmptyList;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.connectionProvider;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.createDatabase;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.db;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.nextUrl;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.easymock.EasyMock.createMock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -1055,17 +1055,21 @@ public class DatabaseTest {
                 .lift(db.beginTransactionOnNextOperator())
                 // update all scores to the item
                 .lift(db.update("update person set score=?").parameterOperator())
+                //to empty parameter list
+                .map(toEmptyList())
+                //increase score
+                .lift(db.update("update person set score=score + 5").parameterListOperator())
                 // commit transaction
                 .lift(db.commitOnNextOperator())
                 // to empty lists
-                .map(constant(emptyList()))
+                .map(toEmptyList())
                 // return count
                  .lift(db.select("select min(score) from person").parameterListOperator().getAs(Integer.class))
                 // list the results
                 .toList()
                 // block and get
                 .toBlockingObservable().single();
-        assertEquals(Arrays.asList(11,12,13), mins);
+        assertEquals(Arrays.asList(16,17,18), mins);
     }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {

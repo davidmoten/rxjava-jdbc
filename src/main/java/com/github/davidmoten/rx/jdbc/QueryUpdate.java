@@ -225,5 +225,9 @@ final public class QueryUpdate implements Query {
         public QueryUpdateOperator<Object> dependsOnOperator() {
             return new QueryUpdateOperator<Object>(this, OperatorType.DEPENDENCY);
         }
+        
+        public QueryUpdateOperator<List<Object>> parameterListOperator() {
+            return new QueryUpdateOperator<List<Object>>(this, OperatorType.PARAMETER_LIST);
+        }
     }
 }
