@@ -469,8 +469,24 @@ final public class Database {
     private static final <T> Observable<Boolean> commitOnCompleteOperatorIfAtLeastOneValue(final Database db,
             Observable<T> source) {
         CounterAction<T> counter = RxUtil.counter();
-        Observable<Boolean> commit = counter.count().filter(greaterThanZero()).lift(db.commitOperator());
-        return Observable.concat(source.doOnNext(counter).ignoreElements().cast(Boolean.class), commit);
+        Observable<Boolean> commit = counter
+        		//get count
+        		.count()
+        		//greater than zero or empty
+        		.filter(greaterThanZero())
+        		//commit if at least one value
+        		.lift(db.commitOperator());
+        return Observable
+        		//concatenate
+        		.concat(source
+        				//count emissions
+        				.doOnNext(counter)
+        				//ignore emissions
+        				.ignoreElements()
+        				//cast the empty sequence to type Boolean
+        				.cast(Boolean.class),
+        				//concat with commit
+        				commit);
     }
 
     private static final <T> Observable<Boolean> commitOnNext(final Database db, Observable<T> source) {
