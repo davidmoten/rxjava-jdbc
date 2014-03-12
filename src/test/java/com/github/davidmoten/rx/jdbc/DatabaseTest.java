@@ -110,7 +110,8 @@ public class DatabaseTest {
 
     @Test
     public void testSimpleExample() {
-        Observable<String> names = db().select("select name from person order by name").getAs(String.class);
+        Observable<String> names = db().select("select name from person order by name").getAs(
+                String.class);
         // convert the names to a list for unit test
         List<String> list = names.toList().toBlockingObservable().single();
         log.debug("list=" + list);
@@ -216,12 +217,13 @@ public class DatabaseTest {
     public void testTransactionOnCommitDoesntOccurUnlessSubscribedTo() {
         Database db = db();
         Observable<Boolean> begin = db.beginTransaction();
-        Observable<Integer> u = db.update("update person set score=?").dependsOn(begin).parameter(99).count();
+        Observable<Integer> u = db.update("update person set score=?").dependsOn(begin)
+                .parameter(99).count();
         db.commit(u);
         // note that last transaction was not listed as a dependency of the next
         // query
-        long count = db.select("select count(*) from person where score=?").parameter(99).getAs(Long.class)
-                .toBlockingObservable().single();
+        long count = db.select("select count(*) from person where score=?").parameter(99)
+                .getAs(Long.class).toBlockingObservable().single();
         assertEquals(0, count);
     }
 
@@ -229,10 +231,11 @@ public class DatabaseTest {
     public void testTransactionOnRollback() {
         Database db = db();
         Observable<Boolean> begin = db.beginTransaction();
-        Observable<Integer> updateCount = db.update("update person set score=?").dependsOn(begin).parameter(99).count();
+        Observable<Integer> updateCount = db.update("update person set score=?").dependsOn(begin)
+                .parameter(99).count();
         db.rollback(updateCount);
-        long count = db.select("select count(*) from person where score=?").parameter(99).dependsOnLastTransaction()
-                .getAs(Long.class).toBlockingObservable().single();
+        long count = db.select("select count(*) from person where score=?").parameter(99)
+                .dependsOnLastTransaction().getAs(Long.class).toBlockingObservable().single();
         assertEquals(0, count);
     }
 
@@ -262,22 +265,24 @@ public class DatabaseTest {
 
     @Test
     public void testUseParameterObservable() {
-        int count = db().select("select name from person where name >?").parameters(Observable.from("ALEX")).get()
-                .count().first().toBlockingObservable().single();
+        int count = db().select("select name from person where name >?")
+                .parameters(Observable.from("ALEX")).get().count().first().toBlockingObservable()
+                .single();
         assertEquals(3, count);
     }
 
     @Test
     public void testTwoParameters() {
-        List<String> list = db().select("select name from person where name > ? and name < ?").parameter("ALEX")
-                .parameter("LOUIS").getAs(String.class).toList().toBlockingObservable().single();
+        List<String> list = db().select("select name from person where name > ? and name < ?")
+                .parameter("ALEX").parameter("LOUIS").getAs(String.class).toList()
+                .toBlockingObservable().single();
         assertEquals(asList("FRED", "JOSEPH"), list);
     }
 
     @Test
     public void testTakeFewerThanAvailable() {
-        int count = db().select("select name from person where name >?").parameter("ALEX").get().take(2).count()
-                .first().toBlockingObservable().single();
+        int count = db().select("select name from person where name >?").parameter("ALEX").get()
+                .take(2).count().first().toBlockingObservable().single();
         assertEquals(2, count);
     }
 
@@ -310,8 +315,10 @@ public class DatabaseTest {
 
     @Test
     public void testTransformToTuple2AndTestActionsPrintln() {
-        Tuple2<String, Integer> tuple = db().select("select name,score from person where name >? order by name")
-                .parameter("ALEX").getAs(String.class, Integer.class).last().toBlockingObservable().single();
+        Tuple2<String, Integer> tuple = db()
+                .select("select name,score from person where name >? order by name")
+                .parameter("ALEX").getAs(String.class, Integer.class).last().toBlockingObservable()
+                .single();
         assertEquals("MARMADUKE", tuple.value1());
         assertEquals(25, (int) tuple.value2());
     }
@@ -326,14 +333,16 @@ public class DatabaseTest {
 
     @Test
     public void testMultipleSetsOfParameters() {
-        List<Integer> list = db().select("select score from person where name=?").parameter("FRED").parameter("JOSEPH")
-                .getAs(Integer.class).toSortedList().toBlockingObservable().single();
+        List<Integer> list = db().select("select score from person where name=?").parameter("FRED")
+                .parameter("JOSEPH").getAs(Integer.class).toSortedList().toBlockingObservable()
+                .single();
         assertEquals(asList(21, 34), list);
     }
 
     @Test
     public void testNoParams() {
-        List<Tuple2<String, Integer>> tuples = db().select("select name, score from person where name=? order by name")
+        List<Tuple2<String, Integer>> tuples = db()
+                .select("select name, score from person where name=? order by name")
                 .getAs(String.class, Integer.class).toList().toBlockingObservable().single();
         assertEquals(0, tuples.size());
     }
@@ -348,25 +357,27 @@ public class DatabaseTest {
             }
         };
         Database db = db();
-        Observable<Integer> existingRows = db.select("select name from person where name=?").parameter("FRED")
-                .getAs(String.class).count().filter(isZero);
-        List<Integer> counts = db.update("insert into person(name,score) values(?,?)").parameters(existingRows).count()
-                .toList().toBlockingObservable().single();
+        Observable<Integer> existingRows = db.select("select name from person where name=?")
+                .parameter("FRED").getAs(String.class).count().filter(isZero);
+        List<Integer> counts = db.update("insert into person(name,score) values(?,?)")
+                .parameters(existingRows).count().toList().toBlockingObservable().single();
         assertEquals(0, counts.size());
     }
 
     @Test
     public void testEmptyResultSet() {
-        int count = db().select("select name from person where name >?").parameters(Observable.from("ZZTOP")).get()
-                .count().first().toBlockingObservable().single();
+        int count = db().select("select name from person where name >?")
+                .parameters(Observable.from("ZZTOP")).get().count().first().toBlockingObservable()
+                .single();
         assertEquals(0, count);
     }
 
     @Test
     public void testMixingExplicitAndObservableParameters() {
-        String name = db().select("select name from person where name > ?  and score < ? order by name")
-                .parameter("BARRY").parameters(Observable.from(100)).getAs(String.class).first().toBlockingObservable()
-                .single();
+        String name = db()
+                .select("select name from person where name > ?  and score < ? order by name")
+                .parameter("BARRY").parameters(Observable.from(100)).getAs(String.class).first()
+                .toBlockingObservable().single();
         assertEquals("FRED", name);
     }
 
@@ -384,9 +395,11 @@ public class DatabaseTest {
         // whose name is not XAVIER. Two threads and connections will be used.
 
         Database db = db();
-        Observable<Integer> score = db.select("select score from person where name <> ? order by name")
+        Observable<Integer> score = db
+                .select("select score from person where name <> ? order by name")
                 .parameter("XAVIER").getAs(Integer.class).last();
-        Observable<String> name = db.select("select name from person where score < ? order by name").parameters(score)
+        Observable<String> name = db
+                .select("select name from person where score < ? order by name").parameters(score)
                 .getAs(String.class).first();
         assertIs("FRED", name);
     }
@@ -403,8 +416,8 @@ public class DatabaseTest {
                 .parameter("XAVIER")
                 .getAs(Integer.class)
                 .last()
-                .lift(db.select("select name from person where score < ? order by name").parameterOperator()
-                        .getAs(String.class)).first();
+                .lift(db.select("select name from person where score < ? order by name")
+                        .parameterOperator().getAs(String.class)).first();
         assertIs("FRED", name);
     }
 
@@ -412,48 +425,55 @@ public class DatabaseTest {
     public void testCompositionTwoLevels() {
 
         Database db = db();
-        Observable<String> names = db.select("select name from person order by name").getAs(String.class);
-        Observable<String> names2 = db.select("select name from person where name<>? order by name").parameters(names)
+        Observable<String> names = db.select("select name from person order by name").getAs(
+                String.class);
+        Observable<String> names2 = db
+                .select("select name from person where name<>? order by name").parameters(names)
                 .parameters(names).getAs(String.class);
-        List<String> list = db.select("select name from person where name>?").parameters(names2).getAs(String.class)
-                .toList().toBlockingObservable().single();
+        List<String> list = db.select("select name from person where name>?").parameters(names2)
+                .getAs(String.class).toList().toBlockingObservable().single();
         System.out.println(list);
         assertEquals(12, list.size());
     }
 
     @Test(expected = RuntimeException.class)
     public void testSqlProblem() {
-        String name = db().select("select name from pperson where name >?").parameter("ALEX").getAs(String.class)
-                .first().toBlockingObservable().single();
+        String name = db().select("select name from pperson where name >?").parameter("ALEX")
+                .getAs(String.class).first().toBlockingObservable().single();
         log.debug(name);
     }
 
     @Test(expected = ClassCastException.class)
     public void testException() {
-        Integer name = db().select("select name from person where name >?").parameter("ALEX").getAs(Integer.class)
-                .first().toBlockingObservable().single();
+        Integer name = db().select("select name from person where name >?").parameter("ALEX")
+                .getAs(Integer.class).first().toBlockingObservable().single();
         log.debug("name=" + name);
     }
 
     @Test
     public void testDependsUsingAsynchronousQueriesWaitsForFirstByDelayingCalculation() {
         Database db = db();
-        Observable<Integer> insert = db.update("insert into person(name,score) values(?,?)").parameters("JOHN", 45)
-                .count().zip(Observable.interval(100, TimeUnit.MILLISECONDS), new Func2<Integer, Long, Integer>() {
-                    @Override
-                    public Integer call(Integer t1, Long t2) {
-                        return t1;
-                    }
-                });
+        Observable<Integer> insert = db
+                .update("insert into person(name,score) values(?,?)")
+                .parameters("JOHN", 45)
+                .count()
+                .zip(Observable.interval(100, TimeUnit.MILLISECONDS),
+                        new Func2<Integer, Long, Integer>() {
+                            @Override
+                            public Integer call(Integer t1, Long t2) {
+                                return t1;
+                            }
+                        });
 
-        Observable<Integer> count = db.select("select name from person").dependsOn(insert).get().count();
+        Observable<Integer> count = db.select("select name from person").dependsOn(insert).get()
+                .count();
         assertIs(4, count);
     }
 
     @Test
     public void testAutoMapWillMapStringToStringAndIntToDouble() {
-        Person person = db().select("select name,score,dob,registered from person order by name").autoMap(Person.class)
-                .first().toBlockingObservable().single();
+        Person person = db().select("select name,score,dob,registered from person order by name")
+                .autoMap(Person.class).first().toBlockingObservable().single();
         assertEquals("FRED", person.getName());
         assertEquals(21, person.getScore(), 0.001);
         assertNull(person.getDateOfBirth());
@@ -461,18 +481,18 @@ public class DatabaseTest {
 
     @Test(expected = RuntimeException.class)
     public void testAutoMapCannotFindConstructorWithEnoughParameters() {
-        db().select("select name,score,dob,registered,name from person order by name").autoMap(Person.class).first()
-                .toBlockingObservable().single();
+        db().select("select name,score,dob,registered,name from person order by name")
+                .autoMap(Person.class).first().toBlockingObservable().single();
     }
 
     @Test
     public void testGetTimestamp() {
         Database db = db();
         java.sql.Timestamp registered = new java.sql.Timestamp(100);
-        Observable<Integer> u = db.update("update person set registered=? where name=?").parameter(registered)
-                .parameter("FRED").count();
-        Date regTime = db.select("select registered from person order by name").dependsOn(u).getAs(Date.class).first()
-                .toBlockingObservable().single();
+        Observable<Integer> u = db.update("update person set registered=? where name=?")
+                .parameter(registered).parameter("FRED").count();
+        Date regTime = db.select("select registered from person order by name").dependsOn(u)
+                .getAs(Date.class).first().toBlockingObservable().single();
         assertEquals(100, regTime.getTime());
     }
 
@@ -481,21 +501,28 @@ public class DatabaseTest {
         Database db = db();
         insertClob(db);
         // read clob as string
-        String text = db.select("select document from person_clob").getAs(String.class).first().toBlockingObservable()
-                .single();
+        String text = db.select("select document from person_clob").getAs(String.class).first()
+                .toBlockingObservable().single();
         assertTrue(text.contains("about Fred"));
     }
 
     private static void insertClob(Database db) {
-        Observable<Integer> count = db.update("insert into person_clob(name,document) values(?,?)").parameter("FRED")
-                .parameter("A description about Fred that is rather long and needs a Clob to store it").count();
+        Observable<Integer> count = db
+                .update("insert into person_clob(name,document) values(?,?)")
+                .parameter("FRED")
+                .parameter(
+                        "A description about Fred that is rather long and needs a Clob to store it")
+                .count();
         assertIs(1, count);
     }
 
     private static void insertBlob(Database db) {
-        Observable<Integer> count = db.update("insert into person_blob(name,document) values(?,?)").parameter("FRED")
-                .parameter("A description about Fred that is rather long and needs a Clob to store it".getBytes())
-                .count();
+        Observable<Integer> count = db
+                .update("insert into person_blob(name,document) values(?,?)")
+                .parameter("FRED")
+                .parameter(
+                        "A description about Fred that is rather long and needs a Clob to store it"
+                                .getBytes()).count();
         assertIs(1, count);
     }
 
@@ -504,8 +531,8 @@ public class DatabaseTest {
         Database db = db();
         insertClob(db);
         // read clob as Reader
-        String text = db.select("select document from person_clob").getAs(Reader.class).map(Util.READER_TO_STRING)
-                .first().toBlockingObservable().single();
+        String text = db.select("select document from person_clob").getAs(Reader.class)
+                .map(Util.READER_TO_STRING).first().toBlockingObservable().single();
         assertTrue(text.contains("about Fred"));
     }
 
@@ -514,8 +541,8 @@ public class DatabaseTest {
         Database db = db();
         insertBlob(db);
         // read clob as string
-        byte[] bytes = db.select("select document from person_blob").getAs(byte[].class).first().toBlockingObservable()
-                .single();
+        byte[] bytes = db.select("select document from person_blob").getAs(byte[].class).first()
+                .toBlockingObservable().single();
         assertTrue(new String(bytes).contains("about Fred"));
     }
 
@@ -535,10 +562,10 @@ public class DatabaseTest {
             Date dob = new Date(100);
             long now = System.currentTimeMillis();
             java.sql.Timestamp registered = new java.sql.Timestamp(now);
-            Observable<Integer> u = db.update("update person set dob=?, registered=? where name=?").parameter(dob)
-                    .parameter(registered).parameter("FRED").count();
-            Person person = db.select("select name,score,dob,registered from person order by name").dependsOn(u)
-                    .autoMap(Person.class).first().toBlockingObservable().single();
+            Observable<Integer> u = db.update("update person set dob=?, registered=? where name=?")
+                    .parameter(dob).parameter(registered).parameter("FRED").count();
+            Person person = db.select("select name,score,dob,registered from person order by name")
+                    .dependsOn(u).autoMap(Person.class).first().toBlockingObservable().single();
             assertEquals("FRED", person.getName());
             assertEquals(21, person.getScore(), 0.001);
             // Dates are truncated to start of day
@@ -556,8 +583,10 @@ public class DatabaseTest {
 
     @Test
     public void testTuple3() {
-        Tuple3<String, Integer, String> tuple = db().select("select name,1,lower(name) from person order by name")
-                .getAs(String.class, Integer.class, String.class).first().toBlockingObservable().single();
+        Tuple3<String, Integer, String> tuple = db()
+                .select("select name,1,lower(name) from person order by name")
+                .getAs(String.class, Integer.class, String.class).first().toBlockingObservable()
+                .single();
         assertEquals("FRED", tuple.value1());
         assertEquals(1, (int) tuple.value2());
         assertEquals("fred", tuple.value3());
@@ -567,8 +596,8 @@ public class DatabaseTest {
     public void testTuple4() {
         Tuple4<String, Integer, String, Integer> tuple = db()
                 .select("select name,1,lower(name),2 from person order by name")
-                .getAs(String.class, Integer.class, String.class, Integer.class).first().toBlockingObservable()
-                .single();
+                .getAs(String.class, Integer.class, String.class, Integer.class).first()
+                .toBlockingObservable().single();
         assertEquals("FRED", tuple.value1());
         assertEquals(1, (int) tuple.value2());
         assertEquals("fred", tuple.value3());
@@ -579,8 +608,8 @@ public class DatabaseTest {
     public void testTuple5() {
         Tuple5<String, Integer, String, Integer, String> tuple = db()
                 .select("select name,1,lower(name),2,name from person order by name")
-                .getAs(String.class, Integer.class, String.class, Integer.class, String.class).first()
-                .toBlockingObservable().single();
+                .getAs(String.class, Integer.class, String.class, Integer.class, String.class)
+                .first().toBlockingObservable().single();
         assertEquals("FRED", tuple.value1());
         assertEquals(1, (int) tuple.value2());
         assertEquals("fred", tuple.value3());
@@ -592,8 +621,8 @@ public class DatabaseTest {
     public void testTuple6() {
         Tuple6<String, Integer, String, Integer, String, Integer> tuple = db()
                 .select("select name,1,lower(name),2,name,3 from person order by name")
-                .getAs(String.class, Integer.class, String.class, Integer.class, String.class, Integer.class).first()
-                .toBlockingObservable().single();
+                .getAs(String.class, Integer.class, String.class, Integer.class, String.class,
+                        Integer.class).first().toBlockingObservable().single();
         assertEquals("FRED", tuple.value1());
         assertEquals(1, (int) tuple.value2());
         assertEquals("fred", tuple.value3());
@@ -606,8 +635,8 @@ public class DatabaseTest {
     public void testTuple7() {
         Tuple7<String, Integer, String, Integer, String, Integer, Integer> tuple = db()
                 .select("select name,1,lower(name),2,name,3,4 from person order by name")
-                .getAs(String.class, Integer.class, String.class, Integer.class, String.class, Integer.class,
-                        Integer.class).first().toBlockingObservable().single();
+                .getAs(String.class, Integer.class, String.class, Integer.class, String.class,
+                        Integer.class, Integer.class).first().toBlockingObservable().single();
         assertEquals("FRED", tuple.value1());
         assertEquals(1, (int) tuple.value2());
         assertEquals("fred", tuple.value3());
@@ -621,8 +650,8 @@ public class DatabaseTest {
     public void testAutoMapClob() {
         Database db = db();
         insertClob(db);
-        List<PersonClob> list = db.select("select name, document from person_clob").autoMap(PersonClob.class).toList()
-                .toBlockingObservable().single();
+        List<PersonClob> list = db.select("select name, document from person_clob")
+                .autoMap(PersonClob.class).toList().toBlockingObservable().single();
         assertEquals(1, list.size());
         assertEquals("FRED", list.get(0).getName());
         assertTrue(list.get(0).getDocument().contains("rather long"));
@@ -632,8 +661,8 @@ public class DatabaseTest {
     public void testAutoMapBlob() {
         Database db = db();
         insertBlob(db);
-        List<PersonBlob> list = db.select("select name, document from person_blob").autoMap(PersonBlob.class).toList()
-                .toBlockingObservable().single();
+        List<PersonBlob> list = db.select("select name, document from person_blob")
+                .autoMap(PersonBlob.class).toList().toBlockingObservable().single();
         assertEquals(1, list.size());
         assertEquals("FRED", list.get(0).getName());
         assertTrue(new String(list.get(0).getDocument()).contains("rather long"));
@@ -644,23 +673,25 @@ public class DatabaseTest {
         Database db = db();
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(0);
-        Observable<Integer> update = db.update("update person set registered=? where name=?").parameters(cal, "FRED")
-                .count();
-        Timestamp t = db.select("select registered from person where name=?").parameter("FRED").dependsOn(update)
-                .getAs(Timestamp.class).first().toBlockingObservable().single();
+        Observable<Integer> update = db.update("update person set registered=? where name=?")
+                .parameters(cal, "FRED").count();
+        Timestamp t = db.select("select registered from person where name=?").parameter("FRED")
+                .dependsOn(update).getAs(Timestamp.class).first().toBlockingObservable().single();
         assertEquals(0, t.getTime());
     }
 
     @Test
     public void testDatabaseBuilder() {
-        Database.builder().connectionProvider(connectionProvider()).nonTransactionalSchedulerOnCurrentThread().build();
+        Database.builder().connectionProvider(connectionProvider())
+                .nonTransactionalSchedulerOnCurrentThread().build();
     }
 
     @Test
     public void testConnectionPool() {
         ConnectionProviderPooled cp = new ConnectionProviderPooled(nextUrl(), 0, 10);
         Database db = createDatabase(cp);
-        int count = db.select("select name from person order by name").get().count().toBlockingObservable().single();
+        int count = db.select("select name from person order by name").get().count()
+                .toBlockingObservable().single();
         assertEquals(3, count);
         cp.close();
         // and again to test idempotentcy
@@ -676,7 +707,8 @@ public class DatabaseTest {
     }
 
     @Test
-    public void testConnectionPoolDoesNotRunOutOfConnectionsWhenQueryRunRepeatedly() throws SQLException {
+    public void testConnectionPoolDoesNotRunOutOfConnectionsWhenQueryRunRepeatedly()
+            throws SQLException {
         ConnectionProviderPooled cp = new ConnectionProviderPooled(nextUrl(), 0, 1);
         Database db = new Database(cp);
         Connection con = cp.get();
@@ -713,8 +745,8 @@ public class DatabaseTest {
     public void testOneConnectionOpenAndClosedAfterOneUpdate() throws InterruptedException {
         CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
         Database db = new Database(cp);
-        db.update("update person set score=? where name=?").parameters(23, "FRED").count().toBlockingObservable()
-                .single();
+        db.update("update person set score=? where name=?").parameters(23, "FRED").count()
+                .toBlockingObservable().single();
         cp.closesLatch().await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         cp.getsLatch().await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
@@ -722,8 +754,8 @@ public class DatabaseTest {
     @Test
     public void testLiftWithParameters() {
         int score = from("FRED")
-                .lift(db().select("select score from person where name=?").parameterOperator().getAs(Integer.class))
-                .toBlockingObservable().single();
+                .lift(db().select("select score from person where name=?").parameterOperator()
+                        .getAs(Integer.class)).toBlockingObservable().single();
         assertEquals(21, score);
     }
 
@@ -767,17 +799,23 @@ public class DatabaseTest {
     @Test
     public void testUnsubscribeOfBufferAndFlatMap() throws InterruptedException {
         UnsubscribeDetector<Long> detector = UnsubscribeDetector.<Long> detect();
-        Observable.interval(10, TimeUnit.MILLISECONDS).lift(detector).buffer(2).flatMap(constant(Observable.from(1L)))
-                .take(6).toList().toBlockingObservable().single();
+        Observable.interval(10, TimeUnit.MILLISECONDS).lift(detector).buffer(2)
+                .flatMap(constant(Observable.from(1L))).take(6).toList().toBlockingObservable()
+                .single();
         assertTrue(detector.latch().await(3, TimeUnit.SECONDS));
     }
 
     @Test
-    public void testParametersAreUnsubscribedIfUnsubscribedPostParameterOperatorLift() throws InterruptedException {
+    public void testParametersAreUnsubscribedIfUnsubscribedPostParameterOperatorLift()
+            throws InterruptedException {
         UnsubscribeDetector<String> detector = UnsubscribeDetector.detect();
-        Observable.interval(100, TimeUnit.MILLISECONDS).doOnEach(log()).map(constant("FRED")).lift(detector)
-                .lift(db().select("select score from person where name=?").parameterOperator().getAs(Integer.class))
-                .take(1).subscribe(log());
+        Observable
+                .interval(100, TimeUnit.MILLISECONDS)
+                .doOnEach(log())
+                .map(constant("FRED"))
+                .lift(detector)
+                .lift(db().select("select score from person where name=?").parameterOperator()
+                        .getAs(Integer.class)).take(1).subscribe(log());
         assertTrue(detector.latch().await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
     }
 
@@ -786,8 +824,8 @@ public class DatabaseTest {
         UnsubscribeDetector<String> detector = UnsubscribeDetector.detect();
         Observable<String> params = Observable.interval(100, TimeUnit.MILLISECONDS).doOnEach(log())
                 .map(constant("FRED")).lift(detector);
-        db().select("select score from person where name=?").parameters(params).getAs(Integer.class).take(1)
-                .subscribe(log());
+        db().select("select score from person where name=?").parameters(params)
+                .getAs(Integer.class).take(1).subscribe(log());
         assertTrue(detector.latch().await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
     }
 
@@ -798,8 +836,8 @@ public class DatabaseTest {
                 .update("update person set score=? where name=?")
                 .parameters(4, "FRED")
                 .count()
-                .lift(db.select("select score from person where name=?").parameters("FRED").dependsOnOperator()
-                        .getAs(Integer.class));
+                .lift(db.select("select score from person where name=?").parameters("FRED")
+                        .dependsOnOperator().getAs(Integer.class));
         assertIs(4, count);
     }
 
@@ -820,10 +858,11 @@ public class DatabaseTest {
                 // update Fred's score to 4
                 .lift(db.update("update person set score=? where name=?").parameterOperator())
                 // update everyone with score of 4 to 14
-                .lift(db.update("update person set score=? where score=?").parameters(14, 4).dependsOnOperator())
+                .lift(db.update("update person set score=? where score=?").parameters(14, 4)
+                        .dependsOnOperator())
                 // get Fred's score
-                .lift(db.select("select score from person where name=?").parameters("FRED").dependsOnOperator()
-                        .getAs(Integer.class));
+                .lift(db.select("select score from person where name=?").parameters("FRED")
+                        .dependsOnOperator().getAs(Integer.class));
         assertIs(14, score);
     }
 
@@ -845,21 +884,24 @@ public class DatabaseTest {
     public void testTwoConnectionsOpenedAndClosedAfterTwoAsyncUpdates() throws InterruptedException {
         CountDownConnectionProvider cp = new CountDownConnectionProvider(2, 2);
         Database db = new Database(cp);
-        db.update("update person set score=? where name=?").parameters(23, "FRED").count().toBlockingObservable()
-                .single();
-        db.update("update person set score=? where name=?").parameters(25, "JOHN").count().toBlockingObservable()
-                .single();
+        db.update("update person set score=? where name=?").parameters(23, "FRED").count()
+                .toBlockingObservable().single();
+        db.update("update person set score=? where name=?").parameters(25, "JOHN").count()
+                .toBlockingObservable().single();
         assertTrue(cp.getsLatch().await(60, TimeUnit.SECONDS));
         assertTrue(cp.closesLatch().await(60, TimeUnit.SECONDS));
     }
 
     @Test
-    public void testOneConnectionOpenedAndClosedAfterTwoSelectsWithinTransaction() throws InterruptedException {
+    public void testOneConnectionOpenedAndClosedAfterTwoSelectsWithinTransaction()
+            throws InterruptedException {
         CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
         Database db = new Database(cp);
         Observable<Boolean> begin = db.beginTransaction();
-        Observable<Integer> count = db.select("select name from person").dependsOn(begin).get().count();
-        Observable<Integer> count2 = db.select("select name from person").dependsOn(count).get().count();
+        Observable<Integer> count = db.select("select name from person").dependsOn(begin).get()
+                .count();
+        Observable<Integer> count2 = db.select("select name from person").dependsOn(count).get()
+                .count();
         int result = db.commit(count2).count().toBlockingObservable().single();
         log.info("committed " + result);
         cp.getsLatch().await();
@@ -869,14 +911,15 @@ public class DatabaseTest {
     }
 
     @Test
-    public void testOneConnectionOpenedAndClosedAfterTwoUpdatesWithinTransaction() throws InterruptedException {
+    public void testOneConnectionOpenedAndClosedAfterTwoUpdatesWithinTransaction()
+            throws InterruptedException {
         CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
         Database db = new Database(cp);
         Observable<Boolean> begin = db.beginTransaction();
-        Observable<Integer> count = db.update("update person set score=? where name=?").dependsOn(begin)
-                .parameters(23, "FRED").count();
-        Observable<Integer> count2 = db.update("update person set score=? where name=?").dependsOn(count)
-                .parameters(25, "JOHN").count();
+        Observable<Integer> count = db.update("update person set score=? where name=?")
+                .dependsOn(begin).parameters(23, "FRED").count();
+        Observable<Integer> count2 = db.update("update person set score=? where name=?")
+                .dependsOn(count).parameters(25, "JOHN").count();
         int result = db.commit(count2).count().toBlockingObservable().single();
         log.info("committed " + result);
         cp.getsLatch().await();
@@ -929,7 +972,8 @@ public class DatabaseTest {
     public void testConnectionsReleasedByUpdateStatementBeforeOnNext() throws InterruptedException {
         final CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
         Database db = new Database(cp);
-        Observable<Integer> result = db.update("update person set score = 1 where name=?").parameter("FRED").count();
+        Observable<Integer> result = db.update("update person set score = 1 where name=?")
+                .parameter("FRED").count();
 
         checkConnectionsReleased(cp, result);
     }
@@ -939,8 +983,8 @@ public class DatabaseTest {
         final CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
         Database db = new Database(cp);
         Observable<Boolean> begin = db.beginTransaction();
-        Observable<Integer> result = db.update("update person set score = 1 where name=?").dependsOn(begin)
-                .parameter("FRED").count();
+        Observable<Integer> result = db.update("update person set score = 1 where name=?")
+                .dependsOn(begin).parameter("FRED").count();
         checkConnectionsReleased(cp, db.commit(result));
     }
 
@@ -949,8 +993,8 @@ public class DatabaseTest {
         final CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
         Database db = new Database(cp);
         Observable<Boolean> begin = db.beginTransaction();
-        Observable<Integer> result = db.update("update person set score = 1 where name=?").dependsOn(begin)
-                .parameter("FRED").count();
+        Observable<Integer> result = db.update("update person set score = 1 where name=?")
+                .dependsOn(begin).parameter("FRED").count();
         checkConnectionsReleased(cp, db.rollback(result));
     }
 
@@ -980,7 +1024,8 @@ public class DatabaseTest {
         // set name parameter
                 .from("FRED")
                 // push into update
-                .lift(db.update("update person set score=1 where name=?").dependsOn(begin).parameterOperator())
+                .lift(db.update("update person set score=1 where name=?").dependsOn(begin)
+                        .parameterOperator())
                 // map num rows affected to JOHN
                 .map(constant("JOHN"))
                 // push into second update
@@ -996,7 +1041,8 @@ public class DatabaseTest {
         // set name parameter
                 .from("FRED")
                 // push into update
-                .lift(db.update("update person set score=1 where name=?").dependsOn(begin).parameterOperator())
+                .lift(db.update("update person set score=1 where name=?").dependsOn(begin)
+                        .parameterOperator())
                 // map num rows affected to JOHN
                 .lift(db.commitOperator())
                 // select query
@@ -1113,7 +1159,8 @@ public class DatabaseTest {
                 // to empty lists
                 .map(toEmpty())
                 // return count
-                .lift(db.select("select min(score) from person").parameterListOperator().getAs(Integer.class))
+                .lift(db.select("select min(score) from person").parameterListOperator()
+                        .getAs(Integer.class))
                 // list the results
                 .toList()
                 // block and get
@@ -1126,20 +1173,24 @@ public class DatabaseTest {
         Database db = db();
         int count = Observable
         // parameters grouped in lists
-                .from(asList(Observable.<Object> from(1), Observable.<Object> from(2)))
+                .from(asList(from((Object) 1), from((Object) 2)))
+                // log
+                .doOnEach(log())
                 // begin trans
                 .lift(db.<Observable<Object>> beginTransactionOnNextOperator())
+                // log
+                .doOnEach(log())
                 // update
                 .lift(db.update("update person set score = ?")
                 // push lists of parameters
-                        .parameterListOperator())
+                        .parameterListOperator()).doOnEach(log())
                 // commit
                 .lift(db.commitOnNextOperator())
                 // total rows affected
                 .count()
                 // block and get result
                 .toBlockingObservable().single();
-        assertEquals(6, count);
+        assertEquals(2, count);
     }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {

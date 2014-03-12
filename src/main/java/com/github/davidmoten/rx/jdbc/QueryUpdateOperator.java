@@ -25,7 +25,6 @@ public class QueryUpdateOperator<R> implements Operator<Integer, R> {
         operator = new OperatorFromOperation<Integer, R>(
                 new Func1<Observable<R>, Observable<Integer>>() {
 
-                    @SuppressWarnings("rawtypes")
                     @Override
                     public Observable<Integer> call(Observable<R> observable) {
                         if (operatorType == OperatorType.PARAMETER)
@@ -42,7 +41,7 @@ public class QueryUpdateOperator<R> implements Operator<Integer, R> {
                                         @Override
                                         public Observable<Integer> call(
                                                 Observable<Object> parameters) {
-                                            return builder.parameters(
+                                            return builder.clearParameters().parameters(
                                                     parameters).count();
                                         }
                                     });

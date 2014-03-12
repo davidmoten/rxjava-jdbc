@@ -136,4 +136,8 @@ final public class QueryBuilder {
     public QueryContext context() {
         return context;
     }
+
+    public void clearParameters() {
+        this.parameters = Observable.empty();
+    }
 }
