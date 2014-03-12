@@ -87,14 +87,14 @@ class QueryUpdateOperation {
                 if (isBeginTransaction())
                     performBeginTransaction(subscriber);
                 else {
-                	getConnection();
-                	if (isCommit())
+                    getConnection();
+                    if (isCommit())
                         performCommit(subscriber);
                     else if (isRollback())
                         performRollback(subscriber);
                     else
                         performUpdate(subscriber);
-                	close();
+                    close();
                 }
 
                 complete(subscriber);
