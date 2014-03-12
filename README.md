@@ -354,7 +354,7 @@ whereas using ```dependsOnOperator()``` just waits for the
 dependency to complete and ignores how many items the dependency emits.  
 
 If the query does not require parameters you can push it an empty list 
-and use the ```parameterListOperator``` to force execution.
+and use the ```parameterListOperator()``` to force execution.
 
 Example:
 ```java
@@ -371,9 +371,8 @@ Observable<Integer> rowsAffected = Observable
 Transactions
 ------------------
 When you want a statement to participate in a transaction then either it should
-* depend on ```db.beginTransaction()``` and be committed/rolled back by ```db.commit()```/```db.rollback()```
-or
-* be passed parameters or dependencies through ```db.beginTransactionOnNext()``` (and be committed/rolled back by ```db.commitOnCompleteOperator()```\```db.rollbackOnCompleteOperator()```)
+* depend on ```db.beginTransaction()``` 
+* be passed parameters or dependencies through ```db.beginTransactionOnNext()```
 
 ###Transactions as dependency
 ```java

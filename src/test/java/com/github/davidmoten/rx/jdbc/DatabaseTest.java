@@ -146,14 +146,13 @@ public class DatabaseTest {
                 return t1 == 0;
             }
         };
-        Observable<Boolean> begin = db.beginTransaction();
         Observable<Integer> existingRows = db
         // select names
                 .select("select name from person where name=?")
                 // set name parameter
                 .parameter("FRED")
                 // is part of transaction
-                .dependsOn(begin)
+                .dependsOn(db.beginTransaction())
                 // get results
                 .get()
                 // get result count
