@@ -3,7 +3,7 @@ package com.github.davidmoten.rx.jdbc;
 import static com.github.davidmoten.rx.RxUtil.constant;
 import static com.github.davidmoten.rx.RxUtil.greaterThanZero;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.sql.Connection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,16 +24,27 @@ import com.github.davidmoten.rx.RxUtil.CounterAction;
  */
 final public class Database {
 
+    /**
+     * Logger.
+     */
     private static final Logger log = LoggerFactory.getLogger(Database.class);
 
     /**
-     * Records the current query context which will be set against a new query
-     * at create time (not at runtime).
+     * Provides access for queries to a limited subset of {@link Database}
+     * methods.
      */
     private final QueryContext context;
 
+    /**
+     * ThreadLocal storage of the current {@link Scheduler} factory to use with
+     * queries.
+     */
     private final ThreadLocal<Func0<Scheduler>> currentSchedulerFactory = new ThreadLocal<Func0<Scheduler>>();
 
+    /**
+     * ThreadLocal storage of the current {@link ConnectionProvider} to use with
+     * queries.
+     */
     private final ThreadLocal<ConnectionProvider> currentConnectionProvider = new ThreadLocal<ConnectionProvider>();
 
     /**
@@ -57,14 +68,8 @@ final public class Database {
      * 
      * @param cp
      *            provides connections
-     * @param selectHandler
-     *            handles select queries
-     * @param updateHandler
-     *            handles update queries
      * @param nonTransactionalSchedulerFactory
      *            schedules non transactional queries
-     * @param transactionalSchedulerFactory
-     *            schedules transactional queries
      */
     public Database(final ConnectionProvider cp,
             Func0<Scheduler> nonTransactionalSchedulerFactory) {
@@ -87,9 +92,6 @@ final public class Database {
             return Schedulers.io();
         }
     };
-
-    private final AtomicBoolean currentIsTransactionOpen = new AtomicBoolean(
-            false);
 
     /**
      * Schedules using {@link Schedulers}.trampoline().
@@ -312,10 +314,22 @@ final public class Database {
         return commitOrRollback(true, depends);
     }
 
+    /**
+     * Waits for the source to complete before returning the result of
+     * db.commit();
+     * 
+     * @return commit operator
+     */
     public <T> Operator<Boolean, T> commitOperator() {
         return commitOrRollbackOperator(true);
     }
 
+    /**
+     * Waits for the source to complete before returning the result of
+     * db.rollback();
+     * 
+     * @return rollback operator
+     */
     public <T> Operator<Boolean, T> rollbackOperator() {
         return commitOrRollbackOperator(false);
     }
@@ -326,8 +340,8 @@ final public class Database {
         return RxUtil
                 .toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
                     @Override
-                    public Observable<Boolean> call(Observable<T> dependency) {
-                        return updateBuilder.dependsOn(dependency).count()
+                    public Observable<Boolean> call(Observable<T> source) {
+                        return updateBuilder.dependsOn(source).count()
                                 .map(IS_NON_ZERO);
                     }
                 });
@@ -406,14 +420,14 @@ final public class Database {
         return this;
     }
 
-    public Scheduler currentScheduler() {
+    Scheduler currentScheduler() {
         if (currentSchedulerFactory.get() == null)
             return nonTransactionalSchedulerFactory.call();
         else
             return currentSchedulerFactory.get().call();
     }
 
-    public ConnectionProvider connectionProvider() {
+    ConnectionProvider connectionProvider() {
         if (currentConnectionProvider.get() == null)
             return cp;
         else
@@ -424,29 +438,21 @@ final public class Database {
         log.debug("beginTransactionObserve");
         currentConnectionProvider
                 .set(new ConnectionProviderSingletonManualCommit(cp));
-        currentIsTransactionOpen.set(true);
     }
 
     void beginTransactionSubscribe() {
         log.debug("beginTransactionSubscribe");
         currentSchedulerFactory.set(CURRENT_THREAD_SCHEDULER_FACTORY);
-        currentIsTransactionOpen.set(true);
     }
 
-    public void endTransactionSubscribe() {
+    void endTransactionSubscribe() {
         log.debug("endTransactionSubscribe");
         currentSchedulerFactory.set(null);
-        currentIsTransactionOpen.set(false);
     }
 
-    public void endTransactionObserve() {
+    void endTransactionObserve() {
         log.debug("endTransactionObserve");
         currentConnectionProvider.set(cp);
-        currentIsTransactionOpen.set(false);
-    }
-
-    public boolean transactionIsOpen() {
-        return currentIsTransactionOpen.get();
     }
 
     private <T> Operator<Boolean, T> commitOrRollbackOnCompleteOperator(
@@ -465,16 +471,31 @@ final public class Database {
      * Commits current transaction on the completion of source if and only if
      * the source sequence is non-empty.
      * 
-     * @return operator
+     * @return operator that commits on completion of source.
      */
     public <T> Operator<Boolean, T> commitOnCompleteOperator() {
         return commitOrRollbackOnCompleteOperator(true);
     }
 
+    /**
+     * Rolls back current transaction on the completion of source if and only if
+     * the source sequence is non-empty.
+     * 
+     * @return operator that rolls back on completion of source.
+     */
+
     public <T> Operator<Boolean, T> rollbackOnCompleteOperator() {
         return commitOrRollbackOnCompleteOperator(false);
     }
 
+    /**
+     * Starts a database transaction for each onNext call. Following database
+     * calls will be subscribed on current thread (Schedulers.trampoline()) and
+     * share the same {@link Connection} until transaction is rolled back or
+     * committed.
+     * 
+     * @return begin transaction operator
+     */
     public <T> Operator<T, T> beginTransactionOnNextOperator() {
         return RxUtil.toOperator(new Func1<Observable<T>, Observable<T>>() {
             @Override
@@ -484,10 +505,20 @@ final public class Database {
         });
     }
 
+    /**
+     * Commits the currently open transaction.
+     * 
+     * @return
+     */
     public <T> Operator<Boolean, T> commitOnNextOperator() {
         return commitOrRollbackOnNextOperator(true);
     }
 
+    /**
+     * Rolls back the current transaction.
+     * 
+     * @return
+     */
     public <T> Operator<Boolean, T> rollbackOnNextOperator() {
         return commitOrRollbackOnNextOperator(false);
     }

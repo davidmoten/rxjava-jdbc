@@ -38,24 +38,20 @@ final class QueryContext {
         return db.connectionProvider();
     }
 
-    public void beginTransactionObserve() {
+    void beginTransactionObserve() {
         db.beginTransactionObserve();
 
     }
 
-    public void beginTransactionSubscribe() {
+    void beginTransactionSubscribe() {
         db.beginTransactionSubscribe();
     }
-    
-    public boolean transactionIsOpen() {
-    	return db.transactionIsOpen();
-    }
 
-    public void endTransactionSubscribe() {
+    void endTransactionSubscribe() {
         db.endTransactionSubscribe();
     }
 
-    public void endTransactionObserve() {
+    void endTransactionObserve() {
         db.endTransactionObserve();
     }
 

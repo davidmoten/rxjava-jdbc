@@ -28,7 +28,8 @@ final public class QueryUpdate implements Query {
      * @param depends
      * @param context
      */
-    private QueryUpdate(String sql, Observable<Parameter> parameters, Observable<?> depends, QueryContext context) {
+    private QueryUpdate(String sql, Observable<Parameter> parameters,
+            Observable<?> depends, QueryContext context) {
         checkNotNull(sql);
         checkNotNull(parameters);
         checkNotNull(depends);
@@ -88,12 +89,14 @@ final public class QueryUpdate implements Query {
     private Func1<List<Parameter>, Observable<Integer>> executeOnce() {
         return new Func1<List<Parameter>, Observable<Integer>>() {
             @Override
-            public Observable<Integer> call(final List<Parameter> params) { 
+            public Observable<Integer> call(final List<Parameter> params) {
                 if (sql.equals(QueryUpdateOperation.BEGIN_TRANSACTION)) {
                     context.beginTransactionSubscribe();
                 }
-                Observable<Integer> result = executeOnce(params).subscribeOn(context.scheduler());
-                if (sql.equals(QueryUpdateOperation.COMMIT) || sql.equals(QueryUpdateOperation.ROLLBACK))
+                Observable<Integer> result = executeOnce(params).subscribeOn(
+                        context.scheduler());
+                if (sql.equals(QueryUpdateOperation.COMMIT)
+                        || sql.equals(QueryUpdateOperation.ROLLBACK))
                     context.endTransactionSubscribe();
                 return result;
             }
@@ -203,7 +206,8 @@ final public class QueryUpdate implements Query {
          * @return
          */
         public Observable<Integer> count() {
-            return new QueryUpdate(builder.sql(), builder.parameters(), builder.depends(), builder.context()).count();
+            return new QueryUpdate(builder.sql(), builder.parameters(),
+                    builder.depends(), builder.context()).count();
         }
 
         /**
@@ -223,11 +227,19 @@ final public class QueryUpdate implements Query {
          * @return operator that acts on dependencies
          */
         public QueryUpdateOperator<Object> dependsOnOperator() {
-            return new QueryUpdateOperator<Object>(this, OperatorType.DEPENDENCY);
+            return new QueryUpdateOperator<Object>(this,
+                    OperatorType.DEPENDENCY);
         }
-        
+
+        /**
+         * Returns an {@link Operator} to allow the query to be run once
+         * per parameter list in the source.
+         * 
+         * @return
+         */
         public QueryUpdateOperator<List<Object>> parameterListOperator() {
-            return new QueryUpdateOperator<List<Object>>(this, OperatorType.PARAMETER_LIST);
+            return new QueryUpdateOperator<List<Object>>(this,
+                    OperatorType.PARAMETER_LIST);
         }
     }
 }

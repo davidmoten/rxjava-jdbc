@@ -37,7 +37,8 @@ final public class QuerySelect implements Query {
      * @param depends
      * @param context
      */
-    private QuerySelect(String sql, Observable<Parameter> parameters, Observable<?> depends, QueryContext context) {
+    private QuerySelect(String sql, Observable<Parameter> parameters,
+            Observable<?> depends, QueryContext context) {
         checkNotNull(sql);
         checkNotNull(parameters);
         checkNotNull(depends);
@@ -110,7 +111,8 @@ final public class QuerySelect implements Query {
      * @return
      */
     private Observable<ResultSet> executeOnce(final List<Parameter> params) {
-        return QuerySelectOperation.execute(this, params).subscribeOn(context.scheduler());
+        return QuerySelectOperation.execute(this, params).subscribeOn(
+                context.scheduler());
     }
 
     /**
@@ -247,7 +249,8 @@ final public class QuerySelect implements Query {
          * @return
          */
         public Observable<ResultSet> get() {
-            return new QuerySelect(builder.sql(), builder.parameters(), builder.depends(), builder.context()).execute();
+            return new QuerySelect(builder.sql(), builder.parameters(),
+                    builder.depends(), builder.context()).execute();
         }
 
         /**
@@ -291,7 +294,8 @@ final public class QuerySelect implements Query {
          * @param cls2
          * @return
          */
-        public <T1, T2> Observable<Tuple2<T1, T2>> getAs(Class<T1> cls1, Class<T2> cls2) {
+        public <T1, T2> Observable<Tuple2<T1, T2>> getAs(Class<T1> cls1,
+                Class<T2> cls2) {
             return get(Tuples.tuple(cls1, cls2));
         }
 
@@ -304,7 +308,8 @@ final public class QuerySelect implements Query {
          * @param cls3
          * @return
          */
-        public <T1, T2, T3> Observable<Tuple3<T1, T2, T3>> getAs(Class<T1> cls1, Class<T2> cls2, Class<T3> cls3) {
+        public <T1, T2, T3> Observable<Tuple3<T1, T2, T3>> getAs(
+                Class<T1> cls1, Class<T2> cls2, Class<T3> cls3) {
             return get(Tuples.tuple(cls1, cls2, cls3));
         }
 
@@ -318,8 +323,8 @@ final public class QuerySelect implements Query {
          * @param cls4
          * @return
          */
-        public <T1, T2, T3, T4> Observable<Tuple4<T1, T2, T3, T4>> getAs(Class<T1> cls1, Class<T2> cls2,
-                Class<T3> cls3, Class<T4> cls4) {
+        public <T1, T2, T3, T4> Observable<Tuple4<T1, T2, T3, T4>> getAs(
+                Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4) {
             return get(Tuples.tuple(cls1, cls2, cls3, cls4));
         }
 
@@ -334,8 +339,9 @@ final public class QuerySelect implements Query {
          * @param cls5
          * @return
          */
-        public <T1, T2, T3, T4, T5> Observable<Tuple5<T1, T2, T3, T4, T5>> getAs(Class<T1> cls1, Class<T2> cls2,
-                Class<T3> cls3, Class<T4> cls4, Class<T5> cls5) {
+        public <T1, T2, T3, T4, T5> Observable<Tuple5<T1, T2, T3, T4, T5>> getAs(
+                Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4,
+                Class<T5> cls5) {
             return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5));
         }
 
@@ -351,8 +357,9 @@ final public class QuerySelect implements Query {
          * @param cls6
          * @return
          */
-        public <T1, T2, T3, T4, T5, T6> Observable<Tuple6<T1, T2, T3, T4, T5, T6>> getAs(Class<T1> cls1,
-                Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5, Class<T6> cls6) {
+        public <T1, T2, T3, T4, T5, T6> Observable<Tuple6<T1, T2, T3, T4, T5, T6>> getAs(
+                Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4,
+                Class<T5> cls5, Class<T6> cls6) {
             return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6));
         }
 
@@ -369,8 +376,9 @@ final public class QuerySelect implements Query {
          * @param cls7
          * @return
          */
-        public <T1, T2, T3, T4, T5, T6, T7> Observable<Tuple7<T1, T2, T3, T4, T5, T6, T7>> getAs(Class<T1> cls1,
-                Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5, Class<T6> cls6, Class<T7> cls7) {
+        public <T1, T2, T3, T4, T5, T6, T7> Observable<Tuple7<T1, T2, T3, T4, T5, T6, T7>> getAs(
+                Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4,
+                Class<T5> cls5, Class<T6> cls6, Class<T7> cls7) {
             return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6, cls7));
         }
 
@@ -394,10 +402,16 @@ final public class QuerySelect implements Query {
             return new OperatorBuilder<Object>(this, OperatorType.DEPENDENCY);
         }
 
-		public OperatorBuilder<List<Object>> parameterListOperator() {
-			return new OperatorBuilder<List<Object>>(this, OperatorType.PARAMETER_LIST);
-		}
-
+        /**
+         * Returns an {@link Operator} that runs a select query for each list of
+         * parameter objects in the source observable.
+         * 
+         * @return
+         */
+        public OperatorBuilder<List<Object>> parameterListOperator() {
+            return new OperatorBuilder<List<Object>>(this,
+                    OperatorType.PARAMETER_LIST);
+        }
 
     }
 
@@ -427,7 +441,8 @@ final public class QuerySelect implements Query {
          * @return
          */
         public <T> Operator<T, R> get(Func1<ResultSet, T> function) {
-            return new QuerySelectOperator<T,R>(builder, function, operatorType);
+            return new QuerySelectOperator<T, R>(builder, function,
+                    operatorType);
         }
 
         /**
@@ -481,7 +496,8 @@ final public class QuerySelect implements Query {
          * @param cls2
          * @return
          */
-        public <T1, T2> Operator<Tuple2<T1, T2>, R> getAs(Class<T1> cls1, Class<T2> cls2) {
+        public <T1, T2> Operator<Tuple2<T1, T2>, R> getAs(Class<T1> cls1,
+                Class<T2> cls2) {
             return get(Tuples.tuple(cls1, cls2));
         }
 
@@ -494,7 +510,8 @@ final public class QuerySelect implements Query {
          * @param cls3
          * @return
          */
-        public <T1, T2, T3> Operator<Tuple3<T1, T2, T3>, R> getAs(Class<T1> cls1, Class<T2> cls2, Class<T3> cls3) {
+        public <T1, T2, T3> Operator<Tuple3<T1, T2, T3>, R> getAs(
+                Class<T1> cls1, Class<T2> cls2, Class<T3> cls3) {
             return get(Tuples.tuple(cls1, cls2, cls3));
         }
 
@@ -508,8 +525,8 @@ final public class QuerySelect implements Query {
          * @param cls4
          * @return
          */
-        public <T1, T2, T3, T4> Operator<Tuple4<T1, T2, T3, T4>, R> getAs(Class<T1> cls1, Class<T2> cls2,
-                Class<T3> cls3, Class<T4> cls4) {
+        public <T1, T2, T3, T4> Operator<Tuple4<T1, T2, T3, T4>, R> getAs(
+                Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4) {
             return get(Tuples.tuple(cls1, cls2, cls3, cls4));
         }
 
@@ -524,8 +541,9 @@ final public class QuerySelect implements Query {
          * @param cls5
          * @return
          */
-        public <T1, T2, T3, T4, T5> Operator<Tuple5<T1, T2, T3, T4, T5>, R> getAs(Class<T1> cls1, Class<T2> cls2,
-                Class<T3> cls3, Class<T4> cls4, Class<T5> cls5) {
+        public <T1, T2, T3, T4, T5> Operator<Tuple5<T1, T2, T3, T4, T5>, R> getAs(
+                Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4,
+                Class<T5> cls5) {
             return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5));
         }
 
@@ -541,8 +559,9 @@ final public class QuerySelect implements Query {
          * @param cls6
          * @return
          */
-        public <T1, T2, T3, T4, T5, T6> Operator<Tuple6<T1, T2, T3, T4, T5, T6>, R> getAs(Class<T1> cls1,
-                Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5, Class<T6> cls6) {
+        public <T1, T2, T3, T4, T5, T6> Operator<Tuple6<T1, T2, T3, T4, T5, T6>, R> getAs(
+                Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4,
+                Class<T5> cls5, Class<T6> cls6) {
             return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6));
         }
 
@@ -559,8 +578,9 @@ final public class QuerySelect implements Query {
          * @param cls7
          * @return
          */
-        public <T1, T2, T3, T4, T5, T6, T7> Operator<Tuple7<T1, T2, T3, T4, T5, T6, T7>, R> getAs(Class<T1> cls1,
-                Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5, Class<T6> cls6, Class<T7> cls7) {
+        public <T1, T2, T3, T4, T5, T6, T7> Operator<Tuple7<T1, T2, T3, T4, T5, T6, T7>, R> getAs(
+                Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4,
+                Class<T5> cls5, Class<T6> cls6, Class<T7> cls7) {
             return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6, cls7));
         }
     }
