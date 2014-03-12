@@ -400,7 +400,9 @@ final public class Database {
      * @return
      */
     public Database close() {
+        log.debug("closing connection provider");
         cp.close();
+        log.debug("closed connection provider");
         return this;
     }
 
