@@ -15,7 +15,7 @@ import com.github.davidmoten.rx.OperatorFromOperation;
  * 
  * @param <T>
  */
-public class QuerySelectFromListOperator<T> implements Operator<T, List<Object>> {
+public class QuerySelectFromObservableOperator<T> implements Operator<T, List<Object>> {
 
     private final OperatorFromOperation<T, List<Object>> operator;
 
@@ -26,7 +26,7 @@ public class QuerySelectFromListOperator<T> implements Operator<T, List<Object>>
      * @param function
      * @param operatorType
      */
-    QuerySelectFromListOperator(final QuerySelect.Builder builder, final Func1<ResultSet, T> function) {
+    QuerySelectFromObservableOperator(final QuerySelect.Builder builder, final Func1<ResultSet, T> function) {
         operator = new OperatorFromOperation<T, List<Object>>(new Func1<Observable<List<Object>>, Observable<T>>() {
             @Override
             public Observable<T> call(Observable<List<Object>> parameterLists) {

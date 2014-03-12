@@ -12,7 +12,7 @@ import com.github.davidmoten.rx.OperatorFromOperation;
 /**
  * {@link Operator} corresonding to {@link QueryUpdateOperation}.
  */
-public class QueryUpdateFromListOperator implements Operator<Integer, List<Object>> {
+public class QueryUpdateFromObservableOperator implements Operator<Integer, List<Object>> {
 
     private final OperatorFromOperation<Integer, List<Object>> operator;
 
@@ -22,7 +22,7 @@ public class QueryUpdateFromListOperator implements Operator<Integer, List<Objec
      * @param builder
      * @param operatorType
      */
-    QueryUpdateFromListOperator(final QueryUpdate.Builder builder) {
+    QueryUpdateFromObservableOperator(final QueryUpdate.Builder builder) {
         operator = new OperatorFromOperation<Integer, List<Object>>(
                 new Func1<Observable<List<Object>>, Observable<Integer>>() {
                     @Override
