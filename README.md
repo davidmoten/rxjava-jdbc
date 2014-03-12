@@ -312,6 +312,47 @@ or
 Observable<InputStream> document = db.select("select document from person_clob")
 				.getAs(InputStream.class);
 ```
+
+Lift
+-----------------------------------
+
+Using the Observable.lift() method you can perform multiple queries without breaking method chaining. Observable.lift() 
+requires an ```Operator``` parameter which are available via 
+
+* db.select(sql).parameterOperator().get()
+* db.select(sql).parameterListOperator().get()
+* db.select(sql).dependsOnOperator().get()
+* db.update(sql).parameterOperator()
+* db.update(sql).parameterListOperator()
+* db.update(sql).dependsOnOperator()
+
+Example:   
+```java
+Observable<Integer> score = Observable
+    // parameters for coming update
+    .from(Arrays.<Object> asList(4, "FRED"))
+    // update Fred's score to 4
+    .lift(db.update("update person set score=? where name=?")
+            //parameters are pushed
+            .parameterOperator())
+    // update everyone with score of 4 to 14
+    .lift(db.update("update person set score=? where score=?")
+            .parameters(14, 4)
+            //wait for completion of previous observable
+            .dependsOnOperator())
+    // get Fred's score
+    .lift(db.select("select score from person where name=?")
+            .parameters("FRED")
+            //wait for completion of previous observable
+            .dependsOnOperator()
+			.getAs(Integer.class));
+```
+
+Note that conditional evaluation of a query is obtained using 
+the ```parameterOperator()``` method (no parameters means no query run) 
+whereas using ```dependsOnOperator()``` just waits for the 
+dependency to complete and ignores how many items the dependency emits.  
+
 Transactions
 ------------------
 When you want a statement to participate in a transaction then either it should
@@ -372,36 +413,6 @@ List<Integer> mins = Observable
     .toBlockingObservable().single();
 assertEquals(Arrays.asList(16,17,18), mins);
 ```
-
-Lift
------------------------------------
-
-Using the ```Observable.lift()``` method you can perform multile queries without breaking method chaining. ```Observable.lift()``` requires an ```Operator``` parameter
-which are available via ```db.select(sql).parameterOperator().etc```,```db.select(sql).dependsOnOperator().etc```,```db.update(sql).parameterOperator()``` and ```db.update(sql).dependsOnOperator()```.
-
-Example:   
-```java
-Observable<Integer> score = Observable
-    // parameters for coming update
-    .from(Arrays.<Object> asList(4, "FRED"))
-    // update Fred's score to 4
-    .lift(db.update("update person set score=? where name=?")
-            .parameterOperator())
-    // update everyone with score of 4 to 14
-    .lift(db.update("update person set score=? where score=?")
-            .parameters(14, 4)
-            .dependsOnOperator())
-    // get Fred's score
-    .lift(db.select("select score from person where name=?")
-            .parameters("FRED")\
-            .dependsOnOperator()
-			.getAs(Integer.class));
-```
-
-Note that conditional evaluation of a query is obtained using 
-the ```parameterOperator()``` method (no parameters means no query run) 
-whereas using ```dependsOnOperator()``` just waits for the 
-dependency to complete and ignores how many items the dependency emits.  
 
 Logging
 -----------------
