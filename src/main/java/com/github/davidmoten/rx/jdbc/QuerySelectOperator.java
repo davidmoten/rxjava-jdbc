@@ -30,7 +30,8 @@ public class QuerySelectOperator<T,R> implements Operator<T, R> {
             final OperatorType operatorType) {
         operator = new OperatorFromOperation<T, R>(new Func1<Observable<R>, Observable<T>>() {
 
-            @Override
+            @SuppressWarnings("rawtypes")
+			@Override
             public Observable<T> call(Observable<R> observable) {
                 if (operatorType == OperatorType.PARAMETER)
                     return builder.parameters(observable).get(function);
@@ -39,6 +40,7 @@ public class QuerySelectOperator<T,R> implements Operator<T, R> {
                     return builder.dependsOn(observable).get(function);
                 else //PARAMETER_LIST
                 	return observable.cast(List.class).flatMap(new Func1<List,Observable<T>>(){
+						@SuppressWarnings("unchecked")
 						@Override
 						public Observable<T> call(List parameters) {
 							return builder.parameters(Observable.from(parameters)).get(function);
