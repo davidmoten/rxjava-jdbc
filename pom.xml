@@ -34,6 +34,7 @@
     <changelog.version>2.2</changelog.version>
     <coverage.reports.dir>${project.build.directory}/target/coverage-reports</coverage.reports.dir>
     <slf4j.version>1.7.6</slf4j.version>
+    <rxjava.version>0.17.0</rxjava.version>
   </properties>
 
   <licenses>
@@ -80,12 +81,12 @@
     <dependency>
       <groupId>com.netflix.rxjava</groupId>
       <artifactId>rxjava-core</artifactId>
-      <version>0.17.0-RC7</version>
+      <version>${rxjava.version}</version>
     </dependency>
     <dependency>
       <groupId>com.netflix.rxjava</groupId>
       <artifactId>rxjava-math</artifactId>
-      <version>0.17.0-RC7</version>
+      <version>${rxjava.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
