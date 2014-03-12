@@ -958,8 +958,8 @@ public class DatabaseTest {
         Observable<Integer> count = db.select("select name from person")
                 .dependsOn(begin).get().count();
         Observable<Integer> count2 = db.select("select name from person")
-                .dependsOn(begin).get().count();
-        int result = db.commit(count, count2).count().toBlockingObservable()
+                .dependsOn(count).get().count();
+        int result = db.commit(count2).count().toBlockingObservable()
                 .single();
         log.info("committed " + result);
         cp.getsLatch().await();

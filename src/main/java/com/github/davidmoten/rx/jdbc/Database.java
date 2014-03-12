@@ -46,6 +46,8 @@ final public class Database {
      * queries.
      */
     private final ThreadLocal<ConnectionProvider> currentConnectionProvider = new ThreadLocal<ConnectionProvider>();
+    
+    private final ThreadLocal<Boolean> isTransactionOpen = new ThreadLocal<Boolean>();
 
     /**
      * Records the result of the last finished transaction (committed =
@@ -81,6 +83,7 @@ final public class Database {
         else
             this.nonTransactionalSchedulerFactory = IO_SCHEDULER_FACTORY;
         this.context = new QueryContext(this);
+        isTransactionOpen.set(false);
     }
 
     /**
@@ -438,6 +441,9 @@ final public class Database {
         log.debug("beginTransactionObserve");
         currentConnectionProvider
                 .set(new ConnectionProviderSingletonManualCommit(cp));
+        if (isTransactionOpen.get())
+            throw new RuntimeException("cannot begin transaction as transaction open already");
+        isTransactionOpen.set(true);
     }
 
     void beginTransactionSubscribe() {
@@ -453,6 +459,7 @@ final public class Database {
     void endTransactionObserve() {
         log.debug("endTransactionObserve");
         currentConnectionProvider.set(cp);
+        isTransactionOpen.set(false);
     }
 
     private <T> Operator<Boolean, T> commitOrRollbackOnCompleteOperator(
