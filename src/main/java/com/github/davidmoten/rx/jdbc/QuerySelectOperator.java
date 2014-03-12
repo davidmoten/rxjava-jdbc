@@ -38,12 +38,15 @@ public class QuerySelectOperator<T,R> implements Operator<T, R> {
                     // dependency
                     return builder.dependsOn(observable).get(function);
                 else //PARAMETER_LIST
-                	return observable.cast(Observable.class).flatMap(new Func1<Observable,Observable<T>>(){
-						@SuppressWarnings("unchecked")
+                {
+                    @SuppressWarnings("unchecked")
+                    Observable<Observable<Object>> obs = (Observable<Observable<Object>>) observable;
+                	return obs.flatMap(new Func1<Observable<Object>,Observable<T>>(){
 						@Override
-						public Observable<T> call(Observable parameters) {
+						public Observable<T> call(Observable<Object> parameters) {
 							return builder.parameters(parameters).get(function);
 						}});
+                }
             }
         });
     }
