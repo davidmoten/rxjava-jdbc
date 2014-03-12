@@ -319,10 +319,35 @@ When you want a statement to participate in a transaction then either it should
 or
 * be passed parameters or dependencies through ```db.beginTransactionOnNext()``` (and be committed/rolled back by ```db.commitOnCompleteOperator()```\```db.rollbackOnCompleteOperator()```)
 
-###Example of Database.beginTransaction()
+###Transactions as dependency
+```java
+Observable<Boolean> begin = db.beginTransaction();
+Observable<Integer> updateCount = db
+    // set everyones score to 99
+    .update("update person set score=?")
+    // is within transaction
+    .dependsOn(begin)
+    // new score
+    .parameter(99)
+    // execute
+    .count();
+Observable<Boolean> commit = db.commit(updateCount);
+long count = db
+    .select("select count(*) from person where score=?")
+	// set score
+	.parameter(99)
+	// depends on
+	.dependsOn(commit)
+	// return as Long
+	.getAs(Long.class)
+	// log
+	.doOnEach(RxUtil.log())
+	// get answer
+	.toBlockingObservable().single();
+assertEquals(3, count);
+```
 
-
-###Example of Database.beginTransactionOnNextOperator()
+###onNext Transactions
 ```java
 List<Integer> mins = Observable
     // do 3 times
