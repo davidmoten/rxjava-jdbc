@@ -361,8 +361,8 @@ Example:
 Observable<Integer> rowsAffected = Observable
     //generate two integers
     .range(1,2)
-    //replace the integers with empty lists
-    .map(toEmptyList())
+    //replace the integers with empty observables
+    .map(toEmpty())
     //execute the update twice with an empty list
     .lift(db.update("update person set score = score + 1")
             .parameterListOperator());
@@ -411,14 +411,14 @@ List<Integer> mins = Observable
     .lift(db.beginTransactionOnNextOperator())
     // update all scores to the item
     .lift(db.update("update person set score=?").parameterOperator())
-    //to empty parameter list
-    .map(toEmptyList())
+    //to empty parameter observable
+    .map(toEmpty())
     //increase score
     .lift(db.update("update person set score=score + 5").parameterListOperator())
     // commit transaction
     .lift(db.commitOnNextOperator())
-    // to empty lists
-    .map(toEmptyList())
+    // to empty observable
+    .map(toEmpty())
     // return count
      .lift(db.select("select min(score) from person").parameterListOperator().getAs(Integer.class))
     // list the results

@@ -237,8 +237,8 @@ final public class QueryUpdate implements Query {
          * 
          * @return
          */
-        public QueryUpdateOperator<List<Object>> parameterListOperator() {
-            return new QueryUpdateOperator<List<Object>>(this,
+        public QueryUpdateOperator<Observable<Object>> parameterListOperator() {
+            return new QueryUpdateOperator<Observable<Object>>(this,
                     OperatorType.PARAMETER_LIST);
         }
     }

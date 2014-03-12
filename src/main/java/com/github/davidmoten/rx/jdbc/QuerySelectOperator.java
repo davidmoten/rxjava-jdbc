@@ -1,7 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
 import java.sql.ResultSet;
-import java.util.List;
 
 import rx.Observable;
 import rx.Observable.Operator;
@@ -39,11 +38,11 @@ public class QuerySelectOperator<T,R> implements Operator<T, R> {
                     // dependency
                     return builder.dependsOn(observable).get(function);
                 else //PARAMETER_LIST
-                	return observable.cast(List.class).flatMap(new Func1<List,Observable<T>>(){
+                	return observable.cast(Observable.class).flatMap(new Func1<Observable,Observable<T>>(){
 						@SuppressWarnings("unchecked")
 						@Override
-						public Observable<T> call(List parameters) {
-							return builder.parameters(Observable.from(parameters)).get(function);
+						public Observable<T> call(Observable parameters) {
+							return builder.parameters(parameters).get(function);
 						}});
             }
         });

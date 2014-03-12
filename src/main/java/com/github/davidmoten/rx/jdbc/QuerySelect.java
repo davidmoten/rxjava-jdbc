@@ -408,8 +408,8 @@ final public class QuerySelect implements Query {
          * 
          * @return
          */
-        public OperatorBuilder<List<Object>> parameterListOperator() {
-            return new OperatorBuilder<List<Object>>(this,
+        public OperatorBuilder<Observable<Object>> parameterListOperator() {
+            return new OperatorBuilder<Observable<Object>>(this,
                     OperatorType.PARAMETER_LIST);
         }
 

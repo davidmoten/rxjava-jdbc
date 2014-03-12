@@ -1,7 +1,5 @@
 package com.github.davidmoten.rx.jdbc;
 
-import java.util.List;
-
 import rx.Observable;
 import rx.Observable.Operator;
 import rx.Subscriber;
@@ -34,11 +32,11 @@ public class QueryUpdateOperator<R> implements Operator<Integer, R> {
                     // dependency
                     return builder.dependsOn(observable).count();
                 else  //PARAMETER_LIST 
-                	return  observable.cast(List.class).flatMap(new Func1<List,Observable<Integer>>(){
+                	return  observable.cast(Observable.class).flatMap(new Func1<Observable,Observable<Integer>>(){
 						@SuppressWarnings("unchecked")
 						@Override
-						public Observable<Integer> call(List parameters) {
-							return builder.parameters(Observable.from(parameters)).count();
+						public Observable<Integer> call(Observable parameters) {
+							return builder.parameters(parameters).count();
 						}});	
             }
         });

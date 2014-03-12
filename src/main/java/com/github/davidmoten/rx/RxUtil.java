@@ -1,7 +1,5 @@
 package com.github.davidmoten.rx;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
@@ -122,7 +120,7 @@ public class RxUtil {
 		};
 	}
 
-	public static <T> Func1<T, List<Object>> toEmptyList() {
-		return constant(Collections.emptyList());
+	public static <T> Func1<T, Observable<Object>> toEmpty() {
+		return constant(Observable.<Object>empty());
 	}
 }

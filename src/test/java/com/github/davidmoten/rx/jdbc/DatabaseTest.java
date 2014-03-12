@@ -2,7 +2,7 @@ package com.github.davidmoten.rx.jdbc;
 
 import static com.github.davidmoten.rx.RxUtil.constant;
 import static com.github.davidmoten.rx.RxUtil.log;
-import static com.github.davidmoten.rx.RxUtil.toEmptyList;
+import static com.github.davidmoten.rx.RxUtil.toEmpty;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.connectionProvider;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.createDatabase;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.db;
@@ -206,7 +206,7 @@ public class DatabaseTest {
                 //generate two integers
                 .range(1,2)
                 //replace the integers with empty lists
-                .map(toEmptyList())
+                .map(toEmpty())
                 //execute the update
                 .lift(db.update("update person set score = score + 1")
                         .parameterListOperator())
@@ -1223,14 +1223,14 @@ public class DatabaseTest {
                 .lift(db.update("update person set score=?")
                         .parameterOperator())
                 // to empty parameter list
-                .map(toEmptyList())
+                .map(toEmpty())
                 // increase score
                 .lift(db.update("update person set score=score + 5")
                         .parameterListOperator())
                 // commit transaction
                 .lift(db.commitOnNextOperator())
                 // to empty lists
-                .map(toEmptyList())
+                .map(toEmpty())
                 // return count
                 .lift(db.select("select min(score) from person")
                         .parameterListOperator().getAs(Integer.class))
