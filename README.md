@@ -314,37 +314,38 @@ Observable<InputStream> document = db.select("select document from person_clob")
 ```
 Transactions
 ------------------
-NOTICE: being completely reworked to be more rx.
+When you want a statement to participate in a transaction then either it should
+* depend on ```db.beginTransaction()``` and be committed/rolled back by ```db.commit()```/```db.rollback()```
+or
+* be passed parameters or dependencies through ```db.beginTransactionOnNext()``` (and be committed/rolled back by ```db.commitOnCompleteOperator()```\```db.rollbackOnCompleteOperator()```)
 
-Queries can be surrounded by ```db.beginTransaction()``` and ```db.commit()```/```db.rollback()``` calls. The queries eventually run between the calls will use the same Scheduler with a single thread pool and will all use the same Connection object. Note that
+###Example of Database.beginTransaction()
 
-* ```Database.select()```/```Database.update()``` 
-calls *must* be called from the same thread as the ```beginTransaction()``` method to ensure that those statements are given 
-the same ```QueryContext``` (delivered via ThreadLocal).
 
-Queries within a transaction are constructed as normal using dependencies on or parameter lists from other queries
-but the commit/rollback statement must also reference its dependencies.
-
-A query can declare a dependency on the previous transaction completing by using the dependsOnLastTransaction() method.
-
-Example:
+###Example of Database.beginTransactionOnNextOperator()
 ```java
-db.beginTransaction();
-Observable<Integer> updateCount = db
-		.update("update person set score=?")
-		.parameter(99)
-		.count();
-// indicate dependency on  updateCount running before commit occurs
-db.commit(updateCount);
-
-//indicate dependency on last transaction before running this query
-long count = db
-		.select("select count(*) from person where score=?")
-		.parameter(99)
-		.dependsOnLastTransaction()
-		.getAs(Long.class)
-		.toBlockingObservable().single();
-assertEquals(3, count);
+List<Integer> mins = Observable
+    // do 3 times
+    .from(asList(11, 12, 13))
+    // begin transaction for each item
+    .lift(db.beginTransactionOnNextOperator())
+    // update all scores to the item
+    .lift(db.update("update person set score=?").parameterOperator())
+    //to empty parameter list
+    .map(toEmptyList())
+    //increase score
+    .lift(db.update("update person set score=score + 5").parameterListOperator())
+    // commit transaction
+    .lift(db.commitOnNextOperator())
+    // to empty lists
+    .map(toEmptyList())
+    // return count
+     .lift(db.select("select min(score) from person").parameterListOperator().getAs(Integer.class))
+    // list the results
+    .toList()
+    // block and get
+    .toBlockingObservable().single();
+assertEquals(Arrays.asList(16,17,18), mins);
 ```
 
 Lift

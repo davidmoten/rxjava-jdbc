@@ -66,7 +66,8 @@ final public class Database {
      * @param transactionalSchedulerFactory
      *            schedules transactional queries
      */
-    public Database(final ConnectionProvider cp, Func0<Scheduler> nonTransactionalSchedulerFactory) {
+    public Database(final ConnectionProvider cp,
+            Func0<Scheduler> nonTransactionalSchedulerFactory) {
         Conditions.checkNotNull(cp);
         this.cp = cp;
         currentConnectionProvider.set(cp);
@@ -87,7 +88,8 @@ final public class Database {
         }
     };
 
-    private final AtomicBoolean currentIsTransactionOpen = new AtomicBoolean(false);
+    private final AtomicBoolean currentIsTransactionOpen = new AtomicBoolean(
+            false);
 
     /**
      * Schedules using {@link Schedulers}.trampoline().
@@ -180,7 +182,8 @@ final public class Database {
          * @return
          */
         public Builder pooled(String url, int minPoolSize, int maxPoolSize) {
-            this.cp = new ConnectionProviderPooled(url, minPoolSize, maxPoolSize);
+            this.cp = new ConnectionProviderPooled(url, minPoolSize,
+                    maxPoolSize);
             return this;
         }
 
@@ -317,14 +320,17 @@ final public class Database {
         return commitOrRollbackOperator(false);
     }
 
-    private <T> Operator<Boolean, T> commitOrRollbackOperator(final boolean commit) {
+    private <T> Operator<Boolean, T> commitOrRollbackOperator(
+            final boolean commit) {
         final QueryUpdate.Builder updateBuilder = createCommitOrRollbackQuery(commit);
-        return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
-            @Override
-            public Observable<Boolean> call(Observable<T> dependency) {
-                return updateBuilder.dependsOn(dependency).count().map(IS_NON_ZERO);
-            }
-        });
+        return RxUtil
+                .toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
+                    @Override
+                    public Observable<Boolean> call(Observable<T> dependency) {
+                        return updateBuilder.dependsOn(dependency).count()
+                                .map(IS_NON_ZERO);
+                    }
+                });
     }
 
     /**
@@ -337,7 +343,8 @@ final public class Database {
      * @param depends
      * @return
      */
-    private Observable<Boolean> commitOrRollback(boolean commit, Observable<?>... depends) {
+    private Observable<Boolean> commitOrRollback(boolean commit,
+            Observable<?>... depends) {
 
         QueryUpdate.Builder u = createCommitOrRollbackQuery(commit);
         for (Observable<?> dep : depends)
@@ -413,7 +420,8 @@ final public class Database {
 
     void beginTransactionObserve() {
         log.debug("beginTransactionObserve");
-        currentConnectionProvider.set(new ConnectionProviderSingletonManualCommit(cp));
+        currentConnectionProvider
+                .set(new ConnectionProviderSingletonManualCommit(cp));
         currentIsTransactionOpen.set(true);
     }
 
@@ -439,13 +447,30 @@ final public class Database {
         return currentIsTransactionOpen.get();
     }
 
+    private <T> Operator<Boolean, T> commitOrRollbackOnCompleteOperator(
+            final boolean isCommit) {
+        return RxUtil
+                .toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
+                    @Override
+                    public Observable<Boolean> call(Observable<T> source) {
+                        return commitOrRollbackOnCompleteOperatorIfAtLeastOneValue(
+                                isCommit, Database.this, source);
+                    }
+                });
+    }
+
+    /**
+     * Commits current transaction on the completion of source if and only if
+     * the source sequence is non-empty.
+     * 
+     * @return operator
+     */
     public <T> Operator<Boolean, T> commitOnCompleteOperator() {
-        return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
-            @Override
-            public Observable<Boolean> call(Observable<T> source) {
-                return commitOnCompleteOperatorIfAtLeastOneValue(Database.this, source);
-            }
-        });
+        return commitOrRollbackOnCompleteOperator(true);
+    }
+
+    public <T> Operator<Boolean, T> rollbackOnCompleteOperator() {
+        return commitOrRollbackOnCompleteOperator(false);
     }
 
     public <T> Operator<T, T> beginTransactionOnNextOperator() {
@@ -458,47 +483,63 @@ final public class Database {
     }
 
     public <T> Operator<Boolean, T> commitOnNextOperator() {
-        return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
-            @Override
-            public Observable<Boolean> call(Observable<T> source) {
-                return commitOnNext(Database.this, source);
-            }
-        });
+        return commitOrRollbackOnNextOperator(true);
     }
 
-    private static final <T> Observable<Boolean> commitOnCompleteOperatorIfAtLeastOneValue(final Database db,
-            Observable<T> source) {
+    public <T> Operator<Boolean, T> rollbackOnNextOperator() {
+        return commitOrRollbackOnNextOperator(false);
+    }
+
+    private <T> Operator<Boolean, T> commitOrRollbackOnNextOperator(
+            final boolean isCommit) {
+        return RxUtil
+                .toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
+                    @Override
+                    public Observable<Boolean> call(Observable<T> source) {
+                        return commitOrRollbackOnNext(isCommit, Database.this,
+                                source);
+                    }
+                });
+    }
+
+    private static final <T> Observable<Boolean> commitOrRollbackOnCompleteOperatorIfAtLeastOneValue(
+            final boolean isCommit, final Database db, Observable<T> source) {
         CounterAction<T> counter = RxUtil.counter();
         Observable<Boolean> commit = counter
-        		//get count
-        		.count()
-        		//greater than zero or empty
-        		.filter(greaterThanZero())
-        		//commit if at least one value
-        		.lift(db.commitOperator());
+        // get count
+                .count()
+                // greater than zero or empty
+                .filter(greaterThanZero())
+                // commit if at least one value
+                .lift(db.commitOrRollbackOperator(isCommit));
         return Observable
-        		//concatenate
-        		.concat(source
-        				//count emissions
-        				.doOnNext(counter)
-        				//ignore emissions
-        				.ignoreElements()
-        				//cast the empty sequence to type Boolean
-        				.cast(Boolean.class),
-        				//concat with commit
-        				commit);
+        // concatenate
+                .concat(source
+                // count emissions
+                        .doOnNext(counter)
+                        // ignore emissions
+                        .ignoreElements()
+                        // cast the empty sequence to type Boolean
+                        .cast(Boolean.class),
+                // concat with commit
+                        commit);
     }
 
-    private static final <T> Observable<Boolean> commitOnNext(final Database db, Observable<T> source) {
+    private static final <T> Observable<Boolean> commitOrRollbackOnNext(
+            final boolean isCommit, final Database db, Observable<T> source) {
         return source.flatMap(new Func1<T, Observable<Boolean>>() {
             @Override
             public Observable<Boolean> call(T t) {
-                return db.commit();
+                if (isCommit)
+                    return db.commit();
+                else
+                    return db.rollback();
             }
         });
     }
 
-    private static <T> Observable<T> beginTransactionOnNext(final Database db, Observable<T> source) {
+    private static <T> Observable<T> beginTransactionOnNext(final Database db,
+            Observable<T> source) {
         return source.flatMap(new Func1<T, Observable<T>>() {
             @Override
             public Observable<T> call(T t) {
