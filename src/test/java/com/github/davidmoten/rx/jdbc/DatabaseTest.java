@@ -201,6 +201,22 @@ public class DatabaseTest {
     }
 
     @Test
+    public void testPushEmptyList() {
+        Database db = db();
+        Observable<Integer> rowsAffected = Observable
+                //generate two integers
+                .range(1,2)
+                //replace the integers with empty lists
+                .map(toEmptyList())
+                //execute the update
+                .lift(db.update("update person set score = score + 1")
+                        .parameterListOperator())
+                //total the affected records        
+                .lift(SUM_INTEGER);
+        assertIs(6,rowsAffected);
+    }
+
+    @Test
     public void testTransactionOnCommitDoesntOccurUnlessSubscribedTo() {
         Database db = db();
         Observable<Boolean> begin = db.beginTransaction();
@@ -1168,7 +1184,7 @@ public class DatabaseTest {
                 .toBlockingObservable().single();
         assertEquals(3, count);
     }
-    
+
     @Test
     public void testRollbackOnLastOperator() {
         Database db = db();

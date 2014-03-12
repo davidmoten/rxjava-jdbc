@@ -353,6 +353,21 @@ the ```parameterOperator()``` method (no parameters means no query run)
 whereas using ```dependsOnOperator()``` just waits for the 
 dependency to complete and ignores how many items the dependency emits.  
 
+If the query does not require parameters you can push it an empty list 
+and use the ```parameterListOperator``` to force execution.
+
+Example:
+```java
+Observable<Integer> rowsAffected = Observable
+    //generate two integers
+    .range(1,2)
+    //replace the integers with empty lists
+    .map(toEmptyList())
+    //execute the update twice with an empty list
+    .lift(db.update("update person set score = score + 1")
+            .parameterListOperator());
+```
+
 Transactions
 ------------------
 When you want a statement to participate in a transaction then either it should
