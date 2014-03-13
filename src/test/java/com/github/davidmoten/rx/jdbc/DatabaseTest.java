@@ -1173,9 +1173,10 @@ public class DatabaseTest {
     @Test
     public void testParameterListOperator() {
         Database db = db();
-        int count = Observable
+        @SuppressWarnings("unchecked")
+        int count = 
         // parameters grouped in lists
-                .from(asList(from(1).cast(Object.class), from(2).cast(Object.class)))
+                objects(objects(1),objects(2))
                 // log
                 .doOnEach(log())
                 // begin trans
@@ -1195,6 +1196,42 @@ public class DatabaseTest {
                 // block and get result
                 .toBlockingObservable().single();
         assertEquals(2, count);
+    }
+    
+    @Test
+    public void testParameterListOperatorWhenQueryNeedsTwoParameters() {
+        Database db = db();
+        @SuppressWarnings("unchecked")
+        int count =
+        // parameters grouped in lists
+                objects(objects(1,"FRED",3,"JOHN"), objects(2,"JOSEPH"))
+                // log
+                .doOnEach(log())
+                // begin trans
+                .lift(db.<Observable<Object>> beginTransactionOnNextOperator())
+                // log
+                .doOnEach(log())
+                // update
+                .lift(db.update("update person set score = ? where name=?")
+                // push lists of parameters
+                        .parameterListOperator())
+                // log
+                .doOnEach(log())
+                // commit
+                .lift(db.commitOnNextListOperator())
+                // total rows affected
+                .count()
+                // block and get result
+                .toBlockingObservable().single();
+        assertEquals(2, count);
+    }
+    
+    private static Observable<Object> objects(Object... objects) {
+        return Observable.from(objects);
+    }
+    
+    private static Observable<Observable<Object>> objects(Observable<Object>... objects) {
+        return Observable.from(objects);
     }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {

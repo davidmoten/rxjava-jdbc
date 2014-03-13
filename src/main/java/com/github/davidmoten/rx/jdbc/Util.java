@@ -86,7 +86,14 @@ public final class Util {
      */
     static void closeQuietly(PreparedStatement ps) {
         try {
-            if (ps != null && !ps.isClosed()) {
+            boolean isClosed;
+            try {
+                isClosed  = ps.isClosed();
+            } catch(SQLException e) {
+                log.debug(e.getMessage());
+                isClosed = true;
+            }
+            if (ps != null && !isClosed) {
                 try {
                     ps.cancel();
                     log.debug("cancelled " + ps);
@@ -245,7 +252,8 @@ public final class Util {
                     return autoMap(rs, cls, c);
                 }
             }
-            throw new RuntimeException("constructor with number of parameters=" + n + "  not found in " + cls);
+            throw new RuntimeException("constructor with number of parameters=" + n
+                    + "  not found in " + cls);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -274,7 +282,8 @@ public final class Util {
         try {
             return newInstance(c, list);
         } catch (RuntimeException e) {
-            throw new RuntimeException("problem with parameters=" + getTypeInfo(list) + ", rs types=" + getRowInfo(rs)
+            throw new RuntimeException("problem with parameters=" + getTypeInfo(list)
+                    + ", rs types=" + getRowInfo(rs)
                     + ". Be sure not to use primitives in a constructor when calling autoMap().", e);
         }
     }
@@ -568,38 +577,38 @@ public final class Util {
     static void setParameters(PreparedStatement ps, List<Parameter> params) throws SQLException {
         for (int i = 1; i <= params.size(); i++) {
             Object o = params.get(i - 1).getValue();
-            if (o == null)
-                ps.setObject(i, null);
-            else {
-                Class<?> cls = o.getClass();
-                if (Clob.class.isAssignableFrom(cls)) {
-                    setClob(ps, i, o, cls);
-                } else if (Blob.class.isAssignableFrom(cls)) {
-                    setBlob(ps, i, o, cls);
-                } else if (Calendar.class.isAssignableFrom(cls)) {
-                    Calendar cal = (Calendar) o;
-                    Timestamp t = new java.sql.Timestamp(cal.getTimeInMillis());
-                    ps.setTimestamp(i, t, cal);
-                } else if (Time.class.isAssignableFrom(cls)) {
-                    Calendar cal = Calendar.getInstance();
-                    ps.setTime(i, (Time) o, cal);
-                } else if (Timestamp.class.isAssignableFrom(cls)) {
-                    Calendar cal = Calendar.getInstance();
-                    ps.setTimestamp(i, (Timestamp) o, cal);
-                } else if (java.sql.Date.class.isAssignableFrom(cls)) {
-                    Calendar cal = Calendar.getInstance();
-                    ps.setDate(i, (java.sql.Date) o, cal);
-                } else if (java.util.Date.class.isAssignableFrom(cls)) {
-                    Calendar cal = Calendar.getInstance();
-                    java.util.Date date = (java.util.Date) o;
-                    ps.setTimestamp(i, new java.sql.Timestamp(date.getTime()), cal);
-                } else
-                    try {
+            try {
+                if (o == null)
+                    ps.setObject(i, null);
+                else {
+                    Class<?> cls = o.getClass();
+                    if (Clob.class.isAssignableFrom(cls)) {
+                        setClob(ps, i, o, cls);
+                    } else if (Blob.class.isAssignableFrom(cls)) {
+                        setBlob(ps, i, o, cls);
+                    } else if (Calendar.class.isAssignableFrom(cls)) {
+                        Calendar cal = (Calendar) o;
+                        Timestamp t = new java.sql.Timestamp(cal.getTimeInMillis());
+                        ps.setTimestamp(i, t, cal);
+                    } else if (Time.class.isAssignableFrom(cls)) {
+                        Calendar cal = Calendar.getInstance();
+                        ps.setTime(i, (Time) o, cal);
+                    } else if (Timestamp.class.isAssignableFrom(cls)) {
+                        Calendar cal = Calendar.getInstance();
+                        ps.setTimestamp(i, (Timestamp) o, cal);
+                    } else if (java.sql.Date.class.isAssignableFrom(cls)) {
+                        Calendar cal = Calendar.getInstance();
+                        ps.setDate(i, (java.sql.Date) o, cal);
+                    } else if (java.util.Date.class.isAssignableFrom(cls)) {
+                        Calendar cal = Calendar.getInstance();
+                        java.util.Date date = (java.util.Date) o;
+                        ps.setTimestamp(i, new java.sql.Timestamp(date.getTime()), cal);
+                    } else
                         ps.setObject(i, o);
-                    } catch (SQLException e) {
-                        log.debug(e.getMessage() + " when setting ps.setObject(" + i + "," + o + ")");
-                        throw e;
-                    }
+                }
+            } catch (SQLException e) {
+                log.debug(e.getMessage() + " when setting ps.setObject(" + i + "," + o + ")");
+                throw e;
             }
         }
     }
@@ -613,14 +622,16 @@ public final class Util {
      * @param cls
      * @throws SQLException
      */
-    private static void setBlob(PreparedStatement ps, int i, Object o, Class<?> cls) throws SQLException {
+    private static void setBlob(PreparedStatement ps, int i, Object o, Class<?> cls)
+            throws SQLException {
         final InputStream is;
         if (o instanceof byte[]) {
             is = new ByteArrayInputStream((byte[]) o);
         } else if (o instanceof InputStream)
             is = (InputStream) o;
         else
-            throw new RuntimeException("cannot insert parameter of type " + cls + " into blob column " + i);
+            throw new RuntimeException("cannot insert parameter of type " + cls
+                    + " into blob column " + i);
         Blob c = ps.getConnection().createBlob();
         OutputStream os = c.setBinaryStream(1);
         copy(is, os);
@@ -636,14 +647,16 @@ public final class Util {
      * @param cls
      * @throws SQLException
      */
-    private static void setClob(PreparedStatement ps, int i, Object o, Class<?> cls) throws SQLException {
+    private static void setClob(PreparedStatement ps, int i, Object o, Class<?> cls)
+            throws SQLException {
         final Reader r;
         if (o instanceof String)
             r = new StringReader((String) o);
         else if (o instanceof Reader)
             r = (Reader) o;
         else
-            throw new RuntimeException("cannot insert parameter of type " + cls + " into clob column " + i);
+            throw new RuntimeException("cannot insert parameter of type " + cls
+                    + " into clob column " + i);
         Clob c = ps.getConnection().createClob();
         Writer w = c.setCharacterStream(1);
         copy(r, w);

@@ -114,7 +114,9 @@ class QueryUpdateOperation {
 
         private void performBeginTransaction(Subscriber<? super Integer> subscriber) {
             query.context().beginTransactionObserve();
+            log.debug("beginTransaction emitting 1");
             subscriber.onNext(Integer.valueOf(1));
+            log.debug("emitted 1");
         }
 
         /**

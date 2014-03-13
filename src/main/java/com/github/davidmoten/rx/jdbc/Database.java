@@ -82,7 +82,10 @@ final public class Database {
         else
             this.nonTransactionalSchedulerFactory = IO_SCHEDULER_FACTORY;
         this.context = new QueryContext(this);
-        isTransactionOpen.set(false);
+    }
+    
+    public ConnectionProvider getConnectionProvider() {
+        return cp;
     }
 
     /**
@@ -278,7 +281,7 @@ final public class Database {
      * @return
      */
     public Observable<Boolean> beginTransaction(Observable<?> dependency) {
-        return update("begin").dependsOn(dependency).count().map(IS_NON_ZERO);
+        return update("begin").dependsOn(dependency).count().map(constant(true));
     }
 
     /**
@@ -434,7 +437,7 @@ final public class Database {
     void beginTransactionObserve() {
         log.debug("beginTransactionObserve");
         currentConnectionProvider.set(new ConnectionProviderSingletonManualCommit(cp));
-        if (isTransactionOpen.get())
+        if (isTransactionOpen.get()!=null && isTransactionOpen.get())
             throw new RuntimeException("cannot begin transaction as transaction open already");
         isTransactionOpen.set(true);
     }
