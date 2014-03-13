@@ -508,27 +508,27 @@ final public class Database {
      * 
      * @return
      */
-    public <T> Operator<Boolean, T> commitOnNextOperator() {
+    public Operator<Boolean, ?> commitOnNextOperator() {
         return commitOrRollbackOnNextOperator(true);
     }
 
-    public <T> Operator<Boolean, Observable<T>> commitOnNextListOperator() {
+    public  Operator<Boolean, Observable<?>> commitOnNextListOperator() {
         return commitOrRollbackOnNextListOperator(true);
     }
     
-    public <T> Operator<Boolean, Observable<T>> rollbackOnNextListOperator() {
+    public  Operator<Boolean, Observable<?>> rollbackOnNextListOperator() {
         return commitOrRollbackOnNextListOperator(false);
     }
 
-    private <T> Operator<Boolean, Observable<T>> commitOrRollbackOnNextListOperator(
+    private Operator<Boolean, Observable<?>> commitOrRollbackOnNextListOperator(
             final boolean isCommit) {
         return RxUtil
-                .toOperator(new Func1<Observable<Observable<T>>, Observable<Boolean>>() {
+                .toOperator(new Func1<Observable<Observable<?>>, Observable<Boolean>>() {
                     @Override
-                    public Observable<Boolean> call(Observable<Observable<T>> source) {
-                        return source.flatMap(new Func1<Observable<T>, Observable<Boolean>>() {
+                    public Observable<Boolean> call(Observable<Observable<?>> source) {
+                        return source.flatMap(new Func1<Observable<?>, Observable<Boolean>>() {
                             @Override
-                            public Observable<Boolean> call(Observable<T> source) {
+                            public Observable<Boolean> call(Observable<?> source) {
                                 if (isCommit)
                                     return commit(source);
                                 else
@@ -544,14 +544,14 @@ final public class Database {
      * 
      * @return
      */
-    public <T> Operator<Boolean, T> rollbackOnNextOperator() {
+    public Operator<Boolean,?> rollbackOnNextOperator() {
         return commitOrRollbackOnNextOperator(false);
     }
 
-    private <T> Operator<Boolean, T> commitOrRollbackOnNextOperator(final boolean isCommit) {
-        return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
+    private Operator<Boolean, ?> commitOrRollbackOnNextOperator(final boolean isCommit) {
+        return RxUtil.toOperator(new Func1<Observable<Object>, Observable<Boolean>>() {
             @Override
-            public Observable<Boolean> call(Observable<T> source) {
+            public Observable<Boolean> call(Observable<Object> source) {
                 return commitOrRollbackOnNext(isCommit, Database.this, source);
             }
         });

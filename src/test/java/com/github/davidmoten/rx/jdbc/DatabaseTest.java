@@ -1157,7 +1157,7 @@ public class DatabaseTest {
                 // increase score
                 .lift(db.update("update person set score=score + 5").parameterListOperator())
                 // commit transaction
-                .lift(db.<Integer>commitOnNextListOperator())
+                .lift(db.commitOnNextListOperator())
                 // to empty lists
                 .map(toEmpty())
                 // return count
@@ -1189,7 +1189,7 @@ public class DatabaseTest {
                 // log
                 .doOnEach(log())
                 // commit
-                .lift(db.commitOnNextOperator())
+                .lift(db.commitOnNextListOperator())
                 // total rows affected
                 .count()
                 // block and get result
