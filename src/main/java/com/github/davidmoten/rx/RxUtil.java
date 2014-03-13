@@ -12,6 +12,7 @@ import rx.Observer;
 import rx.Subscriber;
 import rx.functions.Action1;
 import rx.functions.Func1;
+import rx.functions.Functions;
 
 public class RxUtil {
 
@@ -123,4 +124,14 @@ public class RxUtil {
 	public static <T> Func1<T, Observable<Object>> toEmpty() {
 		return constant(Observable.<Object>empty());
 	}
+
+    public static <T> Operator<T,Observable<T>> flatten() {
+        return RxUtil.toOperator(new Func1<Observable<Observable<T>>,Observable<T>>() {
+
+            @Override
+            public Observable<T> call(Observable<Observable<T>> source) {
+               return source.flatMap(Functions.<Observable<T>>identity());
+            }});
+    }
+
 }

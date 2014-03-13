@@ -46,7 +46,7 @@ final public class Database {
      * queries.
      */
     private final ThreadLocal<ConnectionProvider> currentConnectionProvider = new ThreadLocal<ConnectionProvider>();
-    
+
     private final ThreadLocal<Boolean> isTransactionOpen = new ThreadLocal<Boolean>();
 
     /**
@@ -73,8 +73,7 @@ final public class Database {
      * @param nonTransactionalSchedulerFactory
      *            schedules non transactional queries
      */
-    public Database(final ConnectionProvider cp,
-            Func0<Scheduler> nonTransactionalSchedulerFactory) {
+    public Database(final ConnectionProvider cp, Func0<Scheduler> nonTransactionalSchedulerFactory) {
         Conditions.checkNotNull(cp);
         this.cp = cp;
         currentConnectionProvider.set(cp);
@@ -187,8 +186,7 @@ final public class Database {
          * @return
          */
         public Builder pooled(String url, int minPoolSize, int maxPoolSize) {
-            this.cp = new ConnectionProviderPooled(url, minPoolSize,
-                    maxPoolSize);
+            this.cp = new ConnectionProviderPooled(url, minPoolSize, maxPoolSize);
             return this;
         }
 
@@ -337,17 +335,14 @@ final public class Database {
         return commitOrRollbackOperator(false);
     }
 
-    private <T> Operator<Boolean, T> commitOrRollbackOperator(
-            final boolean commit) {
+    private <T> Operator<Boolean, T> commitOrRollbackOperator(final boolean commit) {
         final QueryUpdate.Builder updateBuilder = createCommitOrRollbackQuery(commit);
-        return RxUtil
-                .toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
-                    @Override
-                    public Observable<Boolean> call(Observable<T> source) {
-                        return updateBuilder.dependsOn(source).count()
-                                .map(IS_NON_ZERO);
-                    }
-                });
+        return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
+            @Override
+            public Observable<Boolean> call(Observable<T> source) {
+                return updateBuilder.dependsOn(source).count().map(IS_NON_ZERO);
+            }
+        });
     }
 
     /**
@@ -360,8 +355,7 @@ final public class Database {
      * @param depends
      * @return
      */
-    private Observable<Boolean> commitOrRollback(boolean commit,
-            Observable<?>... depends) {
+    private Observable<Boolean> commitOrRollback(boolean commit, Observable<?>... depends) {
 
         QueryUpdate.Builder u = createCommitOrRollbackQuery(commit);
         for (Observable<?> dep : depends)
@@ -439,8 +433,7 @@ final public class Database {
 
     void beginTransactionObserve() {
         log.debug("beginTransactionObserve");
-        currentConnectionProvider
-                .set(new ConnectionProviderSingletonManualCommit(cp));
+        currentConnectionProvider.set(new ConnectionProviderSingletonManualCommit(cp));
         if (isTransactionOpen.get())
             throw new RuntimeException("cannot begin transaction as transaction open already");
         isTransactionOpen.set(true);
@@ -462,16 +455,14 @@ final public class Database {
         isTransactionOpen.set(false);
     }
 
-    private <T> Operator<Boolean, T> commitOrRollbackOnCompleteOperator(
-            final boolean isCommit) {
-        return RxUtil
-                .toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
-                    @Override
-                    public Observable<Boolean> call(Observable<T> source) {
-                        return commitOrRollbackOnCompleteOperatorIfAtLeastOneValue(
-                                isCommit, Database.this, source);
-                    }
-                });
+    private <T> Operator<Boolean, T> commitOrRollbackOnCompleteOperator(final boolean isCommit) {
+        return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
+            @Override
+            public Observable<Boolean> call(Observable<T> source) {
+                return commitOrRollbackOnCompleteOperatorIfAtLeastOneValue(isCommit, Database.this,
+                        source);
+            }
+        });
     }
 
     /**
@@ -513,7 +504,7 @@ final public class Database {
     }
 
     /**
-     * Commits the currently open transaction.
+     * Commits the currently open transaction. Emits true.
      * 
      * @return
      */
@@ -522,7 +513,7 @@ final public class Database {
     }
 
     /**
-     * Rolls back the current transaction.
+     * Rolls back the current transaction. Emits false.
      * 
      * @return
      */
@@ -530,16 +521,13 @@ final public class Database {
         return commitOrRollbackOnNextOperator(false);
     }
 
-    private <T> Operator<Boolean, T> commitOrRollbackOnNextOperator(
-            final boolean isCommit) {
-        return RxUtil
-                .toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
-                    @Override
-                    public Observable<Boolean> call(Observable<T> source) {
-                        return commitOrRollbackOnNext(isCommit, Database.this,
-                                source);
-                    }
-                });
+    private <T> Operator<Boolean, T> commitOrRollbackOnNextOperator(final boolean isCommit) {
+        return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
+            @Override
+            public Observable<Boolean> call(Observable<T> source) {
+                return commitOrRollbackOnNext(isCommit, Database.this, source);
+            }
+        });
     }
 
     private static final <T> Observable<Boolean> commitOrRollbackOnCompleteOperatorIfAtLeastOneValue(
@@ -565,8 +553,16 @@ final public class Database {
                         commit);
     }
 
-    private static final <T> Observable<Boolean> commitOrRollbackOnNext(
-            final boolean isCommit, final Database db, Observable<T> source) {
+    /**
+     * Emits true for commit and false for rollback.
+     * 
+     * @param isCommit
+     * @param db
+     * @param source
+     * @return
+     */
+    private static final <T> Observable<Boolean> commitOrRollbackOnNext(final boolean isCommit,
+            final Database db, Observable<T> source) {
         return source.flatMap(new Func1<T, Observable<Boolean>>() {
             @Override
             public Observable<Boolean> call(T t) {
@@ -578,8 +574,7 @@ final public class Database {
         });
     }
 
-    private static <T> Observable<T> beginTransactionOnNext(final Database db,
-            Observable<T> source) {
+    private static <T> Observable<T> beginTransactionOnNext(final Database db, Observable<T> source) {
         return source.flatMap(new Func1<T, Observable<T>>() {
             @Override
             public Observable<T> call(T t) {

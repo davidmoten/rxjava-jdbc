@@ -208,6 +208,8 @@ public class DatabaseTest {
                 .map(toEmpty())
                 // execute the update
                 .lift(db.update("update person set score = score + 1").parameterListOperator())
+                //flatten
+                .lift(RxUtil.<Integer>flatten())
                 // total the affected records
                 .lift(SUM_INTEGER);
         assertIs(6, rowsAffected);
@@ -1154,6 +1156,8 @@ public class DatabaseTest {
                 .map(toEmpty())
                 // increase score
                 .lift(db.update("update person set score=score + 5").parameterListOperator())
+                //flatten
+                .lift(RxUtil.<Integer>flatten())
                 // commit transaction
                 .lift(db.commitOnNextOperator())
                 // to empty lists
@@ -1173,7 +1177,7 @@ public class DatabaseTest {
         Database db = db();
         int count = Observable
         // parameters grouped in lists
-                .from(asList(from((Object) 1), from((Object) 2)))
+                .from(asList(from(1).cast(Object.class), from(2).cast(Object.class)))
                 // log
                 .doOnEach(log())
                 // begin trans

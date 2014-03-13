@@ -180,6 +180,7 @@ class QueryUpdateOperation {
         private void performRollback(Subscriber<? super Integer> subscriber) {
             log.debug("rolling back");
             Conditions.checkTrue(!Util.isAutoCommit(con));
+            query.context().endTransactionObserve();
             Util.rollback(con);
             // must close before onNext so that connection is released and is
             // available to a query that might process the onNext

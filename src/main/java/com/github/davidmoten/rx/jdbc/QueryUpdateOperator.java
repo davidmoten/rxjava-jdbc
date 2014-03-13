@@ -24,7 +24,6 @@ public class QueryUpdateOperator<R> implements Operator<Integer, R> {
             final OperatorType operatorType) {
         operator = new OperatorFromOperation<Integer, R>(
                 new Func1<Observable<R>, Observable<Integer>>() {
-
                     @Override
                     public Observable<Integer> call(Observable<R> observable) {
                         if (operatorType == OperatorType.PARAMETER)
@@ -32,20 +31,7 @@ public class QueryUpdateOperator<R> implements Operator<Integer, R> {
                         else if (operatorType == OperatorType.DEPENDENCY)
                             // dependency
                             return builder.dependsOn(observable).count();
-                        else // PARAMETER_LIST
-                        {
-                            @SuppressWarnings("unchecked")
-                            Observable<Observable<Object>> obs = (Observable<Observable<Object>>) observable;
-                            return obs
-                                    .flatMap(new Func1<Observable<Object>, Observable<Integer>>() {
-                                        @Override
-                                        public Observable<Integer> call(
-                                                Observable<Object> parameters) {
-                                            return builder.clearParameters().parameters(
-                                                    parameters).count();
-                                        }
-                                    });
-                        }
+                        else throw new RuntimeException("does not handle " + operatorType);
                     }
                 });
     }
