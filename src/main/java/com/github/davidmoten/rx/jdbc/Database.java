@@ -512,6 +512,33 @@ final public class Database {
         return commitOrRollbackOnNextOperator(true);
     }
 
+    public <T> Operator<Boolean, Observable<T>> commitOnNextListOperator() {
+        return commitOrRollbackOnNextListOperator(true);
+    }
+    
+    public <T> Operator<Boolean, Observable<T>> rollbackOnNextListOperator() {
+        return commitOrRollbackOnNextListOperator(false);
+    }
+
+    private <T> Operator<Boolean, Observable<T>> commitOrRollbackOnNextListOperator(
+            final boolean isCommit) {
+        return RxUtil
+                .toOperator(new Func1<Observable<Observable<T>>, Observable<Boolean>>() {
+                    @Override
+                    public Observable<Boolean> call(Observable<Observable<T>> source) {
+                        return source.flatMap(new Func1<Observable<T>, Observable<Boolean>>() {
+                            @Override
+                            public Observable<Boolean> call(Observable<T> source) {
+                                if (isCommit)
+                                    return commit(source);
+                                else
+                                    return rollback(source);
+                            }
+                        });
+                    }
+                });
+    }
+
     /**
      * Rolls back the current transaction. Emits false.
      * 
