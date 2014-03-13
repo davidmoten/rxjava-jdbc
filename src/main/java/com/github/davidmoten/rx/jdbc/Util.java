@@ -88,8 +88,11 @@ public final class Util {
         try {
             boolean isClosed;
             try {
-                isClosed  = ps.isClosed();
-            } catch(SQLException e) {
+                if (ps != null)
+                    isClosed = ps.isClosed();
+                else
+                    isClosed = true;
+            } catch (SQLException e) {
                 log.debug(e.getMessage());
                 isClosed = true;
             }
