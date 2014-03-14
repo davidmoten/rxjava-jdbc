@@ -411,21 +411,24 @@ List<Integer> mins = Observable
     .lift(db.beginTransactionOnNextOperator())
     // update all scores to the item
     .lift(db.update("update person set score=?").parameterOperator())
-    //to empty parameter observable
+    // to empty parameter list
     .map(toEmpty())
-    //increase score
+    // increase score
     .lift(db.update("update person set score=score + 5").parameterListOperator())
+    //only expect one result so can flatten
+    .lift(RxUtil.<Integer>flatten())
     // commit transaction
     .lift(db.commitOnNextOperator())
-    // to empty observable
+    // to empty lists
     .map(toEmpty())
     // return count
-     .lift(db.select("select min(score) from person").parameterListOperator().getAs(Integer.class))
+    .lift(db.select("select min(score) from person").parameterListOperator()
+            .getAs(Integer.class))
     // list the results
     .toList()
     // block and get
     .toBlockingObservable().single();
-assertEquals(Arrays.asList(16,17,18), mins);
+assertEquals(Arrays.asList(16, 17, 18), mins);
 ```
 
 Logging
