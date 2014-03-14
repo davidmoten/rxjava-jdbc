@@ -83,7 +83,7 @@ final public class Database {
             this.nonTransactionalSchedulerFactory = IO_SCHEDULER_FACTORY;
         this.context = new QueryContext(this);
     }
-    
+
     public ConnectionProvider getConnectionProvider() {
         return cp;
     }
@@ -420,6 +420,11 @@ final public class Database {
         return this;
     }
 
+    /**
+     * Returns the current thread local {@link Scheduler}.
+     * 
+     * @return
+     */
     Scheduler currentScheduler() {
         if (currentSchedulerFactory.get() == null)
             return nonTransactionalSchedulerFactory.call();
@@ -427,6 +432,11 @@ final public class Database {
             return currentSchedulerFactory.get().call();
     }
 
+    /**
+     * Returns the current thread local {@link ConnectionProvider}.
+     * 
+     * @return
+     */
     ConnectionProvider connectionProvider() {
         if (currentConnectionProvider.get() == null)
             return cp;
@@ -434,36 +444,56 @@ final public class Database {
             return currentConnectionProvider.get();
     }
 
+    /**
+     * Sets the current thread local {@link ConnectionProvider} to a singleton
+     * manual commit instance.
+     */
     void beginTransactionObserve() {
         log.debug("beginTransactionObserve");
         currentConnectionProvider.set(new ConnectionProviderSingletonManualCommit(cp));
-        if (isTransactionOpen.get()!=null && isTransactionOpen.get())
+        if (isTransactionOpen.get() != null && isTransactionOpen.get())
             throw new RuntimeException("cannot begin transaction as transaction open already");
         isTransactionOpen.set(true);
     }
 
+    /**
+     * Sets the current thread local {@link Scheduler} to be
+     * {@link Schedulers#trampoline()}.
+     */
     void beginTransactionSubscribe() {
         log.debug("beginTransactionSubscribe");
         currentSchedulerFactory.set(CURRENT_THREAD_SCHEDULER_FACTORY);
     }
 
+    /**
+     * Resets the current thread local {@link Scheduler} to default.
+     */
     void endTransactionSubscribe() {
         log.debug("endTransactionSubscribe");
         currentSchedulerFactory.set(null);
     }
 
+    /**
+     * Resets the current thread local {@link ConnectionProvider} to default.
+     */
     void endTransactionObserve() {
         log.debug("endTransactionObserve");
         currentConnectionProvider.set(cp);
         isTransactionOpen.set(false);
     }
 
+    /**
+     * Returns an {@link Operator} that performs commit or rollback of a
+     * transaction.
+     * 
+     * @param isCommit
+     * @return
+     */
     private <T> Operator<Boolean, T> commitOrRollbackOnCompleteOperator(final boolean isCommit) {
         return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
             @Override
             public Observable<Boolean> call(Observable<T> source) {
-                return commitOrRollbackOnCompleteOperatorIfAtLeastOneValue(isCommit, Database.this,
-                        source);
+                return commitOrRollbackOnCompleteOperatorIfAtLeastOneValue(isCommit, Database.this, source);
             }
         });
     }
@@ -515,31 +545,29 @@ final public class Database {
         return commitOrRollbackOnNextOperator(true);
     }
 
-    public  Operator<Boolean, Observable<?>> commitOnNextListOperator() {
+    public Operator<Boolean, Observable<?>> commitOnNextListOperator() {
         return commitOrRollbackOnNextListOperator(true);
     }
-    
-    public  Operator<Boolean, Observable<?>> rollbackOnNextListOperator() {
+
+    public Operator<Boolean, Observable<?>> rollbackOnNextListOperator() {
         return commitOrRollbackOnNextListOperator(false);
     }
 
-    private Operator<Boolean, Observable<?>> commitOrRollbackOnNextListOperator(
-            final boolean isCommit) {
-        return RxUtil
-                .toOperator(new Func1<Observable<Observable<?>>, Observable<Boolean>>() {
+    private Operator<Boolean, Observable<?>> commitOrRollbackOnNextListOperator(final boolean isCommit) {
+        return RxUtil.toOperator(new Func1<Observable<Observable<?>>, Observable<Boolean>>() {
+            @Override
+            public Observable<Boolean> call(Observable<Observable<?>> source) {
+                return source.flatMap(new Func1<Observable<?>, Observable<Boolean>>() {
                     @Override
-                    public Observable<Boolean> call(Observable<Observable<?>> source) {
-                        return source.flatMap(new Func1<Observable<?>, Observable<Boolean>>() {
-                            @Override
-                            public Observable<Boolean> call(Observable<?> source) {
-                                if (isCommit)
-                                    return commit(source);
-                                else
-                                    return rollback(source);
-                            }
-                        });
+                    public Observable<Boolean> call(Observable<?> source) {
+                        if (isCommit)
+                            return commit(source);
+                        else
+                            return rollback(source);
                     }
                 });
+            }
+        });
     }
 
     /**
@@ -547,7 +575,7 @@ final public class Database {
      * 
      * @return
      */
-    public Operator<Boolean,?> rollbackOnNextOperator() {
+    public Operator<Boolean, ?> rollbackOnNextOperator() {
         return commitOrRollbackOnNextOperator(false);
     }
 
@@ -591,8 +619,8 @@ final public class Database {
      * @param source
      * @return
      */
-    private static final <T> Observable<Boolean> commitOrRollbackOnNext(final boolean isCommit,
-            final Database db, Observable<T> source) {
+    private static final <T> Observable<Boolean> commitOrRollbackOnNext(final boolean isCommit, final Database db,
+            Observable<T> source) {
         return source.flatMap(new Func1<T, Observable<Boolean>>() {
             @Override
             public Observable<Boolean> call(T t) {
