@@ -1156,8 +1156,10 @@ public class DatabaseTest {
                 .map(toEmpty())
                 // increase score
                 .lift(db.update("update person set score=score + 5").parameterListOperator())
+                //only expect one result so can flatten
+                .lift(RxUtil.<Integer>flatten())
                 // commit transaction
-                .lift(db.commitOnNextListOperator())
+                .lift(db.commitOnNextOperator())
                 // to empty lists
                 .map(toEmpty())
                 // return count
