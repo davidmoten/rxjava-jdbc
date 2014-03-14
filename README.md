@@ -365,7 +365,11 @@ Observable<Integer> rowsAffected = Observable
     .map(toEmpty())
     //execute the update twice with an empty list
     .lift(db.update("update person set score = score + 1")
-            .parameterListOperator());
+            .parameterListOperator())
+    // flatten
+    .lift(RxUtil.<Integer> flatten())
+    // total the affected records
+    .lift(SUM_INTEGER);
 ```
 
 Transactions
