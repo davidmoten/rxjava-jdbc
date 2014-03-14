@@ -15,10 +15,10 @@ import rx.subjects.PublishSubject;
  * @param <T>
  *            from type
  */
-public class OperatorFromOperation<R, T> implements Operator<R, T> {
+public class OperationToOperator<R, T> implements Operator<R, T> {
 
     public static <R, T> Operator<R, T> toOperator(Func1<Observable<T>, Observable<R>> operation) {
-        return new OperatorFromOperation<R, T>(operation);
+        return new OperationToOperator<R, T>(operation);
     }
 
     /**
@@ -32,7 +32,7 @@ public class OperatorFromOperation<R, T> implements Operator<R, T> {
      * @param operation
      *            to be converted into {@link Operator}
      */
-    public OperatorFromOperation(Func1<Observable<T>, Observable<R>> operation) {
+    public OperationToOperator(Func1<Observable<T>, Observable<R>> operation) {
         this.operation = operation;
     }
 

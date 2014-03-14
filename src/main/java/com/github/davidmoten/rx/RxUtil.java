@@ -80,7 +80,7 @@ public class RxUtil {
 
 	public static <R, T> Operator<R, T> toOperator(
 			Func1<Observable<T>, Observable<R>> operation) {
-		return OperatorFromOperation.toOperator(operation);
+		return OperationToOperator.toOperator(operation);
 	}
 
 	public static <T> UnsubscribeDetector<T> detectUnsubscribe() {

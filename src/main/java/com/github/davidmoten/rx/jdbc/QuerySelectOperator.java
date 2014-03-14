@@ -1,13 +1,13 @@
 package com.github.davidmoten.rx.jdbc;
 
+import static com.github.davidmoten.rx.OperationToOperator.toOperator;
+
 import java.sql.ResultSet;
 
 import rx.Observable;
 import rx.Observable.Operator;
 import rx.Subscriber;
 import rx.functions.Func1;
-
-import com.github.davidmoten.rx.OperatorFromOperation;
 
 /**
  * Operator corresponding to the QuerySelectOperation.
@@ -16,7 +16,7 @@ import com.github.davidmoten.rx.OperatorFromOperation;
  */
 public class QuerySelectOperator<T, R> implements Operator<T, R> {
 
-    private final OperatorFromOperation<T, R> operator;
+    private final Operator<T, R> operator;
 
     /**
      * Constructor.
@@ -27,7 +27,7 @@ public class QuerySelectOperator<T, R> implements Operator<T, R> {
      */
     QuerySelectOperator(final QuerySelect.Builder builder, final Func1<ResultSet, T> function,
             final OperatorType operatorType) {
-        operator = new OperatorFromOperation<T, R>(new Func1<Observable<R>, Observable<T>>() {
+        operator = toOperator(new Func1<Observable<R>, Observable<T>>() {
 
             @Override
             public Observable<T> call(Observable<R> observable) {

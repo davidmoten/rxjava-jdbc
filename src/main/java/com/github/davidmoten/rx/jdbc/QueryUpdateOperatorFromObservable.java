@@ -5,14 +5,14 @@ import rx.Observable.Operator;
 import rx.Subscriber;
 import rx.functions.Func1;
 
-import com.github.davidmoten.rx.OperatorFromOperation;
+import com.github.davidmoten.rx.OperationToOperator;
 
 /**
  * {@link Operator} corresonding to {@link QueryUpdateOperation}.
  */
  class QueryUpdateOperatorFromObservable<R> implements Operator<Observable<Integer>, Observable<R>> {
 
-    private final OperatorFromOperation<Observable<Integer>, Observable<R>> operator;
+    private final OperationToOperator<Observable<Integer>, Observable<R>> operator;
 
     /**
      * Constructor.
@@ -22,7 +22,7 @@ import com.github.davidmoten.rx.OperatorFromOperation;
      */
     QueryUpdateOperatorFromObservable(final QueryUpdate.Builder builder
             ) {
-        operator = new OperatorFromOperation<Observable<Integer>, Observable<R>>(
+        operator = new OperationToOperator<Observable<Integer>, Observable<R>>(
                 new Func1<Observable<Observable<R>>, Observable<Observable<Integer>>>() {
 
                     @Override
