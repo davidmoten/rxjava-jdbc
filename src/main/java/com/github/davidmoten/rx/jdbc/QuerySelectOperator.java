@@ -14,7 +14,7 @@ import com.github.davidmoten.rx.OperatorFromOperation;
  * 
  * @param <T>
  */
-public class QuerySelectOperator<T,R> implements Operator<T, R> {
+public class QuerySelectOperator<T, R> implements Operator<T, R> {
 
     private final OperatorFromOperation<T, R> operator;
 
@@ -29,23 +29,23 @@ public class QuerySelectOperator<T,R> implements Operator<T, R> {
             final OperatorType operatorType) {
         operator = new OperatorFromOperation<T, R>(new Func1<Observable<R>, Observable<T>>() {
 
-            @SuppressWarnings("rawtypes")
-			@Override
+            @Override
             public Observable<T> call(Observable<R> observable) {
                 if (operatorType == OperatorType.PARAMETER)
                     return builder.parameters(observable).get(function);
-                else if (operatorType==OperatorType.DEPENDENCY)
+                else if (operatorType == OperatorType.DEPENDENCY)
                     // dependency
                     return builder.dependsOn(observable).get(function);
-                else //PARAMETER_LIST
+                else // PARAMETER_LIST
                 {
                     @SuppressWarnings("unchecked")
                     Observable<Observable<Object>> obs = (Observable<Observable<Object>>) observable;
-                	return obs.flatMap(new Func1<Observable<Object>,Observable<T>>(){
-						@Override
-						public Observable<T> call(Observable<Object> parameters) {
-							return builder.parameters(parameters).get(function);
-						}});
+                    return obs.flatMap(new Func1<Observable<Object>, Observable<T>>() {
+                        @Override
+                        public Observable<T> call(Observable<Object> parameters) {
+                            return builder.parameters(parameters).get(function);
+                        }
+                    });
                 }
             }
         });
