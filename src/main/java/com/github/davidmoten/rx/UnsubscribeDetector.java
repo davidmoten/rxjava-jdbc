@@ -10,12 +10,20 @@ import rx.Observable.Operator;
 import rx.Subscriber;
 import rx.Subscription;
 
+/**
+ * Provides a {@link CountDownLatch} to assist with detecting unsubscribe calls.
+ * 
+ * @param <T>
+ */
 public class UnsubscribeDetector<T> implements Operator<T, T> {
 
     private static final Logger log = LoggerFactory.getLogger(UnsubscribeDetector.class);
 
     private final CountDownLatch latch;
 
+    /**
+     * Constructor.
+     */
     public UnsubscribeDetector() {
         latch = new CountDownLatch(1);
     }
@@ -41,10 +49,20 @@ public class UnsubscribeDetector<T> implements Operator<T, T> {
         return subscriber;
     }
 
+    /**
+     * Returns a latch that will be at zero if one unsubscribe has occurred.
+     * 
+     * @return
+     */
     public CountDownLatch latch() {
         return latch;
     }
 
+    /**
+     * Factory method.
+     * 
+     * @return
+     */
     public static <T> UnsubscribeDetector<T> detect() {
         return new UnsubscribeDetector<T>();
     }
