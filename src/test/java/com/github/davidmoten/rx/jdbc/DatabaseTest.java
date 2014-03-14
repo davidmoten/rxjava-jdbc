@@ -1226,6 +1226,24 @@ public class DatabaseTest {
         assertEquals(2, count);
     }
     
+    @Test
+    public void testCanExecuteCreateSchema() {
+            Database db = db();
+            int count = db.update(
+                    "create schema if not exists special_user").count().toBlockingObservable()
+                    .single();
+            assertEquals(0,count);
+    }
+    
+    @Test
+    public void testCanExecuteCreateTable() {
+            Database db = db();
+            int count = db.update(
+                    "create table  mytemp(name varchar2(100) primary key)").count().toBlockingObservable()
+                    .single();
+            assertEquals(0,count);
+    }
+    
     private static Observable<Object> objects(Object... objects) {
         return Observable.from(objects);
     }
