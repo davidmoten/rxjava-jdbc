@@ -153,13 +153,13 @@ class QueryUpdateOperation {
          * @param subscriber
          */
         private void performCommit(Subscriber<? super Integer> subscriber) {
+            query.context().endTransactionObserve();
             checkSubscription(subscriber);
             if (!keepGoing)
                 return;
 
             log.debug("committing");
             Conditions.checkTrue(!Util.isAutoCommit(con));
-            query.context().endTransactionObserve();
             Util.commit(con);
             // must close before onNext so that connection is released and is
             // available to a query that might process the onNext
@@ -181,8 +181,8 @@ class QueryUpdateOperation {
          */
         private void performRollback(Subscriber<? super Integer> subscriber) {
             log.debug("rolling back");
-            Conditions.checkTrue(!Util.isAutoCommit(con));
             query.context().endTransactionObserve();
+            Conditions.checkTrue(!Util.isAutoCommit(con));
             Util.rollback(con);
             // must close before onNext so that connection is released and is
             // available to a query that might process the onNext
