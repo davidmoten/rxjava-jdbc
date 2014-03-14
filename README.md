@@ -319,12 +319,12 @@ Lift
 Using the Observable.lift() method you can perform multiple queries without breaking method chaining. Observable.lift() 
 requires an ```Operator``` parameter which are available via 
 
-* db.select(sql).parameterOperator().get()
-* db.select(sql).parameterListOperator().get()
-* db.select(sql).dependsOnOperator().get()
-* db.update(sql).parameterOperator()
-* db.update(sql).parameterListOperator()
-* db.update(sql).dependsOnOperator()
+* ```db.select(sql).parameterOperator().getXXX()```
+* ```db.select(sql).parameterListOperator().getXXX()```
+* ```db.select(sql).dependsOnOperator().getXXX()```
+* ```db.update(sql).parameterOperator()```
+* ```db.update(sql).parameterListOperator()```
+* ```db.update(sql).dependsOnOperator()```
 
 Example:   
 ```java
