@@ -28,8 +28,7 @@ final public class QueryUpdate implements Query {
      * @param depends
      * @param context
      */
-    private QueryUpdate(String sql, Observable<Parameter> parameters, Observable<?> depends,
-            QueryContext context) {
+    private QueryUpdate(String sql, Observable<Parameter> parameters, Observable<?> depends, QueryContext context) {
         checkNotNull(sql);
         checkNotNull(parameters);
         checkNotNull(depends);
@@ -94,8 +93,7 @@ final public class QueryUpdate implements Query {
                     context.beginTransactionSubscribe();
                 }
                 Observable<Integer> result = executeOnce(params).subscribeOn(context.scheduler());
-                if (sql.equals(QueryUpdateOperation.COMMIT)
-                        || sql.equals(QueryUpdateOperation.ROLLBACK))
+                if (sql.equals(QueryUpdateOperation.COMMIT) || sql.equals(QueryUpdateOperation.ROLLBACK))
                     context.endTransactionSubscribe();
                 return result;
             }
@@ -205,8 +203,7 @@ final public class QueryUpdate implements Query {
          * @return
          */
         public Observable<Integer> count() {
-            return new QueryUpdate(builder.sql(), builder.parameters(), builder.depends(),
-                    builder.context()).count();
+            return new QueryUpdate(builder.sql(), builder.parameters(), builder.depends(), builder.context()).count();
         }
 
         /**
@@ -215,7 +212,7 @@ final public class QueryUpdate implements Query {
          * 
          * @return operator that acts on parameters
          */
-        public Operator<Integer,Object> parameterOperator() {
+        public Operator<Integer, Object> parameterOperator() {
             return new QueryUpdateOperator<Object>(this, OperatorType.PARAMETER);
         }
 
@@ -225,7 +222,7 @@ final public class QueryUpdate implements Query {
          * 
          * @return operator that acts on dependencies
          */
-        public Operator<Integer,Object> dependsOnOperator() {
+        public Operator<Integer, Object> dependsOnOperator() {
             return new QueryUpdateOperator<Object>(this, OperatorType.DEPENDENCY);
         }
 
@@ -235,7 +232,7 @@ final public class QueryUpdate implements Query {
          * 
          * @return
          */
-        public Operator<Observable<Integer>,Observable<Object>> parameterListOperator() {
+        public Operator<Observable<Integer>, Observable<Object>> parameterListOperator() {
             return new QueryUpdateOperatorFromObservable<Object>(this);
         }
 

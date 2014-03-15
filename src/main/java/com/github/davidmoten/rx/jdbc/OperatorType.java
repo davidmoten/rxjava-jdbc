@@ -18,8 +18,7 @@ public enum OperatorType {
      * dependencies to be completed before the select or update query.
      */
     DEPENDENCY,
-    
+
     PARAMETER_LIST;
-    
-    
+
 }

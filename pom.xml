@@ -92,6 +92,11 @@
       <version>${rxjava.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.netflix.rxjava</groupId>
+      <artifactId>rxjava-string</artifactId>
+      <version>${rxjava.version}</version>
+    </dependency>
+    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>2.4</version>

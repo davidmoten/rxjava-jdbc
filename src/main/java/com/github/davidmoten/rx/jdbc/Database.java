@@ -3,6 +3,8 @@ package com.github.davidmoten.rx.jdbc;
 import static com.github.davidmoten.rx.RxUtil.constant;
 import static com.github.davidmoten.rx.RxUtil.greaterThanZero;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 
 import org.slf4j.Logger;
@@ -13,6 +15,7 @@ import rx.Observable.Operator;
 import rx.Scheduler;
 import rx.functions.Func0;
 import rx.functions.Func1;
+import rx.observables.StringObservable;
 import rx.schedulers.Schedulers;
 
 import com.github.davidmoten.rx.RxUtil;
@@ -639,5 +642,27 @@ final public class Database {
                 return db.beginTransaction().map(constant(t));
             }
         });
+    }
+
+    public Observable<Integer> run(Observable<String> commands) {
+        return commands.flatMap(new Func1<String, Observable<Integer>>() {
+            @Override
+            public Observable<Integer> call(String command) {
+                return update(command).count();
+            }
+        });
+    }
+
+    public Operator<Integer, String> run() {
+        return RxUtil.toOperator(new Func1<Observable<String>, Observable<Integer>>() {
+            @Override
+            public Observable<Integer> call(Observable<String> commands) {
+                return run(commands);
+            }
+        });
+    }
+
+    public Observable<Integer> run(InputStream is, String delimiter) {
+        return StringObservable.split(StringObservable.from(new InputStreamReader(is)), ";").lift(run());
     }
 }

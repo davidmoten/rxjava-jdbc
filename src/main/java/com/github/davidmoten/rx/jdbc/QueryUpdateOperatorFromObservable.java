@@ -10,7 +10,7 @@ import com.github.davidmoten.rx.OperationToOperator;
 /**
  * {@link Operator} corresonding to {@link QueryUpdateOperation}.
  */
- class QueryUpdateOperatorFromObservable<R> implements Operator<Observable<Integer>, Observable<R>> {
+class QueryUpdateOperatorFromObservable<R> implements Operator<Observable<Integer>, Observable<R>> {
 
     private final OperationToOperator<Observable<Integer>, Observable<R>> operator;
 
@@ -20,23 +20,19 @@ import com.github.davidmoten.rx.OperationToOperator;
      * @param builder
      * @param operatorType
      */
-    QueryUpdateOperatorFromObservable(final QueryUpdate.Builder builder
-            ) {
+    QueryUpdateOperatorFromObservable(final QueryUpdate.Builder builder) {
         operator = new OperationToOperator<Observable<Integer>, Observable<R>>(
                 new Func1<Observable<Observable<R>>, Observable<Observable<Integer>>>() {
 
                     @Override
                     public Observable<Observable<Integer>> call(Observable<Observable<R>> observable) {
 
-                            return observable
-                                    .map(new Func1<Observable<R>, Observable<Integer>>() {
-                                        @Override
-                                        public Observable<Integer> call(
-                                                Observable<R> parameters) {
-                                            return builder.clearParameters().parameters(
-                                                    parameters).count();
-                                        }
-                                    });
+                        return observable.map(new Func1<Observable<R>, Observable<Integer>>() {
+                            @Override
+                            public Observable<Integer> call(Observable<R> parameters) {
+                                return builder.clearParameters().parameters(parameters).count();
+                            }
+                        });
                     }
                 });
     }
