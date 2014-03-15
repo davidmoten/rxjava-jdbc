@@ -15,6 +15,7 @@ import rx.Observable.Operator;
 import rx.Scheduler;
 import rx.functions.Func0;
 import rx.functions.Func1;
+import rx.functions.Func2;
 import rx.observables.StringObservable;
 import rx.schedulers.Schedulers;
 
@@ -645,12 +646,15 @@ final public class Database {
     }
 
     public Observable<Integer> run(Observable<String> commands) {
-        return commands.flatMap(new Func1<String, Observable<Integer>>() {
-            @Override
-            public Observable<Integer> call(String command) {
-                return update(command).count();
-            }
-        });
+
+        return commands.scan(Observable.<Integer> empty(),
+                new Func2<Observable<Integer>, String, Observable<Integer>>() {
+
+                    @Override
+                    public Observable<Integer> call(Observable<Integer> dep, String command) {
+                        return update(command).dependsOn(dep).count();
+                    }
+                }).lift(RxUtil.<Integer> flatten());
     }
 
     public Operator<Integer, String> run() {
