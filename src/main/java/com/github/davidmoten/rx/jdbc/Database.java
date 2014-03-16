@@ -271,10 +271,10 @@ final public class Database {
 
     /**
      * Returns a {@link QueryUpdate.Builder} builder based on the given
-     * update/insert statement sql.
+     * update/insert/delete/DDL statement sql.
      * 
      * @param sql
-     *            an update or insert statement.
+     *            an update/insert/delete/DDL statement.
      * @return update/insert query builder
      */
     public QueryUpdate.Builder update(String sql) {
