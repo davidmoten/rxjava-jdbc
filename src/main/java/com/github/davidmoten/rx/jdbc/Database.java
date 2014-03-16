@@ -88,6 +88,11 @@ final public class Database {
         this.context = new QueryContext(this);
     }
 
+    /**
+     * Returns the {@link ConnectionProvider}.
+     * 
+     * @return
+     */
     public ConnectionProvider getConnectionProvider() {
         return cp;
     }
