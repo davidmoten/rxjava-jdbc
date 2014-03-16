@@ -347,6 +347,14 @@ public class DatabaseTest {
     }
 
     @Test
+    public void testCreateFromScript() {
+        Database db = new Database(DatabaseCreator.nextUrl());
+        Observable<Integer> create = db.run(DatabaseTest.class.getResourceAsStream("/db-creation-script.sql"), ";");
+        Observable<Integer> count = db.select("select name from person").dependsOn(create).getAs(String.class).count();
+        assertIs(3, count);
+    }
+
+    @Test
     public void testComposition2() {
         log.debug("running testComposition2");
         Func1<Integer, Boolean> isZero = new Func1<Integer, Boolean>() {
