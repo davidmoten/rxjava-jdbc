@@ -216,16 +216,8 @@ public class DatabaseTest {
 
     @Test
     public void testRunScript() {
-        Observable<String> commands = Observable.from("create table temp1(id integer)",
-                "create table temp2(id integer)");
+        Observable<String> commands = from(asList("create table temp1(id integer)", "drop table temp1"));
         db().run(commands).count().toBlockingObservable().single();
-    }
-
-    @Test
-    public void testRunScript2() {
-        Observable<String> commands = Observable.from("create table temp1(id integer)",
-                "create table temp2(id integer)");
-        db().run2(commands).count().toBlockingObservable().single();
     }
 
     @Test

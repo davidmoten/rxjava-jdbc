@@ -645,23 +645,14 @@ final public class Database {
         });
     }
 
-    public Observable<Integer> run2(Observable<String> commands) {
-        return commands.scan(Observable.<Integer> empty(),
+    public Observable<Integer> run(Observable<String> commands) {
+        return commands.reduce(Observable.<Integer> empty(),
                 new Func2<Observable<Integer>, String, Observable<Integer>>() {
                     @Override
                     public Observable<Integer> call(Observable<Integer> dep, String command) {
                         return update(command).dependsOn(dep).count();
                     }
                 }).lift(RxUtil.<Integer> flatten());
-    }
-
-    public Observable<Integer> run(Observable<String> commands) {
-        return commands.flatMap(new Func1<String, Observable<Integer>>() {
-            @Override
-            public Observable<Integer> call(String command) {
-                return Observable.from(update(command).count().toBlockingObservable().single());
-            }
-        });
     }
 
     public Operator<Integer, String> run() {
