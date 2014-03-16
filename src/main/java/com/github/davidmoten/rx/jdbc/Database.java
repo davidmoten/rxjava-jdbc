@@ -645,6 +645,14 @@ final public class Database {
         });
     }
 
+    /**
+     * Returns an {@link Observable} that is the result of running a sequence of
+     * update commands (insert/update/delete, ddl) read from the given
+     * {@link Observable} sequence.
+     * 
+     * @param commands
+     * @return
+     */
     public Observable<Integer> run(Observable<String> commands) {
         return commands.reduce(Observable.<Integer> empty(),
                 new Func2<Observable<Integer>, String, Observable<Integer>>() {
@@ -655,6 +663,11 @@ final public class Database {
                 }).lift(RxUtil.<Integer> flatten());
     }
 
+    /**
+     * Returns an {@link Operator} version of {@link #run(Observable)}.
+     * 
+     * @return
+     */
     public Operator<Integer, String> run() {
         return RxUtil.toOperator(new Func1<Observable<String>, Observable<Integer>>() {
             @Override
@@ -664,6 +677,16 @@ final public class Database {
         });
     }
 
+    /**
+     * Returns an {@link Observable} that is the result of running a sequence of
+     * update commands (insert/update/delete, ddl) commands read from an
+     * InputStream using the given delimiter as the statement delimiter (for
+     * example semicolon).
+     * 
+     * @param is
+     * @param delimiter
+     * @return
+     */
     public Observable<Integer> run(InputStream is, String delimiter) {
         return StringObservable.split(StringObservable.from(new InputStreamReader(is)), ";").lift(run());
     }
