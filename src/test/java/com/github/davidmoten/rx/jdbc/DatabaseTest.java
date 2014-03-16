@@ -222,6 +222,13 @@ public class DatabaseTest {
     }
 
     @Test
+    public void testRunScript2() {
+        Observable<String> commands = Observable.from("create table temp1(id integer)",
+                "create table temp2(id integer)");
+        db().run2(commands).count().toBlockingObservable().single();
+    }
+
+    @Test
     public void testTransactionOnCommitDoesntOccurUnlessSubscribedTo() {
         Database db = db();
         Observable<Boolean> begin = db.beginTransaction();
