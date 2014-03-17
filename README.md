@@ -54,7 +54,7 @@ it (even without Java 8 lambdas!), I wondered what it could offer for JDBC usage
 
 Here's a simple example:
 ```java
-Database db = new Database(url);
+Database db = Database.from(url);
 List<String> names = db.
 		.select("select name from person where name > ? order by name")
 		.parameter("ALEX")
@@ -461,3 +461,10 @@ db.close();
 This will close the connection pool and  release its resources.
 
 Note: do not use a c3p0 version earlier than the one above as a c3p0 bug may prevent proper closure of connections.
+
+Use a single Connection
+---------------------------
+A Database can be instantiated from a single Connection which will 
+be used for all queries in companion with the current thread Scheduler (trampoline).
+The connection is wrapped in a ConnectionNonClosing which suppresses close calls so that the connection will
+ still be open for all queries and will remain open after use of the Database object.
