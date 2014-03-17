@@ -20,6 +20,11 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Wraps a single {@link Connection} so that calls to {@link Connection#close()}
+ * are ignored. When calling close isClosed will change from false to true but
+ * the underlying connection will not really be closed.
+ */
 final class ConnectionNonClosing implements Connection {
 
     private final Connection con;
