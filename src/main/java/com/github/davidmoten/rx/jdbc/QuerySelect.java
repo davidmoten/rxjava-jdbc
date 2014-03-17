@@ -8,7 +8,6 @@ import java.util.List;
 
 import rx.Observable;
 import rx.Observable.Operator;
-import rx.Scheduler;
 import rx.functions.Func1;
 
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
@@ -83,7 +82,7 @@ final public class QuerySelect implements Query {
     public Observable<ResultSet> execute() {
         return bufferedParameters(this)
         // execute once per set of parameters
-                .flatMap(executeOnce(context.scheduler()));
+                .flatMap(executeOnce());
     }
 
     /**
@@ -93,11 +92,11 @@ final public class QuerySelect implements Query {
      * @param query
      * @return
      */
-    private Func1<List<Parameter>, Observable<ResultSet>> executeOnce(final Scheduler scheduler) {
+    private Func1<List<Parameter>, Observable<ResultSet>> executeOnce() {
         return new Func1<List<Parameter>, Observable<ResultSet>>() {
             @Override
             public Observable<ResultSet> call(List<Parameter> params) {
-                return executeOnce(params, scheduler);
+                return executeOnce(params);
             }
         };
     }
@@ -110,8 +109,8 @@ final public class QuerySelect implements Query {
      *            one set of parameters to be run with the query
      * @return
      */
-    private Observable<ResultSet> executeOnce(final List<Parameter> params, Scheduler scheduler) {
-        return QuerySelectOperation.execute(this, params).subscribeOn(scheduler);
+    private Observable<ResultSet> executeOnce(final List<Parameter> params) {
+        return QuerySelectOperation.execute(this, params).subscribeOn(context.scheduler());
     }
 
     /**

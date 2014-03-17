@@ -730,4 +730,8 @@ final public class Database {
         return StringObservable.split(StringObservable.from(new InputStreamReader(is)), ";").lift(run());
     }
 
+    public Database queriesOnSameThread() {
+        return new Database(cp, CURRENT_THREAD_SCHEDULER_FACTORY);
+    }
+
 }
