@@ -102,6 +102,7 @@ try {
 		}
 	}
 }
+```
 
 Query types
 ------------------
@@ -115,7 +116,6 @@ The Database update() method is used for
 
 Examples of all of the above methods are found in the sections below. 
 
-```
 Functional composition of JDBC calls
 -----------------------------------------
 Here's an example, wonderfully brief compared to normal JDBC usage:
