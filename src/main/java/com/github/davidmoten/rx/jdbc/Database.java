@@ -144,6 +144,40 @@ final public class Database {
     }
 
     /**
+     * Constructor. Uses the single connection provided and current thread
+     * scheduler (trampoline) to run all queries. The connection will not be
+     * closed in reality though the log may indicate it as having received a
+     * close call.
+     * 
+     * @param con
+     *            the connection
+     */
+    public Database(Connection con) {
+        this(new ConnectionProviderNonClosing(con), CURRENT_THREAD_SCHEDULER_FACTORY);
+    }
+
+    public static Database from(String url) {
+        return new Database(url);
+    }
+
+    public static Database from(ConnectionProvider cp) {
+        return new Database(cp);
+    }
+
+    /**
+     * Factory method. Uses the single connection provided and current thread
+     * scheduler (trampoline) to run all queries. The connection will not be
+     * closed in reality though the log may indicate it as having received a
+     * close call.
+     * 
+     * @param con
+     *            the connection
+     */
+    public static Database from(Connection con) {
+        return new Database(con);
+    }
+
+    /**
      * Returns a new {@link Builder}.
      * 
      * @return
@@ -695,4 +729,5 @@ final public class Database {
     public Observable<Integer> run(InputStream is, String delimiter) {
         return StringObservable.split(StringObservable.from(new InputStreamReader(is)), ";").lift(run());
     }
+
 }

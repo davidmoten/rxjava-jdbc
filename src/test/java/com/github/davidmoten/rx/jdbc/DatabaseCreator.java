@@ -29,7 +29,7 @@ public class DatabaseCreator {
     }
 
     public static Database createDatabase(ConnectionProvider cp) {
-        Database db = new Database(cp);
+        Database db = Database.from(cp);
         Connection con = cp.get();
         createDatabase(con);
         try {

@@ -348,7 +348,7 @@ public class DatabaseTest {
 
     @Test
     public void testCreateFromScript() {
-        Database db = new Database(DatabaseCreator.nextUrl());
+        Database db = Database.from(DatabaseCreator.nextUrl());
         Observable<Integer> create = db.run(DatabaseTest.class.getResourceAsStream("/db-creation-script.sql"), ";");
         Observable<Integer> count = db.select("select name from person").dependsOn(create).getAs(String.class).count();
         assertIs(3, count);
@@ -388,7 +388,7 @@ public class DatabaseTest {
 
     @Test
     public void testInstantiateDatabaseWithUrl() throws SQLException {
-        Database db = new Database("jdbc:h2:mem:testa1");
+        Database db = Database.from("jdbc:h2:mem:testa1");
         Connection con = db.queryContext().connectionProvider().get();
         con.close();
     }
@@ -1216,6 +1216,31 @@ public class DatabaseTest {
 
     private static Observable<Observable<Object>> objects(Observable<Object>... objects) {
         return Observable.from(objects);
+    }
+
+    @Test
+    public void testDatabaseFromConnectionCanUseConnectionTwiceWithoutItBeingClosedInReality() throws SQLException {
+        ConnectionProvider cp = DatabaseCreator.connectionProvider();
+        DatabaseCreator.createDatabase(cp);
+        Connection con = cp.get();
+        Database db = Database.from(con);
+        Observable<Integer> count = db
+        // get names
+                .select("select name from person")
+                // as string
+                .getAs(String.class)
+                // count names
+                .count()
+                // do something else
+                .lift(db
+                // get max score
+                .select("select max(score) from person")
+                // run the previous statement first
+                        .dependsOnOperator()
+                        // as integer
+                        .getAs(Integer.class));
+        assertIs(34, count);
+        con.close();
     }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {
