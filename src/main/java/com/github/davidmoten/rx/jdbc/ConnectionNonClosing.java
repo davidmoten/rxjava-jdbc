@@ -20,7 +20,7 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ConnectionNonClosing implements Connection {
+final class ConnectionNonClosing implements Connection {
 
     private final Connection con;
     private final AtomicBoolean isClosed = new AtomicBoolean(false);

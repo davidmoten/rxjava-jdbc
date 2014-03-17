@@ -2,7 +2,7 @@ package com.github.davidmoten.rx.jdbc;
 
 import java.sql.Connection;
 
-public class ConnectionProviderNonClosing implements ConnectionProvider {
+final class ConnectionProviderNonClosing implements ConnectionProvider {
 
     private final Connection con;
 
