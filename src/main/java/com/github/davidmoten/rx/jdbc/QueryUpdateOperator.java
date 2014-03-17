@@ -9,7 +9,7 @@ import rx.functions.Func1;
 /**
  * {@link Operator} corresonding to {@link QueryUpdateOperation}.
  */
-public class QueryUpdateOperator<R> implements Operator<Integer, R> {
+class QueryUpdateOperator<R> implements Operator<Integer, R> {
 
     private final Operator<Integer, R> operator;
 

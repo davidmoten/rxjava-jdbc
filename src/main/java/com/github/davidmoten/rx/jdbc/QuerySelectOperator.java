@@ -14,7 +14,7 @@ import rx.functions.Func1;
  * 
  * @param <T>
  */
-public class QuerySelectOperator<T, R> implements Operator<T, R> {
+class QuerySelectOperator<T, R> implements Operator<T, R> {
 
     private final Operator<T, R> operator;
 
