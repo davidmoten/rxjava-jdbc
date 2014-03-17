@@ -1248,7 +1248,7 @@ public class DatabaseTest {
 
     @Test
     public void testNonTransactionalMultipleQueriesAndFlatMap() {
-        Database db = db().queriesOnSameThread();
+        Database db = db().synchronous();
         final Set<String> set = Collections.newSetFromMap(new HashMap<String, Boolean>());
         Observable<Integer> count = Observable.from(asList(1, 2, 3, 4, 5))
         // select

@@ -730,7 +730,13 @@ final public class Database {
         return StringObservable.split(StringObservable.from(new InputStreamReader(is)), ";").lift(run());
     }
 
-    public Database queriesOnSameThread() {
+    /**
+     * Returns a Database based on the current Database except all queries run
+     * on the same thread.
+     * 
+     * @return
+     */
+    public Database synchronous() {
         return new Database(cp, CURRENT_THREAD_SCHEDULER_FACTORY);
     }
 
