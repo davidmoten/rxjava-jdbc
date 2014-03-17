@@ -20,7 +20,7 @@ import rx.observables.StringObservable;
 import rx.schedulers.Schedulers;
 
 import com.github.davidmoten.rx.RxUtil;
-import com.github.davidmoten.rx.RxUtil.CounterAction;
+import com.github.davidmoten.rx.RxUtil.CountingAction;
 
 /**
  * Main entry point for manipulations of a database using rx-java-jdbc style
@@ -633,7 +633,7 @@ final public class Database {
 
     private static final <T> Observable<Boolean> commitOrRollbackOnCompleteOperatorIfAtLeastOneValue(
             final boolean isCommit, final Database db, Observable<T> source) {
-        CounterAction<T> counter = RxUtil.counter();
+        CountingAction<T> counter = RxUtil.counter();
         Observable<Boolean> commit = counter
         // get count
                 .count()

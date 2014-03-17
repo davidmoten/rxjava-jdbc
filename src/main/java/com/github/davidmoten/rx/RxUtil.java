@@ -85,11 +85,11 @@ public class RxUtil {
         return UnsubscribeDetector.detect();
     }
 
-    public static <T> CounterAction<T> counter() {
-        return new CounterAction<T>();
+    public static <T> CountingAction<T> counter() {
+        return new CountingAction<T>();
     }
 
-    public static class CounterAction<T> implements Action1<T> {
+    public static class CountingAction<T> implements Action1<T> {
         private final AtomicLong count = new AtomicLong(0);
 
         public Observable<Long> count() {
