@@ -5,7 +5,7 @@ import rx.Observable;
 /**
  * Builds base information for a query (either select or update).
  */
-final public class QueryBuilder {
+final class QueryBuilder {
 
     /**
      * JDBC sql either select/update/insert.
@@ -38,7 +38,7 @@ final public class QueryBuilder {
      * @param sql
      * @param db
      */
-    public QueryBuilder(String sql, Database db) {
+    QueryBuilder(String sql, Database db) {
         this.sql = sql;
         this.db = db;
         this.context = db.queryContext();
@@ -51,7 +51,7 @@ final public class QueryBuilder {
      * 
      * @param params
      */
-    public <T> void parameters(Observable<T> params) {
+    <T> void parameters(Observable<T> params) {
         this.parameters = Observable.concat(parameters, params.map(Parameter.TO_PARAMETER));
     }
 
@@ -62,7 +62,7 @@ final public class QueryBuilder {
      * 
      * @param objects
      */
-    public void parameters(Object... objects) {
+    void parameters(Object... objects) {
         for (Object object : objects)
             parameter(object);
     }
@@ -74,7 +74,7 @@ final public class QueryBuilder {
      * 
      * @param value
      */
-    public void parameter(Object value) {
+    void parameter(Object value) {
         // TODO check on supported types?
         if (value instanceof Observable)
             throw new RuntimeException("use parameters() method not the parameter() method for an Observable");
@@ -87,7 +87,7 @@ final public class QueryBuilder {
      * 
      * @param dependency
      */
-    public void dependsOn(Observable<?> dependency) {
+    void dependsOn(Observable<?> dependency) {
         depends = Observable.concat(depends, dependency);
     }
 
@@ -97,7 +97,7 @@ final public class QueryBuilder {
      * dependencies that have to complete their emitting before the query is
      * executed.
      */
-    public void dependsOnLastTransaction() {
+    void dependsOnLastTransaction() {
         dependsOn(db.lastTransactionResult());
     }
 
@@ -106,7 +106,7 @@ final public class QueryBuilder {
      * 
      * @return sql
      */
-    public String sql() {
+    String sql() {
         return sql;
     }
 
@@ -115,7 +115,7 @@ final public class QueryBuilder {
      * 
      * @return parameters
      */
-    public Observable<Parameter> parameters() {
+    Observable<Parameter> parameters() {
         return parameters;
     }
 
@@ -133,11 +133,11 @@ final public class QueryBuilder {
      * 
      * @return context
      */
-    public QueryContext context() {
+    QueryContext context() {
         return context;
     }
 
-    public void clearParameters() {
+    void clearParameters() {
         this.parameters = Observable.empty();
     }
 }

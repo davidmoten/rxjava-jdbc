@@ -6,7 +6,7 @@ import rx.Observable.Operator;
  * The types of {@link Operator} that can be created by a select or update
  * query.
  */
-public enum OperatorType {
+enum OperatorType {
     /**
      * A type of operator that consumes an Observable<Object> to be used as
      * query parameters.

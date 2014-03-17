@@ -13,7 +13,7 @@ import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
 
-class QuerySelectOperation {
+final class QuerySelectOperation {
 
     private static final Logger log = LoggerFactory.getLogger(QuerySelectOperation.class);
 
