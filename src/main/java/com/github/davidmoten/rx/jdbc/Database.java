@@ -584,25 +584,25 @@ final public class Database {
      * 
      * @return
      */
-    public Operator<Boolean, Object> commitOnNextOperator() {
+    public <T> Operator<Boolean, T> commitOnNextOperator() {
         return commitOrRollbackOnNextOperator(true);
     }
 
-    public Operator<Boolean, Observable<?>> commitOnNextListOperator() {
+    public <T> Operator<Boolean, Observable<T>> commitOnNextListOperator() {
         return commitOrRollbackOnNextListOperator(true);
     }
 
-    public Operator<Boolean, Observable<?>> rollbackOnNextListOperator() {
+    public <T> Operator<Boolean, Observable<T>> rollbackOnNextListOperator() {
         return commitOrRollbackOnNextListOperator(false);
     }
 
-    private Operator<Boolean, Observable<?>> commitOrRollbackOnNextListOperator(final boolean isCommit) {
-        return RxUtil.toOperator(new Func1<Observable<Observable<?>>, Observable<Boolean>>() {
+    private <T> Operator<Boolean, Observable<T>> commitOrRollbackOnNextListOperator(final boolean isCommit) {
+        return RxUtil.toOperator(new Func1<Observable<Observable<T>>, Observable<Boolean>>() {
             @Override
-            public Observable<Boolean> call(Observable<Observable<?>> source) {
-                return source.flatMap(new Func1<Observable<?>, Observable<Boolean>>() {
+            public Observable<Boolean> call(Observable<Observable<T>> source) {
+                return source.flatMap(new Func1<Observable<T>, Observable<Boolean>>() {
                     @Override
-                    public Observable<Boolean> call(Observable<?> source) {
+                    public Observable<Boolean> call(Observable<T> source) {
                         if (isCommit)
                             return commit(source);
                         else
@@ -622,10 +622,10 @@ final public class Database {
         return commitOrRollbackOnNextOperator(false);
     }
 
-    private Operator<Boolean, Object> commitOrRollbackOnNextOperator(final boolean isCommit) {
-        return RxUtil.toOperator(new Func1<Observable<Object>, Observable<Boolean>>() {
+    private <T> Operator<Boolean, T> commitOrRollbackOnNextOperator(final boolean isCommit) {
+        return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
             @Override
-            public Observable<Boolean> call(Observable<Object> source) {
+            public Observable<Boolean> call(Observable<T> source) {
                 return commitOrRollbackOnNext(isCommit, Database.this, source);
             }
         });

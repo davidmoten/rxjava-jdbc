@@ -1162,7 +1162,7 @@ public class DatabaseTest {
                 // log
                 .doOnEach(log())
                 // commit
-                .lift(db.commitOnNextListOperator())
+                .lift(db.<Integer> commitOnNextListOperator())
                 // total rows affected
                 .count()
                 // block and get result
@@ -1190,7 +1190,7 @@ public class DatabaseTest {
                 // log
                 .doOnEach(log())
                 // commit
-                .lift(db.commitOnNextListOperator())
+                .lift(db.<Integer> commitOnNextListOperator())
                 // total rows affected
                 .count()
                 // block and get result
