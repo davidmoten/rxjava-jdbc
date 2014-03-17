@@ -478,12 +478,14 @@ Note: do not use a c3p0 version earlier than the one above as a c3p0 bug may pre
 
 Running queries in the same thread
 ------------------------------------------
-Default behaviour for running queries inside a transaction is to use a single thread. To do the same for non-transactional queries when you want to just use 
+Default behaviour for running queries inside a transaction is to use a single thread. To do 
+the same for non-transactional queries just use 
 
 ```java
 Database db = new Database(url);
-Database dbSynchronous = db.synchronous();
-''' 
+Database dbs = db.synchronous();
+dbs.select(...)
+```
 
 Use a single Connection
 ---------------------------
