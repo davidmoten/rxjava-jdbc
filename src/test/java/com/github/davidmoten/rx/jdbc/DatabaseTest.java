@@ -24,8 +24,11 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -1241,6 +1244,31 @@ public class DatabaseTest {
                         .getAs(Integer.class));
         assertIs(34, count);
         con.close();
+    }
+
+    @Test
+    public void testNonTransactionalMultipleQueriesAndFlatMap() {
+        Database db = db();
+        final Set<String> set = Collections.newSetFromMap(new HashMap<String, Boolean>());
+        Observable<Integer> count = Observable.from(asList(1, 2, 3, 4, 5))
+        // select
+                .lift(db.select("select name from person where score >?")
+                // push parameters to this query
+                        .parameterOperator()
+                        // get name as string
+                        .getAs(String.class))
+                // record thread name
+                .doOnNext(new Action1<String>() {
+                    @Override
+                    public void call(String name) {
+                        set.add(Thread.currentThread().getName());
+                    }
+                })
+                // count
+                .count();
+        assertIs(5 * 3, count);
+        System.out.println("threads=" + set);
+        assertEquals(1, set.size());
     }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {
