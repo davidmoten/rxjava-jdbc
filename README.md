@@ -101,6 +101,19 @@ try {
 		}
 	}
 }
+
+Query types
+------------------
+The Database select() method is used for SQL select queries. 
+
+The Database update() method is used for
+* update
+* insert
+* delete
+* DDL (like *create table*, etc)
+
+Examples of all of the above methods are found in the sections below. 
+
 ```
 Functional composition of JDBC calls
 -----------------------------------------
@@ -465,6 +478,6 @@ Note: do not use a c3p0 version earlier than the one above as a c3p0 bug may pre
 Use a single Connection
 ---------------------------
 A Database can be instantiated from a single Connection which will 
-be used for all queries in companion with the current thread Scheduler (trampoline).
+be used for all queries in companion with the current thread Scheduler (```Schedulers.trampoline()```).
 The connection is wrapped in a ConnectionNonClosing which suppresses close calls so that the connection will
  still be open for all queries and will remain open after use of the Database object.
