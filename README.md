@@ -482,3 +482,8 @@ A Database can be instantiated from a single Connection which will
 be used for all queries in companion with the current thread Scheduler (```Schedulers.trampoline()```).
 The connection is wrapped in a ConnectionNonClosing which suppresses close calls so that the connection will
  still be open for all queries and will remain open after use of the Database object.
+ 
+ Example:
+ ```java
+ Database db = Database.from(con);
+ ```
