@@ -15,6 +15,7 @@ Features
 * Functionally compose database queries run sequentially or in parallel 
 * Queries may be only partially run or indeed never run due to subscription cancellations thus improving efficiency
 * Concise code
+* Queries can depend on completion of other Observables and can be supplied parameters through Observables.
 * Method chaining just leads the way (once you are on top of the RxJava api of course!)
 * All the RxJava goodness!
 * Automatically maps query result rows into typed tuples or your own classes
