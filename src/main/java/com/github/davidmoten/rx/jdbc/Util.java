@@ -255,7 +255,8 @@ public final class Util {
                     return autoMap(rs, cls, c);
                 }
             }
-            throw new RuntimeException("constructor with number of parameters=" + n + "  not found in " + cls);
+            throw new RuntimeException("constructor with number of parameters=" + n
+                    + "  not found in " + cls);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -284,7 +285,8 @@ public final class Util {
         try {
             return newInstance(c, list);
         } catch (RuntimeException e) {
-            throw new RuntimeException("problem with parameters=" + getTypeInfo(list) + ", rs types=" + getRowInfo(rs)
+            throw new RuntimeException("problem with parameters=" + getTypeInfo(list)
+                    + ", rs types=" + getRowInfo(rs)
                     + ". Be sure not to use primitives in a constructor when calling autoMap().", e);
         }
     }
@@ -425,7 +427,19 @@ public final class Util {
                 return new BigInteger(o.toString());
             } else if (o instanceof Number && cls.isAssignableFrom(BigDecimal.class)) {
                 return new BigDecimal(o.toString());
-            } else
+            } else if (o instanceof Number && cls.isAssignableFrom(Short.class))
+                return ((Number) o).shortValue();
+            else if (o instanceof Number && cls.isAssignableFrom(Integer.class))
+                return ((Number) o).intValue();
+            else if (o instanceof Number && cls.isAssignableFrom(Integer.class))
+                return ((Number) o).intValue();
+            else if (o instanceof Number && cls.isAssignableFrom(Long.class))
+                return ((Number) o).longValue();
+            else if (o instanceof Number && cls.isAssignableFrom(Float.class))
+                return ((Number) o).floatValue();
+            else if (o instanceof Number && cls.isAssignableFrom(Double.class))
+                return ((Number) o).doubleValue();
+            else
                 return o;
         }
     }
@@ -623,14 +637,16 @@ public final class Util {
      * @param cls
      * @throws SQLException
      */
-    private static void setBlob(PreparedStatement ps, int i, Object o, Class<?> cls) throws SQLException {
+    private static void setBlob(PreparedStatement ps, int i, Object o, Class<?> cls)
+            throws SQLException {
         final InputStream is;
         if (o instanceof byte[]) {
             is = new ByteArrayInputStream((byte[]) o);
         } else if (o instanceof InputStream)
             is = (InputStream) o;
         else
-            throw new RuntimeException("cannot insert parameter of type " + cls + " into blob column " + i);
+            throw new RuntimeException("cannot insert parameter of type " + cls
+                    + " into blob column " + i);
         Blob c = ps.getConnection().createBlob();
         OutputStream os = c.setBinaryStream(1);
         copy(is, os);
@@ -646,14 +662,16 @@ public final class Util {
      * @param cls
      * @throws SQLException
      */
-    private static void setClob(PreparedStatement ps, int i, Object o, Class<?> cls) throws SQLException {
+    private static void setClob(PreparedStatement ps, int i, Object o, Class<?> cls)
+            throws SQLException {
         final Reader r;
         if (o instanceof String)
             r = new StringReader((String) o);
         else if (o instanceof Reader)
             r = (Reader) o;
         else
-            throw new RuntimeException("cannot insert parameter of type " + cls + " into clob column " + i);
+            throw new RuntimeException("cannot insert parameter of type " + cls
+                    + " into clob column " + i);
         Clob c = ps.getConnection().createClob();
         Writer w = c.setCharacterStream(1);
         copy(r, w);
