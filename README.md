@@ -116,32 +116,6 @@ The Database update() method is used for
 
 Examples of all of the above methods are found in the sections below. 
 
-Asynchronous queries
---------------------------
-Unless run within a transaction all queries are asynchronous by default. Watch out for this because this means that 
-something like the code below could produce unpredictable results:
-
-```java
-Observable.from(asList(1,2,3))
-          .lift(db.update("update person set score = ?")
-                  .parameterOperator());
-```
-After running this code you have no guarantee that the *update person set score=1* ran before the *update person set score=2*. 
-To run those queries synchronously either use a transaction:
-
-```java
-
-
-or ask for a synchronous version of the Database object:
-```java
-Database dbs = db.synchronous();
-Observable.from(asList(1,2,3))
-          .lift(dbs.update("update person set score = ?")
-                  .parameterOperator());
-```
-
-
-
 Functional composition of JDBC calls
 -----------------------------------------
 Here's an example, wonderfully brief compared to normal JDBC usage:
@@ -473,6 +447,38 @@ List<Integer> mins = Observable
     // block and get
     .toBlockingObservable().single();
 assertEquals(Arrays.asList(16, 17, 18), mins);
+```
+
+Asynchronous queries
+--------------------------
+Unless run within a transaction all queries are asynchronous by default. Watch out for this because this means that 
+something like the code below could produce unpredictable results:
+
+```java
+Observable
+    .from(asList(1,2,3))
+    .lift(db.update("update person set score = ?")
+            .parameterOperator());
+```
+After running this code you have no guarantee that the *update person set score=1* ran before the *update person set score=2*. 
+To run those queries synchronously either use a transaction:
+
+```java
+Observable
+   .from(asList(1, 2, 3))
+   .lift(db.update("update person set score = ?")
+           .dependsOn(db.beginTransaction())
+           .parameterOperator())
+    .lift(db.commitOnCompleteOperator());
+```
+
+or ask for a synchronous version of the Database object:
+
+```java
+Database dbs = db.synchronous();
+Observable.from(asList(1,2,3))
+          .lift(dbs.update("update person set score = ?")
+                  .parameterOperator());
 ```
 
 Logging
