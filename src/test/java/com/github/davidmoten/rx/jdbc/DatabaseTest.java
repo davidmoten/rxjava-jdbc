@@ -1165,7 +1165,7 @@ public class DatabaseTest {
     @Test
     public void testBeginTransactionOnNextForThreePasses() {
         Database db = db();
-        List<Integer> mins = Observable
+        Observable<Integer> min = Observable
         // do 3 times
                 .from(asList(11, 12, 13))
                 // begin transaction for each item
@@ -1183,13 +1183,9 @@ public class DatabaseTest {
                 // to empty lists
                 .map(toEmpty())
                 // return count
-                .lift(db.select("select min(score) from person").parameterListOperator()
-                        .getAs(Integer.class))
-                // list the results
-                .toList()
-                // block and get
-                .toBlockingObservable().single();
-        assertEquals(Arrays.asList(16, 17, 18), mins);
+                .lift(db.select("select min(score) from person").dependsOnOperator()
+                        .getAs(Integer.class));
+        assertIs(18, min);
     }
 
     @Test
