@@ -60,7 +60,8 @@ public class UtilTest {
 
     @Test
     public void testAutoMapOfSqlTimestampToUtilDate() {
-        assertEquals(new java.util.Date(1), autoMap(new java.sql.Timestamp(1), java.util.Date.class));
+        assertEquals(new java.util.Date(1),
+                autoMap(new java.sql.Timestamp(1), java.util.Date.class));
     }
 
     @Test
@@ -204,12 +205,14 @@ public class UtilTest {
 
     @Test
     public void testAutoMapOfDoubleToBigDecimal() {
-        assertEquals(BigDecimal.ONE.doubleValue(), ((BigDecimal) autoMap(1.0, BigDecimal.class)).doubleValue(), 0.0001);
+        assertEquals(BigDecimal.ONE.doubleValue(),
+                ((BigDecimal) autoMap(1.0, BigDecimal.class)).doubleValue(), 0.0001);
     }
 
     @Test
     public void testAutoMapOfIntegerToBigDecimal() {
-        assertEquals(BigDecimal.ONE.doubleValue(), ((BigDecimal) autoMap(1, BigDecimal.class)).doubleValue(), 0.0001);
+        assertEquals(BigDecimal.ONE.doubleValue(),
+                ((BigDecimal) autoMap(1, BigDecimal.class)).doubleValue(), 0.0001);
     }
 
     @Test
@@ -228,28 +231,33 @@ public class UtilTest {
     }
 
     @Test
-    public void testAutoMapOfLongToBigInteger() {
+    public void testAutoMapOfNumberToBigInteger() {
         assertEquals(BigInteger.ONE, autoMap(1L, BigInteger.class));
     }
-    
+
     @Test
-    public void testAutoMapOfLongToInteger() {
+    public void testAutoMapOfNumberToInteger() {
         assertEquals(1, autoMap(1L, Integer.class));
     }
-    
+
     @Test
-    public void testAutoMapOfLongToShort() {
+    public void testAutoMapOfNumberToShort() {
         assertEquals((short) 1, autoMap(1L, Short.class));
     }
-    
+
     @Test
-    public void testAutoMapOfLongToDouble() {
-        assertEquals(1.0, (Double) autoMap(1L, Double.class),0.00001);
+    public void testAutoMapOfNumberToDouble() {
+        assertEquals(1.0, (Double) autoMap(1L, Double.class), 0.00001);
     }
-    
+
+    @Test
+    public void testAutoMapOfNumberToLong() {
+        assertEquals(1L, (long) (Long) autoMap(1, Long.class));
+    }
+
     @Test
     public void testAutoMapOfLongToFloat() {
-        assertEquals(1.0f, (Float) autoMap(1L, Float.class),0.00001);
+        assertEquals(1.0f, (Float) autoMap(1L, Float.class), 0.00001);
     }
 
     @Test
