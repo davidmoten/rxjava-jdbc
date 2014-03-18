@@ -231,6 +231,26 @@ public class UtilTest {
     public void testAutoMapOfLongToBigInteger() {
         assertEquals(BigInteger.ONE, autoMap(1L, BigInteger.class));
     }
+    
+    @Test
+    public void testAutoMapOfLongToInteger() {
+        assertEquals(1, autoMap(1L, Integer.class));
+    }
+    
+    @Test
+    public void testAutoMapOfLongToShort() {
+        assertEquals((short) 1, autoMap(1L, Short.class));
+    }
+    
+    @Test
+    public void testAutoMapOfLongToDouble() {
+        assertEquals(1.0, (Double) autoMap(1L, Double.class),0.00001);
+    }
+    
+    @Test
+    public void testAutoMapOfLongToFloat() {
+        assertEquals(1.0f, (Float) autoMap(1L, Float.class),0.00001);
+    }
 
     @Test
     public void testClose1() throws SQLException {
