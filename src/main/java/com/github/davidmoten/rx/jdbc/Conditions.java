@@ -41,10 +41,4 @@ final class Conditions {
             throw new NullPointerException("argument cannot be null");
     }
 
-    public static void checkNull(Object obj) {
-        if (obj != null)
-            throw new RuntimeException("argument must be null");
-
-    }
-
 }

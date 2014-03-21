@@ -1,5 +1,7 @@
 package com.github.davidmoten.rx.jdbc;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -19,15 +21,12 @@ final class QuerySelectOperation {
      * Returns an Observable of the results of pushing one set of parameters
      * through a select query.
      * 
-     * @param connectionResource
-     * 
      * @param params
      *            one set of parameters to be run with the query
      * @return
      */
-    static Observable<ResultSet> execute(QuerySelect query, ConnectionResource connectionResource,
-            List<Parameter> parameters) {
-        return Observable.create(new QuerySelectOnSubscribe(connectionResource, query, parameters));
+    static Observable<ResultSet> execute(QuerySelect query, List<Parameter> parameters) {
+        return Observable.create(new QuerySelectOnSubscribe(query, parameters));
     }
 
     /**
@@ -38,19 +37,17 @@ final class QuerySelectOperation {
         private boolean keepGoing = true;
         private final List<Parameter> parameters;
         private final QuerySelect query;
-        private final ConnectionResource connectionResource;
+        private Connection con;
+        private PreparedStatement ps;
+        private ResultSet rs;
 
         /**
          * Constructor.
          * 
-         * @param connectionResource
-         * 
          * @param query
          * @param parameters
          */
-        private QuerySelectOnSubscribe(ConnectionResource connectionResource, QuerySelect query,
-                List<Parameter> parameters) {
-            this.connectionResource = connectionResource;
+        private QuerySelectOnSubscribe(QuerySelect query, List<Parameter> parameters) {
             this.query = query;
             this.parameters = parameters;
         }
@@ -63,9 +60,14 @@ final class QuerySelectOperation {
                 while (keepGoing) {
                     processRow(subscriber);
                 }
+                close();
                 complete(subscriber);
             } catch (Exception e) {
-                handleException(e, subscriber);
+                try {
+                    close();
+                } finally {
+                    handleException(e, subscriber);
+                }
             }
         }
 
@@ -81,11 +83,12 @@ final class QuerySelectOperation {
             log.debug("connectionProvider=" + query.context().connectionProvider());
             checkSubscription(subscriber);
             if (keepGoing) {
+                log.debug("getting connection");
+                con = query.context().connectionProvider().get();
                 log.debug("preparing statement,sql=" + query.sql());
-                connectionResource.prepareStatement(query.sql());
+                ps = con.prepareStatement(query.sql());
                 log.debug("setting parameters");
-
-                connectionResource.setParameters(parameters);
+                Util.setParameters(ps, parameters);
             }
         }
 
@@ -100,7 +103,9 @@ final class QuerySelectOperation {
             checkSubscription(subscriber);
             if (keepGoing) {
                 try {
-                    connectionResource.executeQuery();
+                    log.debug("executing ps");
+                    rs = ps.executeQuery();
+                    log.debug("executed ps=" + ps);
                 } catch (SQLException e) {
                     throw new SQLException("failed to run sql=" + query.sql(), e);
                 }
@@ -118,9 +123,9 @@ final class QuerySelectOperation {
             checkSubscription(subscriber);
             if (!keepGoing)
                 return;
-            if (connectionResource.next()) {
+            if (rs.next()) {
                 log.trace("onNext");
-                subscriber.onNext(connectionResource.rs());
+                subscriber.onNext(rs);
             } else
                 keepGoing = false;
         }
@@ -152,6 +157,20 @@ final class QuerySelectOperation {
             else {
                 subscriber.onError(e);
             }
+        }
+
+        /**
+         * Closes connection resources (connection, prepared statement and
+         * result set).
+         */
+        private void close() {
+            log.debug("closing rs");
+            Util.closeQuietly(rs);
+            log.debug("closing ps");
+            Util.closeQuietly(ps);
+            log.debug("closing con");
+            Util.closeQuietlyIfAutoCommit(con);
+            log.debug("closed");
         }
 
         /**
