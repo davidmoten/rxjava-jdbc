@@ -20,7 +20,7 @@ Features
 * All the RxJava goodness!
 * Automatically maps query result rows into typed tuples or your own classes
 * CLOB and BLOB handling is simplified greatly
-* uses rxjava-core 0.17.0
+* uses rxjava-core 0.17.1
 
 Continuous integration with Jenkins for this project is [here](https://xuml-tools.ci.cloudbees.com/). <a href="https://xuml-tools.ci.cloudbees.com/"><img  src="http://web-static-cloudfront.s3.amazonaws.com/images/badges/BuiltOnDEV.png"/></a>
 
