@@ -8,6 +8,7 @@ import java.util.List;
 
 import rx.Observable;
 import rx.Observable.Operator;
+import rx.functions.Func0;
 import rx.functions.Func1;
 
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
@@ -101,6 +102,28 @@ final public class QuerySelect implements Query {
         };
     }
 
+    private Func0<ConnectionResource> connectionResourceFactory(final boolean closeOnlyIfAutoCommit) {
+        return new Func0<ConnectionResource>() {
+            @Override
+            public ConnectionResource call() {
+                return new ConnectionResource(context.connectionProvider().get(), closeOnlyIfAutoCommit);
+            }
+        };
+    }
+
+    private Func1<ConnectionResource, Observable<ResultSet>> executeOnceFactory(final List<Parameter> params) {
+        return new Func1<ConnectionResource, Observable<ResultSet>>() {
+            @Override
+            public Observable<ResultSet> call(ConnectionResource connectionResource) {
+                return executeOnce(connectionResource, params);
+            }
+        };
+    }
+
+    private Observable<ResultSet> executeOnce(ConnectionResource connectionResource, final List<Parameter> params) {
+        return QuerySelectOperation.execute(this, connectionResource, params).subscribeOn(context.scheduler());
+    }
+
     /**
      * Returns an Observable of the results of pushing one set of parameters
      * through a select query.
@@ -110,7 +133,8 @@ final public class QuerySelect implements Query {
      * @return
      */
     private Observable<ResultSet> executeOnce(final List<Parameter> params) {
-        return QuerySelectOperation.execute(this, params).subscribeOn(context.scheduler());
+        boolean closeOnlyIfAutoCommit = !sql.equals("commit") && !sql.equals("rollback");
+        return Observable.using(connectionResourceFactory(closeOnlyIfAutoCommit), executeOnceFactory(params));
     }
 
     /**
