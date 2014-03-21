@@ -4,9 +4,9 @@ rxjava-jdbc
 Efficient execution, concise code, and functional composition of database calls
 using JDBC and [RxJava](https://github.com/Netflix/RxJava/wiki) [Observable](http://netflix.github.io/RxJava/javadoc/rx/Observable.html). 
 
-Status: *alpha*
+Status: *pre-alpha*
 
-Beta release likely late April 2014.
+Alpha release likely late April 2014.
 
 Be aware APIs are in major flux at the moment.
 
