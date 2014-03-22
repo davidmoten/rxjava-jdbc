@@ -94,10 +94,22 @@ public class RxUtil {
 		return OperationToOperator.toOperator(operation);
 	}
 
+	/**
+	 * Returns a detector of unsubscribe events. Insert this operator using lift
+	 * just after the {@link Observable} you want to monitor unsubscribe on.
+	 * 
+	 * @return
+	 */
 	public static <T> UnsubscribeDetector<T> detectUnsubscribe() {
 		return UnsubscribeDetector.detect();
 	}
 
+	/**
+	 * Returns an {@link Action1} that increments a counter when the call method
+	 * is called.
+	 * 
+	 * @return {@link Action1} to count calls.
+	 */
 	public static <T> CountingAction<T> counter() {
 		return new CountingAction<T>();
 	}
@@ -132,10 +144,22 @@ public class RxUtil {
 		};
 	}
 
+	/**
+	 * Returns a {@link Func1} that returns an empty {@link Observable}.
+	 * 
+	 * @return
+	 */
 	public static <T> Func1<T, Observable<Object>> toEmpty() {
 		return constant(Observable.<Object> empty());
 	}
 
+	/**
+	 * Returns an {@link Operator} that flattens a sequence of
+	 * {@link Observable} into a flat sequence of the items from the
+	 * Observables.
+	 * 
+	 * @return
+	 */
 	public static <T> Operator<T, Observable<T>> flatten() {
 		return RxUtil
 				.toOperator(new Func1<Observable<Observable<T>>, Observable<T>>() {
