@@ -41,12 +41,12 @@ mvn clean install
 
 Getting started
 --------------------
-Include this maven dependency in your pom:
+Include this maven dependency in your pom (available in Maven Central):
 ```xml
 <dependency>
     <groupId>com.github.davidmoten</groupId>
     <artifactId>rxjava-jdbc</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
 </dependency>
 ```
 
