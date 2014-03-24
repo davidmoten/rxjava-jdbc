@@ -106,7 +106,8 @@ try {
 
 Query types
 ------------------
-The Database select() method is used for SQL select queries. 
+The Database select() method is used for 
+* SQL select queries. 
 
 The Database update() method is used for
 * update
@@ -168,7 +169,7 @@ Dependencies
 --------------
 You can setup chains of dependencies that will determine the order of running of queries. 
 By default queries are run in parallel (to the limits of the current QueryContext) unless
-you specify dependencies. 
+you specify dependencies between them that precludes running in parallel. 
 
 To indicate that a query cannot be run before one or more other Observables
 have been completed use the `dependsOn()` method. Here's an example:
@@ -214,6 +215,18 @@ List<Integer> list =
 		.getAs(Integer.class).toList().toBlockingObservable().single();
 assertEquals(Arrays.asList(21,34),list);
 ```
+
+Processing a ResultSet
+-----------------------------
+Many operators in rxjava process items pushed to them asynchronously. If you use queries in the default asynchronous way then the ResultSet results need to be processed before being emitted to a consuming Observable. This means that the select query needs to be passed a function that converts a ResultSet to a result that does not depend on an open java.sql.Connection. Use the get(), getAs(), getTuple?(), and autoMap() methods to process the method
+ to specify this function as below.
+
+```java
+Observable<Integer> scores = db.query("select score from person where name=?")
+	    .parameter("FRED")
+		.getAs(Integer.class);
+```
+
 
 Automap
 ------------------------------

@@ -9,8 +9,8 @@ import java.util.List;
 import rx.Observable;
 import rx.Observable.Operator;
 import rx.functions.Func1;
-import rx.functions.Functions;
 
+import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple4;
@@ -248,17 +248,6 @@ final public class QuerySelect implements Query {
 		}
 
 		/**
-		 * Returns the ResultSet rows of the select query. Not recommended
-		 * because asynchronous downstream behaviour may mean your connection
-		 * has already been closed.
-		 * 
-		 * @return
-		 */
-		public Observable<ResultSet> get() {
-			return get(Functions.<ResultSet> identity());
-		}
-
-		/**
 		 * Automaps the first column of the ResultSet into the target class
 		 * <code>cls</code>.
 		 * 
@@ -385,6 +374,10 @@ final public class QuerySelect implements Query {
 				Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4,
 				Class<T5> cls5, Class<T6> cls6, Class<T7> cls7) {
 			return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6, cls7));
+		}
+
+		public Observable<Integer> count() {
+			return get(RxUtil.<ResultSet, Integer> constant(1)).count();
 		}
 
 		/**
@@ -588,6 +581,7 @@ final public class QuerySelect implements Query {
 				Class<T5> cls5, Class<T6> cls6, Class<T7> cls7) {
 			return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6, cls7));
 		}
+
 	}
 
 }

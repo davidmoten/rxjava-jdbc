@@ -129,8 +129,6 @@ public class DatabaseTest {
 				.select("select name from person where name >?")
 				// set name parameter
 				.parameter("ALEX")
-				// get results
-				.get()
 				// count results
 				.count()
 				// get count
@@ -156,8 +154,6 @@ public class DatabaseTest {
 				.parameter("FRED")
 				// is part of transaction
 				.dependsOn(db.beginTransaction())
-				// get results
-				.get()
 				// get result count
 				.count()
 				// return empty if count = 0
@@ -283,7 +279,7 @@ public class DatabaseTest {
 	@Test
 	public void testUseParameterObservable() {
 		int count = db().select("select name from person where name >?")
-				.parameters(Observable.from("ALEX")).get().count().first()
+				.parameters(Observable.from("ALEX")).count()
 				.toBlockingObservable().single();
 		assertEquals(3, count);
 	}
@@ -300,8 +296,8 @@ public class DatabaseTest {
 	@Test
 	public void testTakeFewerThanAvailable() {
 		int count = db().select("select name from person where name >?")
-				.parameter("ALEX").get().take(2).count().first()
-				.toBlockingObservable().single();
+				.parameter("ALEX").get(RxUtil.<ResultSet, Integer> constant(1))
+				.take(2).count().first().toBlockingObservable().single();
 		assertEquals(2, count);
 	}
 
@@ -413,7 +409,7 @@ public class DatabaseTest {
 	@Test
 	public void testEmptyResultSet() {
 		int count = db().select("select name from person where name >?")
-				.parameters(Observable.from("ZZTOP")).get().count().first()
+				.parameters(Observable.from("ZZTOP")).count().first()
 				.toBlockingObservable().single();
 		assertEquals(0, count);
 	}
@@ -516,7 +512,7 @@ public class DatabaseTest {
 						});
 
 		Observable<Integer> count = db.select("select name from person")
-				.dependsOn(insert).get().count();
+				.dependsOn(insert).count();
 		assertIs(4, count);
 	}
 
@@ -761,8 +757,8 @@ public class DatabaseTest {
 		ConnectionProviderPooled cp = new ConnectionProviderPooled(nextUrl(),
 				0, 10);
 		Database db = createDatabase(cp);
-		int count = db.select("select name from person order by name").get()
-				.count().toBlockingObservable().single();
+		int count = db.select("select name from person order by name").count()
+				.toBlockingObservable().single();
 		assertEquals(3, count);
 		cp.close();
 		// and again to test idempotentcy
@@ -786,9 +782,9 @@ public class DatabaseTest {
 		Connection con = cp.get();
 		DatabaseCreator.createDatabase(con);
 		con.close();
-		assertCountIs(100, db.select("select name from person where name=?")
+		assertIs(100, db.select("select name from person where name=?")
 				.parameters(Observable.range(0, 100).map(constant("FRED")))
-				.get());
+				.count());
 	}
 
 	// TODO add unit test to check that resources closed (connection etc) before
@@ -808,8 +804,8 @@ public class DatabaseTest {
 			throws InterruptedException {
 		CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
 		Database db = new Database(cp);
-		db.select("select name from person").get().count()
-				.toBlockingObservable().single();
+		db.select("select name from person").count().toBlockingObservable()
+				.single();
 		cp.closesLatch().await();
 		cp.getsLatch().await();
 	}
@@ -958,10 +954,10 @@ public class DatabaseTest {
 			throws InterruptedException {
 		CountDownConnectionProvider cp = new CountDownConnectionProvider(2, 2);
 		Database db = new Database(cp);
-		db.select("select name from person").get().count()
-				.toBlockingObservable().single();
-		db.select("select name from person").get().count()
-				.toBlockingObservable().single();
+		db.select("select name from person").count().toBlockingObservable()
+				.single();
+		db.select("select name from person").count().toBlockingObservable()
+				.single();
 		assertTrue(cp.getsLatch().await(60, TimeUnit.SECONDS));
 		assertTrue(cp.closesLatch().await(60, TimeUnit.SECONDS));
 	}
@@ -986,9 +982,9 @@ public class DatabaseTest {
 		Database db = new Database(cp);
 		Observable<Boolean> begin = db.beginTransaction();
 		Observable<Integer> count = db.select("select name from person")
-				.dependsOn(begin).get().count();
+				.dependsOn(begin).count();
 		Observable<Integer> count2 = db.select("select name from person")
-				.dependsOn(count).get().count();
+				.dependsOn(count).count();
 		int result = db.commit(count2).count().toBlockingObservable().single();
 		log.info("committed " + result);
 		cp.getsLatch().await();
