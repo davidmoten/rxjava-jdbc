@@ -795,10 +795,6 @@ public class DatabaseTest {
 		Database.builder().pooled(nextUrl(), 0, 5).build().close();
 	}
 
-	private static void assertCountIs(int count, Observable<?> o) {
-		assertEquals(count, (int) o.count().toBlockingObservable().single());
-	}
-
 	@Test
 	public void testOneConnectionOpenAndClosedAfterOneSelect()
 			throws InterruptedException {
