@@ -1185,7 +1185,7 @@ public class DatabaseTest {
 		// start transaction
 				.beginTransaction()
 				// push parameters
-				.flatMap(constant(from(asList(99, 88))))
+				.concatMap(constant(from(asList(99, 88))))
 				// log
 				.doOnEach(log())
 				// update twice
@@ -1212,7 +1212,7 @@ public class DatabaseTest {
 		// start transaction
 				.beginTransaction()
 				// push parameters
-				.flatMap(constant(from(asList(99, 88))))
+				.concatMap(constant(from(asList(99, 88))))
 				// log
 				.doOnEach(log())
 				// update twice
@@ -1369,7 +1369,7 @@ public class DatabaseTest {
 	}
 
 	@Test
-	public void testNonTransactionalMultipleQueriesAndFlatMap() {
+	public void testNonTransactionalMultipleQueries() {
 		Database db = db().synchronous();
 		final Set<String> set = Collections
 				.newSetFromMap(new HashMap<String, Boolean>());
