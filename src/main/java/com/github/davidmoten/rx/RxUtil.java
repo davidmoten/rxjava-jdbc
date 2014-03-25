@@ -156,20 +156,39 @@ public class RxUtil {
 	/**
 	 * Returns an {@link Operator} that flattens a sequence of
 	 * {@link Observable} into a flat sequence of the items from the
-	 * Observables.
+	 * Observables. This operator may interleave the items asynchronously. For
+	 * synchronous behaviour use {@link RxUtil#concat()}.
 	 * 
 	 * @return
 	 */
 	public static <T> Operator<T, Observable<T>> flatten() {
-		return RxUtil
-				.toOperator(new Func1<Observable<Observable<T>>, Observable<T>>() {
+		return toOperator(new Func1<Observable<Observable<T>>, Observable<T>>() {
 
-					@Override
-					public Observable<T> call(Observable<Observable<T>> source) {
-						return source.flatMap(Functions
-								.<Observable<T>> identity());
-					}
-				});
+			@Override
+			public Observable<T> call(Observable<Observable<T>> source) {
+				return source.flatMap(Functions.<Observable<T>> identity());
+			}
+		});
+	}
+
+	public static <T> Operator<T, Observable<T>> concat() {
+		return toOperator(new Func1<Observable<Observable<T>>, Observable<T>>() {
+
+			@Override
+			public Observable<T> call(Observable<Observable<T>> source) {
+				return Observable.concat(source);
+			}
+		});
+	}
+
+	public static <T, R> Operator<T, R> serialFlatMap(
+			final Func1<R, Observable<T>> function) {
+		return toOperator(new Func1<Observable<R>, Observable<T>>() {
+			@Override
+			public Observable<T> call(Observable<R> source) {
+				return Observable.concat(source.map(function));
+			}
+		});
 	}
 
 }

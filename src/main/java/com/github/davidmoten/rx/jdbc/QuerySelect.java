@@ -1,5 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
+import static com.github.davidmoten.rx.RxUtil.serialFlatMap;
 import static com.github.davidmoten.rx.jdbc.Conditions.checkNotNull;
 import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
 
@@ -84,7 +85,7 @@ final public class QuerySelect implements Query {
 	public <T> Observable<T> execute(Func1<ResultSet, T> function) {
 		return bufferedParameters(this)
 		// execute once per set of parameters
-				.flatMap(executeOnce(function));
+				.lift(serialFlatMap(executeOnce(function)));
 	}
 
 	/**
