@@ -181,14 +181,4 @@ public class RxUtil {
 		});
 	}
 
-	public static <T, R> Operator<T, R> serialFlatMap(
-			final Func1<R, Observable<T>> function) {
-		return toOperator(new Func1<Observable<R>, Observable<T>>() {
-			@Override
-			public Observable<T> call(Observable<R> source) {
-				return Observable.concat(source.map(function));
-			}
-		});
-	}
-
 }

@@ -1,6 +1,5 @@
 package com.github.davidmoten.rx.jdbc;
 
-import static com.github.davidmoten.rx.RxUtil.serialFlatMap;
 import static com.github.davidmoten.rx.jdbc.Conditions.checkNotNull;
 import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
 
@@ -77,7 +76,7 @@ final public class QueryUpdate implements Query {
 	public Observable<Integer> count() {
 		return bufferedParameters(this)
 		// execute query for each set of parameters
-				.lift(serialFlatMap(executeOnce()));
+				.concatMap(executeOnce());
 	}
 
 	/**

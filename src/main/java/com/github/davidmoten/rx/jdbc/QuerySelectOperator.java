@@ -1,7 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
 import static com.github.davidmoten.rx.OperationToOperator.toOperator;
-import static com.github.davidmoten.rx.RxUtil.serialFlatMap;
 
 import java.sql.ResultSet;
 
@@ -42,14 +41,14 @@ final class QuerySelectOperator<T, R> implements Operator<T, R> {
 					@SuppressWarnings("unchecked")
 					Observable<Observable<Object>> obs = (Observable<Observable<Object>>) observable;
 					return obs
-							.lift(serialFlatMap(new Func1<Observable<Object>, Observable<T>>() {
+							.concatMap(new Func1<Observable<Object>, Observable<T>>() {
 								@Override
 								public Observable<T> call(
 										Observable<Object> parameters) {
 									return builder.parameters(parameters).get(
 											function);
 								}
-							}));
+							});
 				}
 			}
 		});

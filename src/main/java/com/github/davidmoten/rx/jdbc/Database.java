@@ -2,7 +2,6 @@ package com.github.davidmoten.rx.jdbc;
 
 import static com.github.davidmoten.rx.RxUtil.constant;
 import static com.github.davidmoten.rx.RxUtil.greaterThanZero;
-import static com.github.davidmoten.rx.RxUtil.serialFlatMap;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -618,7 +617,7 @@ final public class Database {
 					public Observable<Boolean> call(
 							Observable<Observable<T>> source) {
 						return source
-								.lift(serialFlatMap(new Func1<Observable<T>, Observable<Boolean>>() {
+								.concatMap(new Func1<Observable<T>, Observable<Boolean>>() {
 									@Override
 									public Observable<Boolean> call(
 											Observable<T> source) {
@@ -627,7 +626,7 @@ final public class Database {
 										else
 											return rollback(source);
 									}
-								}));
+								});
 					}
 				});
 	}
@@ -686,7 +685,7 @@ final public class Database {
 	 */
 	private static final <T> Observable<Boolean> commitOrRollbackOnNext(
 			final boolean isCommit, final Database db, Observable<T> source) {
-		return source.lift(serialFlatMap(new Func1<T, Observable<Boolean>>() {
+		return source.concatMap(new Func1<T, Observable<Boolean>>() {
 			@Override
 			public Observable<Boolean> call(T t) {
 				if (isCommit)
@@ -694,17 +693,17 @@ final public class Database {
 				else
 					return db.rollback();
 			}
-		}));
+		});
 	}
 
 	private static <T> Observable<T> beginTransactionOnNext(final Database db,
 			Observable<T> source) {
-		return source.lift(serialFlatMap(new Func1<T, Observable<T>>() {
+		return source.concatMap(new Func1<T, Observable<T>>() {
 			@Override
 			public Observable<T> call(T t) {
 				return db.beginTransaction().map(constant(t));
 			}
-		}));
+		});
 	}
 
 	/**
