@@ -9,7 +9,7 @@
 </parent>
   <groupId>com.github.davidmoten</groupId>
   <artifactId>rxjava-jdbc</artifactId>
-  <version>0.1.1</version>
+  <version>0.1.2-SNAPSHOT</version>
 
   <name>${project.artifactId}</name>
   <description>rx-java Observables for jdbc</description>
