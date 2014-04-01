@@ -162,6 +162,10 @@ final public class Database {
 		return new Database(url);
 	}
 
+	public static Database fromContext(String jndiResource) {
+		return new Database(new ConnectionProviderFromContext(jndiResource));
+	}
+
 	public static Database from(ConnectionProvider cp) {
 		return new Database(cp);
 	}
