@@ -4,9 +4,7 @@ rxjava-jdbc
 Efficient execution, concise code, and functional composition of database calls
 using JDBC and [RxJava](https://github.com/Netflix/RxJava/wiki) [Observable](http://netflix.github.io/RxJava/javadoc/rx/Observable.html). 
 
-Status: *alpha*, released to Maven Central
-
-Be aware APIs are in major flux at the moment.
+Status: Released to Maven Central
 
 [Release Notes](RELEASE_NOTES.md)
 
