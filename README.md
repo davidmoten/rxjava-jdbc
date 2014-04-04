@@ -165,8 +165,6 @@ an endpoint or better still just subscribe with an Observer.
 Dependencies
 --------------
 You can setup chains of dependencies that will determine the order of running of queries. 
-By default queries are run in parallel (to the limits of the current QueryContext) unless
-you specify dependencies between them that precludes running in parallel. 
 
 To indicate that a query cannot be run before one or more other Observables
 have been completed use the `dependsOn()` method. Here's an example:
