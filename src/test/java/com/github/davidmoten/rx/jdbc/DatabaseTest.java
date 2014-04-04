@@ -1370,7 +1370,7 @@ public class DatabaseTest {
 
 	@Test
 	public void testNonTransactionalMultipleQueries() {
-		Database db = db().synchronous();
+		Database db = db();
 		final Set<String> set = Collections
 				.newSetFromMap(new HashMap<String, Boolean>());
 		Observable<Integer> count = Observable.from(asList(1, 2, 3, 4, 5))

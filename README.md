@@ -215,8 +215,10 @@ assertEquals(Arrays.asList(21,34),list);
 
 Processing a ResultSet
 -----------------------------
-Many operators in rxjava process items pushed to them asynchronously. If you use queries in the default asynchronous way then the ResultSet results need to be processed before being emitted to a consuming Observable. This means that the select query needs to be passed a function that converts a ResultSet to a result that does not depend on an open java.sql.Connection. Use the get(), getAs(), getTuple?(), and autoMap() methods to process the method
- to specify this function as below.
+Many operators in rxjava process items pushed to them asynchronously. Given this it is important that ResultSet query results are processed 
+before being emitted to a consuming Observable. This means that the select query needs to be passed a function that converts a ResultSet to
+a result that does not depend on an open java.sql.Connection. Use the get(), getAs(), getTuple?(), and autoMap() methods to process the method
+to specify this function as below.
 
 ```java
 Observable<Integer> scores = db.query("select score from person where name=?")
@@ -461,33 +463,35 @@ assertEquals(Arrays.asList(16, 17, 18), mins);
 
 Asynchronous queries
 --------------------------
-Unless run within a transaction all queries are asynchronous by default. Watch out for this because this means that 
+Unless run within a transaction all queries are synchronous by default. However, if you request an asynchronous 
+version of the database using ```Database.asynchronous()``` or if you use asynchronous operators then watch out because this means that 
 something like the code below could produce unpredictable results:
 
 ```java
+Database adb = db.asynchronous();
 Observable
     .from(asList(1,2,3))
-    .lift(db.update("update person set score = ?")
+    .lift(adb.update("update person set score = ?")
             .parameterOperator());
 ```
 After running this code you have no guarantee that the *update person set score=1* ran before the *update person set score=2*. 
 To run those queries synchronously either use a transaction:
 
 ```java
+Database adb = db.asynchronous();
 Observable
    .from(asList(1, 2, 3))
-   .lift(db.update("update person set score = ?")
+   .lift(adb.update("update person set score = ?")
            .dependsOn(db.beginTransaction())
            .parameterOperator())
-    .lift(db.commitOnCompleteOperator());
+    .lift(adb.commitOnCompleteOperator());
 ```
 
-or ask for a synchronous version of the Database object:
+or ask use the default version of the Database object that schedules queries using ```Schedulers.trampoline()```.
 
 ```java
-Database dbs = db.synchronous();
 Observable.from(asList(1,2,3))
-          .lift(dbs.update("update person set score = ?")
+          .lift(db.update("update person set score = ?")
                   .parameterOperator());
 ```
 
@@ -517,17 +521,6 @@ db.close();
 This will close the connection pool and  release its resources.
 
 Note: do not use a c3p0 version earlier than the one above as a c3p0 bug may prevent proper closure of connections.
-
-Running queries in the same thread
-------------------------------------------
-Default behaviour for running queries inside a transaction is to use a single thread. To do 
-the same for non-transactional queries just use 
-
-```java
-Database db = new Database(url);
-Database dbs = db.synchronous();
-dbs.select(...)
-```
 
 Use a single Connection
 ---------------------------

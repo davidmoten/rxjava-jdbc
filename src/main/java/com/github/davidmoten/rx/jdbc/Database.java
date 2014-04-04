@@ -88,7 +88,7 @@ final public class Database {
 		if (nonTransactionalSchedulerFactory != null)
 			this.nonTransactionalSchedulerFactory = nonTransactionalSchedulerFactory;
 		else
-			this.nonTransactionalSchedulerFactory = IO_SCHEDULER_FACTORY;
+			this.nonTransactionalSchedulerFactory = CURRENT_THREAD_SCHEDULER_FACTORY;
 		this.context = new QueryContext(this);
 	}
 
@@ -787,12 +787,12 @@ final public class Database {
 
 	/**
 	 * Returns a Database based on the current Database except all queries run
-	 * on the same thread.
+	 * {@link Schedulers#io}.
 	 * 
 	 * @return
 	 */
-	public Database synchronous() {
-		return new Database(cp, CURRENT_THREAD_SCHEDULER_FACTORY);
+	public Database asynchronous() {
+		return new Database(cp, IO_SCHEDULER_FACTORY);
 	}
 
 }
