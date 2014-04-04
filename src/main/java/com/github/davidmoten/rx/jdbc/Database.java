@@ -7,6 +7,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 
+import javax.activation.DataSource;
+import javax.naming.Context;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,14 +161,36 @@ final public class Database {
 				CURRENT_THREAD_SCHEDULER_FACTORY);
 	}
 
+	/**
+	 * Returns a {@link Database} based on a jdbc connection string.
+	 * 
+	 * @param url
+	 *            jdbc connection url
+	 * @return
+	 */
 	public static Database from(String url) {
 		return new Database(url);
 	}
 
+	/**
+	 * Returns a {@link Database} based on connections obtained from a
+	 * {@link DataSource} based on looking up the current {@link Context}.
+	 * 
+	 * @param jndiResource
+	 * @return
+	 */
 	public static Database fromContext(String jndiResource) {
 		return new Database(new ConnectionProviderFromContext(jndiResource));
 	}
 
+	/**
+	 * Returns a {@link Database} that obtains {@link Connection}s on demand
+	 * from the given {@link ConnectionProvider}. When {@link Database#close()}
+	 * is called, {@link ConnectionProvider#close()} is called.
+	 * 
+	 * @param cp
+	 * @return
+	 */
 	public static Database from(ConnectionProvider cp) {
 		return new Database(cp);
 	}

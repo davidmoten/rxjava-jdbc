@@ -32,7 +32,7 @@ public class ConnectionProviderFromContext implements ConnectionProvider {
 
 	@Override
 	public void close() {
-		// TODO is close required
+		// do nothing
 	}
 
 }
