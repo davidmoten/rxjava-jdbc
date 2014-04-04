@@ -1,6 +1,6 @@
 Release Notes
 ---------------
-###Version 0.1.2-SNAPSHOT
+###Version 0.1.2 ([Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.davidmoten%7Crxjava-jdbc%7C0.1.2%7Cjar))
 * [issue #1](https://github.com/davidmoten/rxjava-jdbc/issues/1) use rxjava 0.17.4
 * add ```Database.fromContext(jndiResource)``` for JNDI lookup of DataSource 
 * [issue #2](https://github.com/davidmoten/rxjava-jdbc/issues/2) queries synchronous by default (scheduled using ```Schedulers.trampoline()```)
