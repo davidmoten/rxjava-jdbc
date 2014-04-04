@@ -5,7 +5,6 @@ import static com.github.davidmoten.rx.RxUtil.log;
 import static com.github.davidmoten.rx.RxUtil.toEmpty;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.connectionProvider;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.createDatabase;
-import static com.github.davidmoten.rx.jdbc.DatabaseCreator.db;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.nextUrl;
 import static java.util.Arrays.asList;
 import static org.easymock.EasyMock.createMock;
@@ -17,11 +16,9 @@ import static rx.Observable.from;
 import java.io.IOException;
 import java.io.Reader;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -42,7 +39,6 @@ import rx.Observable;
 import rx.Observable.Operator;
 import rx.functions.Action1;
 import rx.functions.Func1;
-import rx.functions.Func2;
 import rx.observables.MathObservable;
 
 import com.github.davidmoten.rx.RxUtil;
@@ -56,7 +52,7 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuple7;
 import com.github.davidmoten.rx.jdbc.tuple.TupleN;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
-public class DatabaseTest {
+public abstract class DatabaseTestBase {
 
 	/**
 	 * <p>
@@ -74,42 +70,19 @@ public class DatabaseTest {
 	private static final int TIMEOUT_SECONDS = 3;
 
 	private static final Logger log = LoggerFactory
-			.getLogger(DatabaseTest.class);
+			.getLogger(DatabaseTestBase.class);
 
-	@Test
-	public void testOldStyle() {
-		Connection con = connectionProvider().get();
-		createDatabase(con);
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		try {
-			ps = con.prepareStatement("select name from person where name > ?");
-			ps.setObject(1, "ALEX");
-			rs = ps.executeQuery();
-			List<String> list = new ArrayList<String>();
-			while (rs.next()) {
-				list.add(rs.getString(1));
-			}
-			assertEquals(asList("FRED", "JOSEPH", "MARMADUKE"), list);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		} finally {
-			if (rs != null)
-				try {
-					rs.close();
-				} catch (SQLException e) {
-				}
-			if (ps != null)
-				try {
-					ps.close();
-				} catch (SQLException e) {
-				}
-			try {
-				con.close();
-			} catch (SQLException e) {
-			}
-		}
+	private final boolean async;
 
+	public DatabaseTestBase(boolean async) {
+		this.async = async;
+	}
+
+	Database db() {
+		if (async)
+			return DatabaseCreator.db().asynchronous();
+		else
+			return DatabaseCreator.db();
 	}
 
 	@Test
@@ -379,7 +352,7 @@ public class DatabaseTest {
 	@Test
 	public void testCreateFromScript() {
 		Database db = Database.from(DatabaseCreator.nextUrl());
-		Observable<Integer> create = db.run(DatabaseTest.class
+		Observable<Integer> create = db.run(DatabaseTestBase.class
 				.getResourceAsStream("/db-creation-script.sql"), ";");
 		Observable<Integer> count = db.select("select name from person")
 				.dependsOn(create).getAs(String.class).count();
@@ -494,26 +467,6 @@ public class DatabaseTest {
 				.parameter("ALEX").getAs(Integer.class).first()
 				.toBlockingObservable().single();
 		log.debug("name=" + name);
-	}
-
-	@Test
-	public void testDependsUsingAsynchronousQueriesWaitsForFirstByDelayingCalculation() {
-		Database db = db();
-		Observable<Integer> insert = db
-				.update("insert into person(name,score) values(?,?)")
-				.parameters("JOHN", 45)
-				.count()
-				.zip(Observable.interval(100, TimeUnit.MILLISECONDS),
-						new Func2<Integer, Long, Integer>() {
-							@Override
-							public Integer call(Integer t1, Long t2) {
-								return t1;
-							}
-						});
-
-		Observable<Integer> count = db.select("select name from person")
-				.dependsOn(insert).count();
-		assertIs(4, count);
 	}
 
 	@Test
@@ -941,12 +894,12 @@ public class DatabaseTest {
 		assertIs(14, score);
 	}
 
-	private static <T> void assertIs(T t, Observable<T> observable) {
+	static <T> void assertIs(T t, Observable<T> observable) {
 		assertEquals(t, observable.toBlockingObservable().single());
 	}
 
 	@Test
-	public void testTwoConnectionsOpenedAndClosedAfterTwoAsyncSelects()
+	public void testTwoConnectionsOpenedAndClosedAfterTwoSelects()
 			throws InterruptedException {
 		CountDownConnectionProvider cp = new CountDownConnectionProvider(2, 2);
 		Database db = new Database(cp);
@@ -959,7 +912,7 @@ public class DatabaseTest {
 	}
 
 	@Test
-	public void testTwoConnectionsOpenedAndClosedAfterTwoAsyncUpdates()
+	public void testTwoConnectionsOpenedAndClosedAfterTwoUpdates()
 			throws InterruptedException {
 		CountDownConnectionProvider cp = new CountDownConnectionProvider(2, 2);
 		Database db = new Database(cp);
@@ -1370,7 +1323,8 @@ public class DatabaseTest {
 
 	@Test
 	public void testNonTransactionalMultipleQueries() {
-		Database db = db();
+		// get a synchronous database
+		Database db = DatabaseCreator.db();
 		final Set<String> set = Collections
 				.newSetFromMap(new HashMap<String, Boolean>());
 		Observable<Integer> count = Observable.from(asList(1, 2, 3, 4, 5))
