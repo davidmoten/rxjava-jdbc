@@ -505,7 +505,7 @@ Include the dependency below:
 <dependency>
 	<groupId>com.mchange</groupId>
 	<artifactId>c3p0</artifactId>
-	<version>0.9.5-pre6</version>
+	<version>0.9.5-pre8</version>
 </dependency>
 ```
 and you can use a c3p0 database connection pool like so:
