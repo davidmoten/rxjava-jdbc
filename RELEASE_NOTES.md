@@ -2,7 +2,8 @@ Release Notes
 ---------------
 ###Version 0.1.3-SNAPSHOT
 * upgrade rxjava dependency to 0.17.5
-* upgrade c3p0 dependency to 0.9.5-pre8
+* upgrade c3p0, h2, slf4j dependencies to latest
+* change ```Database.Builder``` method for specifiying connection pool
 
 ###Version 0.1.2 ([Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.davidmoten%7Crxjava-jdbc%7C0.1.2%7Cjar))
 * [issue #1](https://github.com/davidmoten/rxjava-jdbc/issues/1) use rxjava 0.17.4
