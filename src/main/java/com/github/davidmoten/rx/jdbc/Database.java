@@ -224,6 +224,19 @@ final public class Database {
 
 		private ConnectionProvider cp;
 		private Func0<Scheduler> nonTransactionalSchedulerFactory = null;
+		private Pool pool = null;
+		private String url;
+
+		private static class Pool {
+			int minSize;
+			int maxSize;
+
+			Pool(int minSize, int maxSize) {
+				super();
+				this.minSize = minSize;
+				this.maxSize = maxSize;
+			}
+		}
 
 		/**
 		 * Constructor.
@@ -249,7 +262,7 @@ final public class Database {
 		 * @return
 		 */
 		public Builder url(String url) {
-			this.cp = new ConnectionProviderFromUrl(url);
+			this.url = url;
 			return this;
 		}
 
@@ -262,9 +275,8 @@ final public class Database {
 		 * @param maxPoolSize
 		 * @return
 		 */
-		public Builder pooled(String url, int minPoolSize, int maxPoolSize) {
-			this.cp = new ConnectionProviderPooled(url, minPoolSize,
-					maxPoolSize);
+		public Builder pool(int minPoolSize, int maxPoolSize) {
+			pool = new Pool(minPoolSize, maxPoolSize);
 			return this;
 		}
 
@@ -308,6 +320,11 @@ final public class Database {
 		 * @return
 		 */
 		public Database build() {
+			if (url != null && pool != null)
+				cp = new ConnectionProviderPooled(url, pool.minSize,
+						pool.maxSize);
+			else if (url != null)
+				cp = new ConnectionProviderFromUrl(url);
 			return new Database(cp, nonTransactionalSchedulerFactory);
 		}
 	}

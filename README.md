@@ -510,7 +510,7 @@ Include the dependency below:
 ```
 and you can use a c3p0 database connection pool like so:
 ```java
-Database db = Database.builder().pooled(url,minPoolSize,maxPoolSize).build();
+Database db = Database.builder().url(url).pool(minPoolSize,maxPoolSize).build();
 ```
 Once finished with a ``Database`` that has used a connection pool you should call 
 ```java

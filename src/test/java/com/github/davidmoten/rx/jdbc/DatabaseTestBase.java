@@ -745,7 +745,7 @@ public abstract class DatabaseTestBase {
 
 	@Test
 	public void testDatabaseBuilderWithPool() {
-		Database.builder().pooled(nextUrl(), 0, 5).build().close();
+		Database.builder().url(nextUrl()).pool(0, 5).build().close();
 	}
 
 	@Test
