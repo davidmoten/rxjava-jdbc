@@ -18,33 +18,32 @@ import rx.subjects.PublishSubject;
  */
 public class OperationToOperator<R, T> implements Operator<R, T> {
 
-	public static <R, T> Operator<R, T> toOperator(
-			Func1<Observable<T>, Observable<R>> operation) {
-		return new OperationToOperator<R, T>(operation);
-	}
+    public static <R, T> Operator<R, T> toOperator(Func1<Observable<T>, Observable<R>> operation) {
+        return new OperationToOperator<R, T>(operation);
+    }
 
-	/**
-	 * The operation to convert.
-	 */
-	private final Func1<Observable<T>, Observable<R>> operation;
+    /**
+     * The operation to convert.
+     */
+    private final Func1<Observable<T>, Observable<R>> operation;
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param operation
-	 *            to be converted into {@link Operator}
-	 */
-	public OperationToOperator(Func1<Observable<T>, Observable<R>> operation) {
-		this.operation = operation;
-	}
+    /**
+     * Constructor.
+     * 
+     * @param operation
+     *            to be converted into {@link Operator}
+     */
+    public OperationToOperator(Func1<Observable<T>, Observable<R>> operation) {
+        this.operation = operation;
+    }
 
-	@Override
-	public Subscriber<? super T> call(Subscriber<? super R> subscriber) {
-		final PublishSubject<T> subject = PublishSubject.create();
-		Subscriber<T> result = Subscribers.from(subject);
-		subscriber.add(result);
-		operation.call(subject).subscribe(subscriber);
-		return result;
-	}
+    @Override
+    public Subscriber<? super T> call(Subscriber<? super R> subscriber) {
+        final PublishSubject<T> subject = PublishSubject.create();
+        Subscriber<T> result = Subscribers.from(subject);
+        subscriber.add(result);
+        operation.call(subject).subscribe(subscriber);
+        return result;
+    }
 
 }

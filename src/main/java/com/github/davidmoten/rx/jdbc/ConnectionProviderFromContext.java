@@ -10,29 +10,29 @@ import javax.sql.DataSource;
 
 public class ConnectionProviderFromContext implements ConnectionProvider {
 
-	private final String jndiResource;
+    private final String jndiResource;
 
-	public ConnectionProviderFromContext(String jndiResource) {
-		this.jndiResource = jndiResource;
-	}
+    public ConnectionProviderFromContext(String jndiResource) {
+        this.jndiResource = jndiResource;
+    }
 
-	@Override
-	public Connection get() {
-		try {
-			Context ctx = new InitialContext();
-			DataSource ds = (DataSource) ctx.lookup(jndiResource);
-			Connection conn = ds.getConnection();
-			return conn;
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		} catch (NamingException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    @Override
+    public Connection get() {
+        try {
+            Context ctx = new InitialContext();
+            DataSource ds = (DataSource) ctx.lookup(jndiResource);
+            Connection conn = ds.getConnection();
+            return conn;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	@Override
-	public void close() {
-		// do nothing
-	}
+    @Override
+    public void close() {
+        // do nothing
+    }
 
 }
