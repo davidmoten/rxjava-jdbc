@@ -17,7 +17,7 @@ import rx.functions.Functions;
 /**
  * Utility methods for RxJava.
  */
-public class RxUtil {
+public final class RxUtil {
 
     /**
      * slf4j logger.

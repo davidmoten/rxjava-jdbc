@@ -16,7 +16,7 @@ import rx.subjects.PublishSubject;
  * @param <T>
  *            from type
  */
-public class OperationToOperator<R, T> implements Operator<R, T> {
+public final class OperationToOperator<R, T> implements Operator<R, T> {
 
     public static <R, T> Operator<R, T> toOperator(Func1<Observable<T>, Observable<R>> operation) {
         return new OperationToOperator<R, T>(operation);

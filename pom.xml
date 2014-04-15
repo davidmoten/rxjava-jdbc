@@ -205,7 +205,7 @@
 							<artifactId>maven-checkstyle-plugin</artifactId>
 							<version>${checkstyle.version}</version>
 							<configuration>
-								<includeTestSourceDirectory>true</includeTestSourceDirectory>
+								<includeTestSourceDirectory>false</includeTestSourceDirectory>
 								<configLocation>src/checkstyle/checks.xml</configLocation>
 							</configuration>
 						</plugin>

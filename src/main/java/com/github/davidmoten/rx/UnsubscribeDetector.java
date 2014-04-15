@@ -15,7 +15,7 @@ import rx.Subscription;
  * 
  * @param <T>
  */
-public class UnsubscribeDetector<T> implements Operator<T, T> {
+public final class UnsubscribeDetector<T> implements Operator<T, T> {
 
     private static final Logger log = LoggerFactory.getLogger(UnsubscribeDetector.class);
 
