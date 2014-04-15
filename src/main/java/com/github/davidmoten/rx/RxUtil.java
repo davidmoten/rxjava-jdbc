@@ -24,6 +24,10 @@ public class RxUtil {
      */
     private static final Logger log = LoggerFactory.getLogger(RxUtil.class);
 
+    private RxUtil() {
+        // prevent instantiation
+    }
+
     /**
      * Returns the concatenation of two {@link Observable}s but the first
      * sequence will be emitted in its entirety and ignored before o2 starts
