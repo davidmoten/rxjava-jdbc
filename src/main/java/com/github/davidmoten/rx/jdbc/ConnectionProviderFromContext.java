@@ -8,7 +8,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-public class ConnectionProviderFromContext implements ConnectionProvider {
+public final class ConnectionProviderFromContext implements ConnectionProvider {
 
     private final String jndiResource;
 

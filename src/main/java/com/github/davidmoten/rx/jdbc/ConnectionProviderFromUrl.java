@@ -8,7 +8,7 @@ import java.sql.SQLException;
  * Provides {@link Connection}s from a url (using
  * DriverManager.getConnection()).
  */
-public class ConnectionProviderFromUrl implements ConnectionProvider {
+public final class ConnectionProviderFromUrl implements ConnectionProvider {
 
     /**
      * JDBC url

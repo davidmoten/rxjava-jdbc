@@ -7,9 +7,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 
-import javax.activation.DataSource;
-import javax.naming.Context;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -172,7 +169,8 @@ final public class Database {
 
     /**
      * Returns a {@link Database} based on connections obtained from a
-     * {@link DataSource} based on looking up the current {@link Context}.
+     * javax.activation.DataSource based on looking up the current
+     * javax.naming.Context.
      * 
      * @param jndiResource
      * @return

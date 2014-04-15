@@ -9,7 +9,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 /**
  * Provides database connection pooling using c3p0.
  */
-public class ConnectionProviderPooled implements ConnectionProvider {
+public final class ConnectionProviderPooled implements ConnectionProvider {
 
     /**
      * C3p0 connection pool.
