@@ -139,8 +139,8 @@ final public class Database {
      * @param url
      *            jdbc connection url
      */
-    public Database(String url) {
-        this(new ConnectionProviderFromUrl(url));
+    public Database(String url, String username, String password) {
+        this(new ConnectionProviderFromUrl(url, username, password));
     }
 
     /**
@@ -164,7 +164,18 @@ final public class Database {
      * @return
      */
     public static Database from(String url) {
-        return new Database(url);
+        return new Database(url, null, null);
+    }
+
+    /**
+     * Returns a {@link Database} based on a jdbc connection string.
+     * 
+     * @param url
+     *            jdbc connection url
+     * @return
+     */
+    public static Database from(String url, String username, String password) {
+        return new Database(url, username, password);
     }
 
     /**
