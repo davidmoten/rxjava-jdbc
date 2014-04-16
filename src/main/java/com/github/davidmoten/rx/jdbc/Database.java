@@ -222,6 +222,8 @@ final public class Database {
         private Func0<Scheduler> nonTransactionalSchedulerFactory = null;
         private Pool pool = null;
         private String url;
+        private String username;
+        private String password;
 
         private static class Pool {
             int minSize;
@@ -259,6 +261,16 @@ final public class Database {
          */
         public Builder url(String url) {
             this.url = url;
+            return this;
+        }
+
+        public Builder username() {
+            this.username = username;
+            return this;
+        }
+
+        public Builder password() {
+            this.password = password;
             return this;
         }
 
@@ -317,9 +329,10 @@ final public class Database {
          */
         public Database build() {
             if (url != null && pool != null)
-                cp = new ConnectionProviderPooled(url, pool.minSize, pool.maxSize);
+                cp = new ConnectionProviderPooled(url, username, password, pool.minSize,
+                        pool.maxSize);
             else if (url != null)
-                cp = new ConnectionProviderFromUrl(url);
+                cp = new ConnectionProviderFromUrl(url, username, password);
             return new Database(cp, nonTransactionalSchedulerFactory);
         }
     }

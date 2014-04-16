@@ -15,6 +15,10 @@ public final class ConnectionProviderFromUrl implements ConnectionProvider {
      */
     private final String url;
 
+    private final String username;
+
+    private final String password;
+
     /**
      * Constructor.
      * 
@@ -22,13 +26,29 @@ public final class ConnectionProviderFromUrl implements ConnectionProvider {
      *            the jdbc url
      */
     public ConnectionProviderFromUrl(String url) {
+        this(url, null, null);
+    }
+
+    /**
+     * Constructor.
+     * 
+     * @param url
+     * @param username
+     * @param password
+     */
+    public ConnectionProviderFromUrl(String url, String username, String password) {
         this.url = url;
+        this.username = username;
+        this.password = password;
     }
 
     @Override
     public Connection get() {
         try {
-            return DriverManager.getConnection(url);
+            if (username != null || password != null)
+                return DriverManager.getConnection(url, username, password);
+            else
+                return DriverManager.getConnection(url);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
