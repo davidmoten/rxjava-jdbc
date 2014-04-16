@@ -137,7 +137,11 @@ final public class Database {
      * url.
      * 
      * @param url
-     *            jdbc connection url
+     *            jdbc url
+     * @param username
+     *            username for connection
+     * @param password
+     *            password for connection
      */
     public Database(String url, String username, String password) {
         this(new ConnectionProviderFromUrl(url, username, password));
