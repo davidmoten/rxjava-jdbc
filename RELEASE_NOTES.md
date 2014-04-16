@@ -4,7 +4,7 @@ Release Notes
 * upgrade rxjava dependency to 0.17.5
 * upgrade c3p0, h2, slf4j dependencies to latest
 * change ```Database.Builder``` method for specifiying connection pool
-* add username and password parameters to ```Database.Builder```
+* add username and password parameters to ```Database.Builder```, ```Database.from()```
 
 ###Version 0.1.2 ([Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.davidmoten%7Crxjava-jdbc%7C0.1.2%7Cjar))
 * [issue #1](https://github.com/davidmoten/rxjava-jdbc/issues/1) use rxjava 0.17.4
