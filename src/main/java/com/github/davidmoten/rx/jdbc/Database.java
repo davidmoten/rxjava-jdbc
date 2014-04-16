@@ -264,12 +264,12 @@ final public class Database {
             return this;
         }
 
-        public Builder username() {
+        public Builder username(String username) {
             this.username = username;
             return this;
         }
 
-        public Builder password() {
+        public Builder password(String password) {
             this.password = password;
             return this;
         }
