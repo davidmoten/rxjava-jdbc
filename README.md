@@ -485,7 +485,7 @@ Observable
     .lift(adb.commitOnCompleteOperator());
 ```
 
-or ask use the default version of the Database object that schedules queries using ```Schedulers.trampoline()```.
+or use the default version of the Database object that schedules queries using ```Schedulers.trampoline()```.
 
 ```java
 Observable.from(asList(1,2,3))
