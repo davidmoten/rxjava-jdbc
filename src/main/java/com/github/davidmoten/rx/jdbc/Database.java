@@ -175,8 +175,12 @@ final public class Database {
      * Returns a {@link Database} based on a jdbc connection string.
      * 
      * @param url
-     *            jdbc connection url
-     * @return
+     *            jdbc url
+     * @param username
+     *            username for connection
+     * @param password
+     *            password for connection
+     * @return the database object
      */
     public static Database from(String url, String username, String password) {
         return new Database(url, username, password);
