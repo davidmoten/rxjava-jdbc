@@ -4,6 +4,7 @@ Release Notes
 * upgrade rxjava dependency to 0.17.5
 * upgrade c3p0, h2, slf4j dependencies to latest
 * change ```Database.Builder``` method for specifiying connection pool
+* add username and password parameters to ```Database.Builder```
 
 ###Version 0.1.2 ([Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.davidmoten%7Crxjava-jdbc%7C0.1.2%7Cjar))
 * [issue #1](https://github.com/davidmoten/rxjava-jdbc/issues/1) use rxjava 0.17.4
@@ -12,7 +13,7 @@ Release Notes
 * [pull 3](https://github.com/davidmoten/rxjava-jdbc/pull/3) run all database tests sync and async 
 
 ###Version 0.1.1 ([Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.davidmoten%7Crxjava-jdbc%7C0.1.1%7Cjar))
-* replaced use of flatMap with concatMap to limit possible async side effects on specifying parameter observables to queries
+* replaced use of ```flatMap``` with ```concatMap``` to limit possible async side effects on specifying parameter observables to queries
 
 ###Version 0.1 ([Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.davidmoten%7Crxjava-jdbc%7C0.1%7Cjar))
 * initial release
