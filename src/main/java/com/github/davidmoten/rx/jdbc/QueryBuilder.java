@@ -77,8 +77,7 @@ final class QueryBuilder {
     void parameter(Object value) {
         // TODO check on supported types?
         if (value instanceof Observable)
-            throw new RuntimeException(
-                    "use parameters() method not the parameter() method for an Observable");
+            throw new RuntimeException("use parameters() method not the parameter() method for an Observable");
         parameters(Observable.from(value));
     }
 

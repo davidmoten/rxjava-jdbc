@@ -50,11 +50,9 @@ public class DatabaseCreator {
             c.prepareStatement("insert into person(name,score) values('JOSEPH',34)").execute();
             c.prepareStatement("insert into person(name,score) values('MARMADUKE',25)").execute();
 
-            c.prepareStatement(
-                    "create table person_clob (name varchar(50) not null,  document clob not null)")
+            c.prepareStatement("create table person_clob (name varchar(50) not null,  document clob not null)")
                     .execute();
-            c.prepareStatement(
-                    "create table person_blob (name varchar(50) not null, document blob not null)")
+            c.prepareStatement("create table person_blob (name varchar(50) not null, document blob not null)")
                     .execute();
         } catch (SQLException e) {
             throw new RuntimeException(e);

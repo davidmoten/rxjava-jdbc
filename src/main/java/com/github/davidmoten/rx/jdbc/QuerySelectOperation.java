@@ -26,8 +26,7 @@ final class QuerySelectOperation {
      *            one set of parameters to be run with the query
      * @return
      */
-    static <T> Observable<T> execute(QuerySelect query, List<Parameter> parameters,
-            Func1<? super ResultSet, T> function) {
+    static <T> Observable<T> execute(QuerySelect query, List<Parameter> parameters, Func1<? super ResultSet, T> function) {
         return Observable.create(new QuerySelectOnSubscribe<T>(query, parameters, function));
     }
 
@@ -84,8 +83,7 @@ final class QuerySelectOperation {
          * 
          * @throws SQLException
          */
-        private void connectAndPrepareStatement(Subscriber<? super T> subscriber)
-                throws SQLException {
+        private void connectAndPrepareStatement(Subscriber<? super T> subscriber) throws SQLException {
             log.debug("connectionProvider=" + query.context().connectionProvider());
             checkSubscription(subscriber);
             if (keepGoing) {

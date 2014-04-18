@@ -119,7 +119,7 @@ public class Tuple6<T1, T2, T3, T4, T5, T6> {
 
     @Override
     public String toString() {
-        return "Tuple6 [value1=" + value1 + ", value2=" + value2 + ", value3=" + value3
-                + ", value4=" + value4 + ", value5=" + value5 + ", value6=" + value6 + "]";
+        return "Tuple6 [value1=" + value1 + ", value2=" + value2 + ", value3=" + value3 + ", value4=" + value4
+                + ", value5=" + value5 + ", value6=" + value6 + "]";
     }
 }

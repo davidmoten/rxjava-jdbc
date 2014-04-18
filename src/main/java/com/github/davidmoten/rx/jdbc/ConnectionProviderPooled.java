@@ -46,8 +46,7 @@ public final class ConnectionProviderPooled implements ConnectionProvider {
      * @param minPoolSize
      * @param maxPoolSize
      */
-    public ConnectionProviderPooled(String url, String username, String password, int minPoolSize,
-            int maxPoolSize) {
+    public ConnectionProviderPooled(String url, String username, String password, int minPoolSize, int maxPoolSize) {
         this(createPool(url, username, password, minPoolSize, maxPoolSize));
     }
 
@@ -61,8 +60,8 @@ public final class ConnectionProviderPooled implements ConnectionProvider {
      * @param maxPoolSize
      * @return
      */
-    private static ComboPooledDataSource createPool(String url, String username, String password,
-            int minPoolSize, int maxPoolSize) {
+    private static ComboPooledDataSource createPool(String url, String username, String password, int minPoolSize,
+            int maxPoolSize) {
         ComboPooledDataSource pool = new ComboPooledDataSource();
         pool.setJdbcUrl(url);
         pool.setUser(username);

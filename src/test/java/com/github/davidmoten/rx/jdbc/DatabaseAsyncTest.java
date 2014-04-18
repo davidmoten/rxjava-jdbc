@@ -16,17 +16,13 @@ public class DatabaseAsyncTest extends DatabaseTestBase {
     @Test
     public void testDependsUsingAsynchronousQueriesWaitsForFirstByDelayingCalculation() {
         Database db = db().asynchronous();
-        Observable<Integer> insert = db
-                .update("insert into person(name,score) values(?,?)")
-                .parameters("JOHN", 45)
-                .count()
-                .zip(Observable.interval(100, TimeUnit.MILLISECONDS),
-                        new Func2<Integer, Long, Integer>() {
-                            @Override
-                            public Integer call(Integer t1, Long t2) {
-                                return t1;
-                            }
-                        });
+        Observable<Integer> insert = db.update("insert into person(name,score) values(?,?)").parameters("JOHN", 45)
+                .count().zip(Observable.interval(100, TimeUnit.MILLISECONDS), new Func2<Integer, Long, Integer>() {
+                    @Override
+                    public Integer call(Integer t1, Long t2) {
+                        return t1;
+                    }
+                });
 
         Observable<Integer> count = db.select("select name from person").dependsOn(insert).count();
         assertIs(4, count);
