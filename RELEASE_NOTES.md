@@ -1,7 +1,7 @@
 Release Notes
 ---------------
 ###Version 0.1.3-SNAPSHOT
-* upgrade rxjava dependency to 0.17.5
+* upgrade rxjava dependency to 0.17.6
 * upgrade c3p0, h2, slf4j dependencies to latest
 * change ```Database.Builder``` method for specifiying connection pool
 * add username and password parameters to ```Database.Builder```, ```Database.from()```
