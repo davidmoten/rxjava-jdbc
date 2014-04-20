@@ -103,10 +103,10 @@ try {
 
 Query types
 ------------------
-The Database select() method is used for 
+The ```Database.select()``` method is used for 
 * SQL select queries. 
 
-The Database update() method is used for
+The ```Database.update()``` method is used for
 * update
 * insert
 * delete
@@ -160,7 +160,7 @@ You'll see ```toBlockingObservable()``` used in the examples in this page and in
 the unit tests but in your application code you should try to avoid using it. The most benefit 
 from the reactive style is obtained by *not leaving the monad*. That is, stay in Observable land and make 
 the most of it. Chain everything together and leave toBlockingObservable to 
-an endpoint or better still just subscribe with an Observer.
+an endpoint or better still just subscribe with an ```Observer```.
 
 Dependencies
 --------------
@@ -213,9 +213,9 @@ assertEquals(Arrays.asList(21,34),list);
 
 Processing a ResultSet
 -----------------------------
-Many operators in rxjava process items pushed to them asynchronously. Given this it is important that ResultSet query results are processed 
-before being emitted to a consuming operator. This means that the select query needs to be passed a function that converts a ResultSet to
-a result that does not depend on an open java.sql.Connection. Use the get(), getAs(), getTuple?(), and autoMap() methods to process the method
+Many operators in rxjava process items pushed to them asynchronously. Given this it is important that ```ResultSet``` query results are processed 
+before being emitted to a consuming operator. This means that the select query needs to be passed a function that converts a ```ResultSet``` to
+a result that does not depend on an open ```java.sql.Connection```. Use the ```get()```, ```getAs()```, ```getTuple?()```, and ```autoMap()``` methods to process the method
 to specify this function as below.
 
 ```java
@@ -239,14 +239,14 @@ static class Person {
 				Long registered) {
 				...
 ```
-We can get *rxjava-jdbc* to use reflection to auto map the fields in a result set to create an instance of Person:
+We can get *rxjava-jdbc* to use reflection to auto map the fields in a result set to create an instance of ```Person```:
 ```java
 Observable<Person> persons = db
 				.select("select name,score,dob,registered from person order by name")
 				.autoMap(Person.class);
 ```
 The main requirement is that the number of columns in the select statement must match 
-the number of columns in a constructor of Person and that the column types can be 
+the number of columns in a constructor of ```Person``` and that the column types can be 
 automatically mapped to the types in the constructor.
 
 Auto mappings
@@ -259,11 +259,11 @@ The automatic mappings below of objects are used in the ```autoMap()``` method a
 * ```java.math.BigInteger``` ==> ```Long```, ```Integer```, ```Decimal```, ```Float```, ```Short```, ```java.math.BigDecimal```
 * ```java.math.BigDecimal``` ==> ```Long```, ```Integer```, ```Decimal```, ```Float```, ```Short```, ```java.math.BigInteger```
 
-Note that automappings do not occur to primitives so use Long instead of long.
+Note that automappings do not occur to primitives so use ```Long``` instead of ```long```.
 
 Tuples
 ---------------
-Typed tuples can be returned in an Observable:
+Typed tuples can be returned in an ```Observable```:
 ###Tuple2
 ```java
 Tuple2<String, Integer> tuple = db
@@ -274,7 +274,7 @@ Tuple2<String, Integer> tuple = db
 assertEquals("MARMADUKE", tuple.value1());
 assertEquals(25, (int) tuple.value2());
 ```
-Similarly for Tuple3, Tuple4, Tuple5, Tuple6, Tuple7, and finally 
+Similarly for ```Tuple3```, ```Tuple4```, ```Tuple5```, ```Tuple6```, ```Tuple7```, and finally 
 ###TupleN
 ```java
 TupleN<String> tuple = db
@@ -291,7 +291,7 @@ Large objects support
 Blob and Clobs are straightforward to handle.
 
 ### Insert a Clob
-Here's how to insert a String value into a Clob (*document* column below is of type CLOB):
+Here's how to insert a String value into a Clob (*document* column below is of type ```CLOB```):
 ```java
 String document = ...
 Observable<Integer> count = db
@@ -299,7 +299,7 @@ Observable<Integer> count = db
 		.parameter("FRED")
 		.parameter(document).count();
 ```
-or using a java.io.Reader:
+or using a ```java.io.Reader```:
 ```java
 Reader reader = ...;
 Observable<Integer> count = db
@@ -318,7 +318,7 @@ Observable<Reader> document = db.select("select document from person_clob")
 				.getAs(Reader.class);
 ```
 ### Insert a Blob
-Similarly for Blobs (*document* column below is of type BLOB):
+Similarly for Blobs (*document* column below is of type ```BLOB```):
 ```java
 byte[] bytes = ...
 Observable<Integer> count = db
@@ -340,7 +340,7 @@ Observable<InputStream> document = db.select("select document from person_clob")
 Lift
 -----------------------------------
 
-Using the Observable.lift() method you can perform multiple queries without breaking method chaining. Observable.lift() 
+Using the ```Observable.lift()``` method you can perform multiple queries without breaking method chaining. ```Observable.lift()``` 
 requires an ```Operator``` parameter which are available via 
 
 * ```db.select(sql).parameterOperator().getXXX()```
@@ -485,7 +485,7 @@ Observable
     .lift(adb.commitOnCompleteOperator());
 ```
 
-or use the default version of the Database object that schedules queries using ```Schedulers.trampoline()```.
+or use the default version of the ```Database``` object that schedules queries using ```Schedulers.trampoline()```.
 
 ```java
 Observable.from(asList(1,2,3))
@@ -522,10 +522,10 @@ Note: do not use a c3p0 version earlier than the one above as a c3p0 bug may pre
 
 Use a single Connection
 ---------------------------
-A Database can be instantiated from a single Connection which will 
-be used for all queries in companion with the current thread Scheduler (```Schedulers.trampoline()```).
-The connection is wrapped in a ConnectionNonClosing which suppresses close calls so that the connection will
- still be open for all queries and will remain open after use of the Database object.
+A ```Database``` can be instantiated from a single ```java.sql.Connection``` which will 
+be used for all queries in companion with the current thread ```Scheduler``` (```Schedulers.trampoline()```).
+The connection is wrapped in a ```ConnectionNonClosing``` which suppresses close calls so that the connection will
+ still be open for all queries and will remain open after use of the ```Database``` object.
  
  Example:
  ```java
