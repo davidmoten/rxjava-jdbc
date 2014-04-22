@@ -20,8 +20,9 @@ public class RetryTest {
 
     // TODO move this test as pull request to rxjava-core.
     /**
-     * This test overlaps somewhat with testSourceObservableCallsUnsubscribe()
-     * but is simpler and synchronous.
+     * Overlaps somewhat with testSourceObservableCallsUnsubscribe() but is
+     * simpler and synchronous. This test fails against 0.16.1-0.17.4, hangs on
+     * 0.17.5 and passes in 0.17.6 thanks to fix for issue #1027.
      */
     @Test
     public void testRetrySubscribesAgainAfterError() {
