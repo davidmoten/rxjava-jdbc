@@ -1,6 +1,7 @@
 package com.github.davidmoten.rx;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,24 +18,48 @@ import rx.subjects.PublishSubject;
  */
 public class RetryTest {
 
+    // TODO move this test as pull request to rxjava-core.
+    /**
+     * This test overlaps somewhat with testSourceObservableCallsUnsubscribe()
+     * but is simpler and synchronous.
+     */
     @Test
-    public void test() {
-        final List<Integer> list = new ArrayList<Integer>();
+    public void testRetrySubscribesAgainAfterError() {
+        List<Integer> list = new ArrayList<Integer>();
         PublishSubject<Integer> subject = PublishSubject.create();
-        subject.doOnNext(new Action1<Integer>() {
-            @Override
-            public void call(Integer n) {
-                list.add(n);
-            }
-        }).doOnNext(new Action1<Integer>() {
+        subject
+        // record item
+        .doOnNext(addToList(list))
+        // throw a RuntimeException
+                .doOnNext(throwException())
+                // retry on error
+                .retry()
+                // subscribe and ignore
+                .subscribe();
+        assertTrue(list.isEmpty());
+        subject.onNext(1);
+        assertEquals(Arrays.asList(1), list);
+        subject.onNext(2);
+        assertEquals(Arrays.asList(1, 2), list);
+        subject.onNext(3);
+        assertEquals(Arrays.asList(1, 2, 3), list);
+    }
+
+    private Action1<Integer> throwException() {
+        return new Action1<Integer>() {
             @Override
             public void call(Integer t1) {
                 throw new RuntimeException("boo");
             }
-        }).retry().subscribe();
-        subject.onNext(1);
-        subject.onNext(2);
-        subject.onNext(3);
-        assertEquals(Arrays.asList(1, 2, 3), list);
+        };
+    }
+
+    private Action1<Integer> addToList(final List<Integer> list) {
+        return new Action1<Integer>() {
+            @Override
+            public void call(Integer n) {
+                list.add(n);
+            }
+        };
     }
 }
