@@ -1,13 +1,8 @@
 package com.github.davidmoten.rx;
 
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 
 import rx.functions.Action1;
 import rx.subjects.PublishSubject;
@@ -26,24 +21,26 @@ public class RetryTest {
      */
     @Test
     public void testRetrySubscribesAgainAfterError() {
-        List<Integer> list = new ArrayList<Integer>();
+        Action1<Integer> record = Mockito.mock(Action1.class);
+        InOrder inOrder = Mockito.inOrder(record);
         PublishSubject<Integer> subject = PublishSubject.create();
         subject
         // record item
-        .doOnNext(addToList(list))
+        .doOnNext(record)
         // throw a RuntimeException
                 .doOnNext(throwException())
                 // retry on error
                 .retry()
                 // subscribe and ignore
                 .subscribe();
-        assertTrue(list.isEmpty());
+        inOrder.verifyNoMoreInteractions();
         subject.onNext(1);
-        assertEquals(asList(1), list);
+        inOrder.verify(record).call(1);
         subject.onNext(2);
-        assertEquals(asList(1, 2), list);
+        inOrder.verify(record).call(2);
         subject.onNext(3);
-        assertEquals(asList(1, 2, 3), list);
+        inOrder.verify(record).call(3);
+        inOrder.verifyNoMoreInteractions();
     }
 
     private Action1<Integer> throwException() {
@@ -55,12 +52,4 @@ public class RetryTest {
         };
     }
 
-    private Action1<Integer> addToList(final List<Integer> list) {
-        return new Action1<Integer>() {
-            @Override
-            public void call(Integer n) {
-                list.add(n);
-            }
-        };
-    }
 }
