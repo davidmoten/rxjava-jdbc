@@ -1,10 +1,10 @@
 package com.github.davidmoten.rx;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -38,11 +38,11 @@ public class RetryTest {
                 .subscribe();
         assertTrue(list.isEmpty());
         subject.onNext(1);
-        assertEquals(Arrays.asList(1), list);
+        assertEquals(asList(1), list);
         subject.onNext(2);
-        assertEquals(Arrays.asList(1, 2), list);
+        assertEquals(asList(1, 2), list);
         subject.onNext(3);
-        assertEquals(Arrays.asList(1, 2, 3), list);
+        assertEquals(asList(1, 2, 3), list);
     }
 
     private Action1<Integer> throwException() {
