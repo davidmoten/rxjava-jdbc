@@ -1,5 +1,8 @@
 Release Notes
 ---------------
+###Version 0.1.4-SNAPSHOT
+* upgrade rxjava dependency to 0.18.0 
+
 ###Version 0.1.3 ([Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.davidmoten%7Crxjava-jdbc%7C0.1.3%7Cjar))
 * upgrade rxjava dependency to 0.17.6 (retry operator was broken in 0.17.5)
 * upgrade c3p0, h2, slf4j dependencies to latest
