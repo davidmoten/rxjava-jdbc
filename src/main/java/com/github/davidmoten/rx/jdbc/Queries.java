@@ -49,7 +49,7 @@ final class Queries {
      * @return {@link Observable} with one element 1
      */
     static Observable<Integer> singleIntegerAfterDependencies(Query query) {
-        return concatButIgnoreFirstSequence(query.depends(), Observable.from(1));
+        return concatButIgnoreFirstSequence(query.depends(), Observable.just(1));
     }
 
     /**

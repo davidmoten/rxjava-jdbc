@@ -12,6 +12,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static rx.Observable.from;
+import static rx.Observable.just;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -242,7 +243,7 @@ public abstract class DatabaseTestBase {
 
     @Test
     public void testUseParameterObservable() {
-        int count = db().select("select name from person where name >?").parameters(Observable.from("ALEX")).count()
+        int count = db().select("select name from person where name >?").parameters(Observable.just("ALEX")).count()
                 .toBlockingObservable().single();
         assertEquals(3, count);
     }
@@ -356,7 +357,7 @@ public abstract class DatabaseTestBase {
 
     @Test
     public void testEmptyResultSet() {
-        int count = db().select("select name from person where name >?").parameters(Observable.from("ZZTOP")).count()
+        int count = db().select("select name from person where name >?").parameters(Observable.just("ZZTOP")).count()
                 .first().toBlockingObservable().single();
         assertEquals(0, count);
     }
@@ -364,7 +365,7 @@ public abstract class DatabaseTestBase {
     @Test
     public void testMixingExplicitAndObservableParameters() {
         String name = db().select("select name from person where name > ?  and score < ? order by name")
-                .parameter("BARRY").parameters(Observable.from(100)).getAs(String.class).first().toBlockingObservable()
+                .parameter("BARRY").parameters(Observable.just(100)).getAs(String.class).first().toBlockingObservable()
                 .single();
         assertEquals("FRED", name);
     }
@@ -701,7 +702,7 @@ public abstract class DatabaseTestBase {
 
     @Test
     public void testLiftWithParameters() {
-        int score = from("FRED")
+        int score = just("FRED")
                 .lift(db().select("select score from person where name=?").parameterOperator().getAs(Integer.class))
                 .toBlockingObservable().single();
         assertEquals(21, score);
@@ -747,8 +748,8 @@ public abstract class DatabaseTestBase {
     @Test
     public void testUnsubscribeOfBufferAndFlatMap() throws InterruptedException {
         UnsubscribeDetector<Long> detector = RxUtil.detectUnsubscribe();
-        Observable.interval(10, TimeUnit.MILLISECONDS).lift(detector).buffer(2).flatMap(constant(Observable.from(1L)))
-                .take(6).toList().toBlockingObservable().single();
+        Observable.interval(10, TimeUnit.MILLISECONDS).lift(detector).buffer(2).flatMap(constant(just(1L))).take(6)
+                .toList().toBlockingObservable().single();
         assertTrue(detector.latch().await(3, TimeUnit.SECONDS));
     }
 
@@ -902,7 +903,7 @@ public abstract class DatabaseTestBase {
 
     @Test(expected = RuntimeException.class)
     public void testCannotPassObservableAsSingleParameter() {
-        db().select("anything").parameter(Observable.from(123));
+        db().select("anything").parameter(Observable.just(123));
     }
 
     @Test
@@ -958,7 +959,7 @@ public abstract class DatabaseTestBase {
         Observable<Boolean> begin = db.beginTransaction();
         Observable<Integer> updates = Observable
         // set name parameter
-                .from("FRED")
+                .just("FRED")
                 // push into update
                 .lift(db.update("update person set score=1 where name=?").dependsOn(begin).parameterOperator())
                 // map num rows affected to JOHN
@@ -974,7 +975,7 @@ public abstract class DatabaseTestBase {
         Observable<Boolean> begin = db.beginTransaction();
         String name = Observable
         // set name parameter
-                .from("FRED")
+                .just("FRED")
                 // push into update
                 .lift(db.update("update person set score=1 where name=?").dependsOn(begin).parameterOperator())
                 // map num rows affected to JOHN
