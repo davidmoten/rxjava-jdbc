@@ -183,6 +183,8 @@ int count = db
 assertEquals(4, count);
 ```
 
+Note that when you pass the output of a query as a parameter to another query there is an implicit dependency established.
+
 Mixing explicit and Observable parameters
 ------------------------------------------
 Example:
