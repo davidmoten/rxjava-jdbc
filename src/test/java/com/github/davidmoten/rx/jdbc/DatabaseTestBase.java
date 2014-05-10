@@ -20,7 +20,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -189,7 +188,7 @@ public abstract class DatabaseTestBase {
 
     @Test
     public void testRunScript() {
-        Observable<String> commands = from(asList("create table temp1(id integer)", "drop table temp1"));
+        Observable<String> commands = from("create table temp1(id integer)", "drop table temp1");
         db().run(commands).count().toBlockingObservable().single();
     }
 
@@ -787,7 +786,7 @@ public abstract class DatabaseTestBase {
     @Test
     public void testLiftUpdateWithParameters() {
         Database db = db();
-        Observable<Integer> count = Observable.from(Arrays.<Object> asList(4, "FRED")).lift(
+        Observable<Integer> count = Observable.from(4, "FRED").lift(
                 db.update("update person set score=? where name=?").parameterOperator());
         assertIs(1, count);
     }
@@ -797,7 +796,7 @@ public abstract class DatabaseTestBase {
         Database db = db();
         Observable<Integer> score = Observable
         // parameters for coming update
-                .from(Arrays.<Object> asList(4, "FRED"))
+                .from(4, "FRED")
                 // update Fred's score to 4
                 .lift(db.update("update person set score=? where name=?").parameterOperator())
                 // update everyone with score of 4 to 14
@@ -1028,7 +1027,7 @@ public abstract class DatabaseTestBase {
         // start transaction
                 .beginTransaction()
                 // push parameters
-                .concatMap(constant(from(asList(99, 88))))
+                .concatMap(constant(from(99, 88)))
                 // log
                 .doOnEach(log())
                 // update twice
@@ -1055,7 +1054,7 @@ public abstract class DatabaseTestBase {
         // start transaction
                 .beginTransaction()
                 // push parameters
-                .concatMap(constant(from(asList(99, 88))))
+                .concatMap(constant(from(99, 88)))
                 // log
                 .doOnEach(log())
                 // update twice
@@ -1080,7 +1079,7 @@ public abstract class DatabaseTestBase {
         Database db = db();
         Observable<Integer> min = Observable
         // do 3 times
-                .from(asList(11, 12, 13))
+                .from(11, 12, 13)
                 // begin transaction for each item
                 .lift(db.beginTransactionOnNextOperator())
                 // update all scores to the item
@@ -1209,7 +1208,7 @@ public abstract class DatabaseTestBase {
         // get a synchronous database
         Database db = DatabaseCreator.db();
         final Set<String> set = Collections.newSetFromMap(new HashMap<String, Boolean>());
-        Observable<Integer> count = Observable.from(asList(1, 2, 3, 4, 5))
+        Observable<Integer> count = Observable.from(1, 2, 3, 4, 5)
         // select
                 .lift(db.select("select name from person where score >?")
                 // push parameters to this query
@@ -1236,7 +1235,7 @@ public abstract class DatabaseTestBase {
         Observable<Boolean> begin = db.beginTransaction();
         Observable<Integer> count = Observable
         // generate 1,2,3
-                .from(asList(1, 2, 3))
+                .from(1, 2, 3)
                 // update score with that value
                 .lift(db.update("update person set score = ?")
                 // participates in a transaction
