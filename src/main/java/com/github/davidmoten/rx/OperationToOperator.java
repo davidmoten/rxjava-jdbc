@@ -42,7 +42,7 @@ public final class OperationToOperator<R, T> implements Operator<R, T> {
         final PublishSubject<T> subject = PublishSubject.create();
         Subscriber<T> result = Subscribers.from(subject);
         subscriber.add(result);
-        operation.call(subject).subscribe(subscriber);
+        operation.call(subject).unsafeSubscribe(subscriber);
         return result;
     }
 
