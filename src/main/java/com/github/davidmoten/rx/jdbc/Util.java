@@ -247,6 +247,7 @@ public final class Util {
      *            the class of the resultant instance
      * @return an automapped instance
      */
+    @SuppressWarnings("unchecked")
     static <T> T autoMap(ResultSet rs, Class<T> cls) {
         try {
             int n = rs.getMetaData().getColumnCount();
