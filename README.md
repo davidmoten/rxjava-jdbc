@@ -217,7 +217,7 @@ Processing a ResultSet
 -----------------------------
 Many operators in rxjava process items pushed to them asynchronously. Given this it is important that ```ResultSet``` query results are processed 
 before being emitted to a consuming operator. This means that the select query needs to be passed a function that converts a ```ResultSet``` to
-a result that does not depend on an open ```java.sql.Connection```. Use the ```get()```, ```getAs()```, ```getTuple?()```, and ```autoMap()``` methods to process the method
+a result that does not depend on an open ```java.sql.Connection```. Use the ```get()```, ```getAs()```, ```getTuple?()```, and ```autoMap()``` methods 
 to specify this function as below.
 
 ```java
