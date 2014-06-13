@@ -33,7 +33,7 @@ public class OperationToOperatorTest {
                 // use toOperator
                 .lift(toOperator(Functions.<Observable<Long>> identity())).take(1).first()
                 // block and get result
-                .toBlockingObservable().single();
+                .toBlocking().single();
         // wait for expected unsubscription
         assertTrue(detector.latch().await(AWAIT_SECONDS, TimeUnit.SECONDS));
 
@@ -61,8 +61,8 @@ public class OperationToOperatorTest {
     public void testMultipleNonSimultaeousSubscriptions() {
         Observable<Integer> sequence = Observable.range(1, 3).lift(
                 toOperator(Functions.<Observable<Integer>> identity()));
-        assertEquals(asList(1, 2, 3), sequence.toList().toBlockingObservable().single());
-        assertEquals(asList(1, 2, 3), sequence.toList().toBlockingObservable().single());
+        assertEquals(asList(1, 2, 3), sequence.toList().toBlocking().single());
+        assertEquals(asList(1, 2, 3), sequence.toList().toBlocking().single());
     }
 
     @Test
