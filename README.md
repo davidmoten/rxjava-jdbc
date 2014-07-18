@@ -57,7 +57,7 @@ List<String> names = db.
 		.select("select name from person where name > ? order by name")
 		.parameter("ALEX")
 		.getAs(String.class)
-		.toList().toBlockingObservable().single();
+		.toList().toBlocking().single();
 System.out.println(names);
 ```
 output:
@@ -137,7 +137,7 @@ String name = db
 		.parameters(score)
 		.getAs(String.class)
 		.first()
-		.toBlockingObservable().single();
+		.toBlocking().single();
 assertEquals("FRED", name);
 ```
 or alternatively using the ```Observable.lift()``` method to chain everything in one command:
@@ -151,15 +151,15 @@ String name = db
             .parameterOperator()
             .getAs(String.class))
     .first()
-    .toBlockingObservable().single();
+    .toBlocking().single();
 ```
 
-About BlockingObservable
+About toBlocking
 ----------------------------
-You'll see ```toBlockingObservable()``` used in the examples in this page and in 
+You'll see ```toBlocking()``` used in the examples in this page and in 
 the unit tests but in your application code you should try to avoid using it. The most benefit 
 from the reactive style is obtained by *not leaving the monad*. That is, stay in Observable land and make 
-the most of it. Chain everything together and leave toBlockingObservable to 
+the most of it. Chain everything together and leave ```toBlocking``` to 
 an endpoint or better still just subscribe with an ```Observer```.
 
 Dependencies
@@ -179,7 +179,7 @@ int count = db
 		.dependsOn(insert)
 		.get()
 		.count()
-		.toBlockingObservable().single();
+		.toBlocking().single();
 assertEquals(4, count);
 ```
 
@@ -195,7 +195,7 @@ String name= db
 	.parameters(Observable.from(100))
 	.getAs(String.class)
 	.first()
-	.toBlockingObservable().single();
+	.toBlocking().single();
 assertEquals("FRED",name);
 ```
 
@@ -209,7 +209,7 @@ This causes the statement to be run twice.
 List<Integer> list = 
 	db.query("select score from person where name=?")
 	    .parameter("FRED").parameter("JOSEPH")
-		.getAs(Integer.class).toList().toBlockingObservable().single();
+		.getAs(Integer.class).toList().toBlocking().single();
 assertEquals(Arrays.asList(21,34),list);
 ```
 
@@ -272,7 +272,7 @@ Tuple2<String, Integer> tuple = db
 		.query("select name,score from person where name >? order by name")
 		.parameter("ALEX").create()
 		.execute(String.class, Integer.class).last()
-		.toBlockingObservable().single();
+		.toBlocking().single();
 assertEquals("MARMADUKE", tuple.value1());
 assertEquals(25, (int) tuple.value2());
 ```
@@ -283,7 +283,7 @@ TupleN<String> tuple = db
 		.query("select name, lower(name) from person order by name")
 		.create()
 		.executeN(String.class).first()
-		.toBlockingObservable().single();
+		.toBlocking().single();
 assertEquals("FRED", tuple.values().get(0));
 assertEquals("fred", tuple.values().get(1));
 ```
@@ -428,7 +428,7 @@ long count = db
 	// log
 	.doOnEach(RxUtil.log())
 	// get answer
-	.toBlockingObservable().single();
+	.toBlocking().single();
 assertEquals(3, count);
 ```
 
@@ -457,7 +457,7 @@ List<Integer> mins = Observable
     // list the results
     .toList()
     // block and get
-    .toBlockingObservable().single();
+    .toBlocking().single();
 assertEquals(Arrays.asList(16, 17, 18), mins);
 ```
 
