@@ -99,12 +99,12 @@ public final class Util {
             if (ps != null && !isClosed) {
                 try {
                     ps.cancel();
-                    log.debug("cancelled " + ps);
+                    log.debug("cancelled {}", ps);
                 } catch (SQLException e) {
                     log.debug(e.getMessage());
                 }
                 ps.close();
-                log.debug("closed " + ps);
+                log.debug("closed {}", ps);
             }
         } catch (SQLException e) {
             log.debug(e.getMessage(), e);
@@ -123,7 +123,7 @@ public final class Util {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();
-                log.debug("closed " + connection);
+                log.debug("closed {}", connection);
             }
         } catch (SQLException e) {
             log.debug(e.getMessage(), e);
@@ -186,7 +186,7 @@ public final class Util {
         try {
             if (rs != null && !rs.isClosed()) {
                 rs.close();
-                log.debug("closed " + rs);
+                log.debug("closed {}", rs);
             }
         } catch (SQLException e) {
             log.debug(e.getMessage(), e);
@@ -256,7 +256,8 @@ public final class Util {
                     return autoMap(rs, (Constructor<T>) c);
                 }
             }
-            throw new RuntimeException("constructor with number of parameters=" + n + "  not found in " + cls);
+            throw new RuntimeException("constructor with number of parameters=" + n
+                    + "  not found in " + cls);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -283,7 +284,8 @@ public final class Util {
         try {
             return newInstance(c, list);
         } catch (RuntimeException e) {
-            throw new RuntimeException("problem with parameters=" + getTypeInfo(list) + ", rs types=" + getRowInfo(rs)
+            throw new RuntimeException("problem with parameters=" + getTypeInfo(list)
+                    + ", rs types=" + getRowInfo(rs)
                     + ". Be sure not to use primitives in a constructor when calling autoMap().", e);
         }
     }
@@ -619,7 +621,7 @@ public final class Util {
                         ps.setObject(i, o);
                 }
             } catch (SQLException e) {
-                log.debug(e.getMessage() + " when setting ps.setObject(" + i + "," + o + ")");
+                log.debug("{} when setting ps.setObject({},{})", e.getMessage(), i, o);
                 throw e;
             }
         }
@@ -634,14 +636,16 @@ public final class Util {
      * @param cls
      * @throws SQLException
      */
-    private static void setBlob(PreparedStatement ps, int i, Object o, Class<?> cls) throws SQLException {
+    private static void setBlob(PreparedStatement ps, int i, Object o, Class<?> cls)
+            throws SQLException {
         final InputStream is;
         if (o instanceof byte[]) {
             is = new ByteArrayInputStream((byte[]) o);
         } else if (o instanceof InputStream)
             is = (InputStream) o;
         else
-            throw new RuntimeException("cannot insert parameter of type " + cls + " into blob column " + i);
+            throw new RuntimeException("cannot insert parameter of type " + cls
+                    + " into blob column " + i);
         Blob c = ps.getConnection().createBlob();
         OutputStream os = c.setBinaryStream(1);
         copy(is, os);
@@ -657,14 +661,16 @@ public final class Util {
      * @param cls
      * @throws SQLException
      */
-    private static void setClob(PreparedStatement ps, int i, Object o, Class<?> cls) throws SQLException {
+    private static void setClob(PreparedStatement ps, int i, Object o, Class<?> cls)
+            throws SQLException {
         final Reader r;
         if (o instanceof String)
             r = new StringReader((String) o);
         else if (o instanceof Reader)
             r = (Reader) o;
         else
-            throw new RuntimeException("cannot insert parameter of type " + cls + " into clob column " + i);
+            throw new RuntimeException("cannot insert parameter of type " + cls
+                    + " into clob column " + i);
         Clob c = ps.getConnection().createClob();
         Writer w = c.setCharacterStream(1);
         copy(r, w);

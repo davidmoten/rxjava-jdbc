@@ -26,7 +26,8 @@ final class QuerySelectOperation {
      *            one set of parameters to be run with the query
      * @return
      */
-    static <T> Observable<T> execute(QuerySelect query, List<Parameter> parameters, Func1<? super ResultSet, T> function) {
+    static <T> Observable<T> execute(QuerySelect query, List<Parameter> parameters,
+            Func1<? super ResultSet, T> function) {
         return Observable.create(new QuerySelectOnSubscribe<T>(query, parameters, function));
     }
 
@@ -83,13 +84,14 @@ final class QuerySelectOperation {
          * 
          * @throws SQLException
          */
-        private void connectAndPrepareStatement(Subscriber<? super T> subscriber) throws SQLException {
-            log.debug("connectionProvider=" + query.context().connectionProvider());
+        private void connectAndPrepareStatement(Subscriber<? super T> subscriber)
+                throws SQLException {
+            log.debug("connectionProvider={}", query.context().connectionProvider());
             checkSubscription(subscriber);
             if (keepGoing) {
                 log.debug("getting connection");
                 con = query.context().connectionProvider().get();
-                log.debug("preparing statement,sql=" + query.sql());
+                log.debug("preparing statement,sql={}", query.sql());
                 ps = con.prepareStatement(query.sql());
                 log.debug("setting parameters");
                 Util.setParameters(ps, parameters);
@@ -109,7 +111,7 @@ final class QuerySelectOperation {
                 try {
                     log.debug("executing ps");
                     rs = ps.executeQuery();
-                    log.debug("executed ps=" + ps);
+                    log.debug("executed ps={}", ps);
                 } catch (SQLException e) {
                     throw new SQLException("failed to run sql=" + query.sql(), e);
                 }

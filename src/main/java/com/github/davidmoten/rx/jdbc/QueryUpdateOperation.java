@@ -125,7 +125,7 @@ class QueryUpdateOperation {
         private void getConnection() {
             log.debug("getting connection");
             con = query.context().connectionProvider().get();
-            log.debug("cp=" + query.context().connectionProvider());
+            log.debug("cp={}", query.context().connectionProvider());
         }
 
         /**
@@ -212,9 +212,9 @@ class QueryUpdateOperation {
 
             int count;
             try {
-                log.debug("executing sql=" + query.sql() + ", parameters" + parameters);
+                log.debug("executing sql={}, parameters {}", query.sql(), parameters);
                 count = ps.executeUpdate();
-                log.debug("executed ps=" + ps);
+                log.debug("executed ps={}", ps);
             } catch (SQLException e) {
                 throw new SQLException("failed to execute sql=" + query.sql(), e);
             }
@@ -248,7 +248,7 @@ class QueryUpdateOperation {
          * @param subscriber
          */
         private void handleException(Exception e, Subscriber<? super Integer> subscriber) {
-            log.debug("onError: " + e.getMessage());
+            log.debug("onError: ", e.getMessage());
             if (subscriber.isUnsubscribed())
                 log.debug("unsubscribed");
             else {
