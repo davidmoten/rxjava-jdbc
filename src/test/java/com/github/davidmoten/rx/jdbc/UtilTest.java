@@ -60,7 +60,8 @@ public class UtilTest {
 
     @Test
     public void testAutoMapOfSqlTimestampToUtilDate() {
-        assertEquals(new java.util.Date(1), autoMap(new java.sql.Timestamp(1), java.util.Date.class));
+        assertEquals(new java.util.Date(1),
+                autoMap(new java.sql.Timestamp(1), java.util.Date.class));
     }
 
     @Test
@@ -204,12 +205,14 @@ public class UtilTest {
 
     @Test
     public void testAutoMapOfDoubleToBigDecimal() {
-        assertEquals(BigDecimal.ONE.doubleValue(), ((BigDecimal) autoMap(1.0, BigDecimal.class)).doubleValue(), 0.0001);
+        assertEquals(BigDecimal.ONE.doubleValue(),
+                ((BigDecimal) autoMap(1.0, BigDecimal.class)).doubleValue(), 0.0001);
     }
 
     @Test
     public void testAutoMapOfIntegerToBigDecimal() {
-        assertEquals(BigDecimal.ONE.doubleValue(), ((BigDecimal) autoMap(1, BigDecimal.class)).doubleValue(), 0.0001);
+        assertEquals(BigDecimal.ONE.doubleValue(),
+                ((BigDecimal) autoMap(1, BigDecimal.class)).doubleValue(), 0.0001);
     }
 
     @Test
@@ -304,4 +307,5 @@ public class UtilTest {
         Util.rollback(con);
         verify(con);
     }
+
 }

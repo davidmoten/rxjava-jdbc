@@ -802,6 +802,12 @@ public abstract class DatabaseTestBase {
     }
 
     @Test
+    public void testTakeShouldNotHang() {
+        assertEquals(1, (int) Observable.<Integer> empty().concatWith(Observable.just(1)).take(1)
+                .toBlocking().single());
+    }
+
+    @Test
     public void testLiftSelectWithDependencies() {
         Database db = db();
         Observable<Integer> count = db
