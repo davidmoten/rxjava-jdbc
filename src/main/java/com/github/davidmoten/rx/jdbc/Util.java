@@ -449,6 +449,10 @@ public final class Util {
 
     private static <T> Object getObject(final ResultSet rs, Class<T> cls, int i) {
         try {
+            if (rs.getObject(i) == null) {
+                return null;
+            }
+
             final int type = rs.getMetaData().getColumnType(i);
             // TODO java.util.Calendar support
             // TODO XMLGregorian Calendar support
