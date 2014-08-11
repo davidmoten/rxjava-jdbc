@@ -506,12 +506,27 @@ public abstract class DatabaseTestBase {
 		assertTrue(text.contains("about Fred"));
 	}
 
+//	@Test
+	//TODO
+	public void insertNullClobAndReadAsString() throws SQLException {
+		Database db = db();
+		insertClob(db, null);
+		// read clob as string
+		String text = db.select("select document from person_clob")
+				.getAs(String.class).first().toBlocking().single();
+		assertNull(text);
+	}
+
 	private static void insertClob(Database db) {
+		insertClob(db,
+				"A description about Fred that is rather long and needs a Clob to store it");
+	}
+	
+	private static void insertClob(Database db,String value) {
 		Observable<Integer> count = db
 				.update("insert into person_clob(name,document) values(?,?)")
 				.parameter("FRED")
-				.parameter(
-						"A description about Fred that is rather long and needs a Clob to store it")
+				.parameter(value)
 				.count();
 		assertIs(1, count);
 	}
