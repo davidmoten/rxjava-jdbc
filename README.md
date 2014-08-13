@@ -312,7 +312,7 @@ Observable<Integer> count = db
 		.parameter(reader).count();
 ```
 ### Insert a Null Clob
-This requires *either* a special call (```parameterClob(String)``` to identify the parameter as a CLOB:
+This requires *either* a special call (```parameterClob(String)```) to identify the parameter as a CLOB:
 ```java
 Observable<Integer> count = db
 		.update("insert into person_clob(name,document) values(?,?)")
