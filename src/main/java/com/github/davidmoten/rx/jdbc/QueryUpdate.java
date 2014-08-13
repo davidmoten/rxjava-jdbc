@@ -28,7 +28,8 @@ final public class QueryUpdate implements Query {
      * @param depends
      * @param context
      */
-    private QueryUpdate(String sql, Observable<Parameter> parameters, Observable<?> depends, QueryContext context) {
+    private QueryUpdate(String sql, Observable<Parameter> parameters, Observable<?> depends,
+            QueryContext context) {
         checkNotNull(sql);
         checkNotNull(parameters);
         checkNotNull(depends);
@@ -93,7 +94,8 @@ final public class QueryUpdate implements Query {
                     context.beginTransactionSubscribe();
                 }
                 Observable<Integer> result = executeOnce(params).subscribeOn(context.scheduler());
-                if (sql.equals(QueryUpdateOperation.COMMIT) || sql.equals(QueryUpdateOperation.ROLLBACK))
+                if (sql.equals(QueryUpdateOperation.COMMIT)
+                        || sql.equals(QueryUpdateOperation.ROLLBACK))
                     context.endTransactionSubscribe();
                 return result;
             }
@@ -172,6 +174,35 @@ final public class QueryUpdate implements Query {
         }
 
         /**
+         * Appends a parameter to the parameter list for the query for a CLOB
+         * parameter and handles null appropriately. If there are more
+         * parameters than required for one execution of the query then more
+         * than one execution of the query will occur.
+         * 
+         * @param value
+         *            the string to insert in the CLOB column
+         * @return this
+         */
+        public Builder parameterClob(String value) {
+            builder.parameter(Database.toSentinelIfNull(value));
+            return this;
+        }
+
+        /**
+         * Appends a parameter to the parameter list for the query for a CLOB
+         * parameter and handles null appropriately. If there are more
+         * parameters than required for one execution of the query then more
+         * than one execution of the query will occur.
+         * 
+         * @param value
+         * @return this
+         */
+        public Builder parameterBlob(byte[] bytes) {
+            builder.parameter(Database.toSentinelIfNull(bytes));
+            return this;
+        }
+
+        /**
          * Appends a dependency to the dependencies that have to complete their
          * emitting before the query is executed.
          * 
@@ -203,7 +234,8 @@ final public class QueryUpdate implements Query {
          * @return
          */
         public Observable<Integer> count() {
-            return new QueryUpdate(builder.sql(), builder.parameters(), builder.depends(), builder.context()).count();
+            return new QueryUpdate(builder.sql(), builder.parameters(), builder.depends(),
+                    builder.context()).count();
         }
 
         /**

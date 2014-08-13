@@ -299,8 +299,10 @@ String document = ...
 Observable<Integer> count = db
 		.update("insert into person_clob(name,document) values(?,?)")
 		.parameter("FRED")
-		.parameter(document).count();
+		.parameter(Database.toSentinelIfNull(document)).count();
 ```
+(Note the use of the ```Database.toSentinelIfNull(String)``` method to handle the null case correctly)
+
 or using a ```java.io.Reader```:
 ```java
 Reader reader = ...;
@@ -309,6 +311,23 @@ Observable<Integer> count = db
 		.parameter("FRED")
 		.parameter(reader).count();
 ```
+### Insert a Null Clob
+This requires *either* a special call (```parameterClob(String)``` to identify the parameter as a CLOB:
+```java
+Observable<Integer> count = db
+		.update("insert into person_clob(name,document) values(?,?)")
+		.parameter("FRED")
+		.parameterClob(null).count();
+```
+or use the null Sentinel object for Clobs:
+```java
+Observable<Integer> count = db
+		.update("insert into person_clob(name,document) values(?,?)")
+		.parameter("FRED")
+		.parameter(Database.NULL_CLOB).count();
+```
+or wrap the String parameter with ```Database.toSentinelIfNull(String)``` as above in the Insert a Clob section.
+
 ### Read a Clob
 ```java
 Observable<String> document = db.select("select document from person_clob")
@@ -326,8 +345,25 @@ byte[] bytes = ...
 Observable<Integer> count = db
 		.update("insert into person_blob(name,document) values(?,?)")
 		.parameter("FRED")
-		.parameter(bytes).count();
+		.parameter(Database.toSentinelIfNull(bytes)).count();
 ```
+### Insert a Null Blob
+This requires *either* a special call (```parameterBlob(String)``` to identify the parameter as a CLOB:
+```java
+Observable<Integer> count = db
+		.update("insert into person_blob(name,document) values(?,?)")
+		.parameter("FRED")
+		.parameterBlob(null).count();
+```
+or use the null Sentinel object for Blobs:
+```java
+Observable<Integer> count = db
+		.update("insert into person_clob(name,document) values(?,?)")
+		.parameter("FRED")
+		.parameter(Database.NULL_BLOB).count();
+```
+or wrap the byte[] parameter with ```Database.toSentinelIfNull(byte[])``` as above in the Insert a Blob section.
+
 ### Read a Blob
 ```java
 Observable<byte[]> document = db.select("select document from person_clob")

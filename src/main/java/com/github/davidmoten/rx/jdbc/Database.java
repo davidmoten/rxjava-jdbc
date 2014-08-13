@@ -6,6 +6,8 @@ import static com.github.davidmoten.rx.RxUtil.greaterThanZero;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Types;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -348,7 +350,8 @@ final public class Database {
          */
         public Database build() {
             if (url != null && pool != null)
-                cp = new ConnectionProviderPooled(url, username, password, pool.minSize, pool.maxSize);
+                cp = new ConnectionProviderPooled(url, username, password, pool.minSize,
+                        pool.maxSize);
             else if (url != null)
                 cp = new ConnectionProviderFromUrl(url, username, password);
             return new Database(cp, nonTransactionalSchedulerFactory);
@@ -611,7 +614,8 @@ final public class Database {
         return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
             @Override
             public Observable<Boolean> call(Observable<T> source) {
-                return commitOrRollbackOnCompleteOperatorIfAtLeastOneValue(isCommit, Database.this, source);
+                return commitOrRollbackOnCompleteOperatorIfAtLeastOneValue(isCommit, Database.this,
+                        source);
             }
         });
     }
@@ -671,7 +675,8 @@ final public class Database {
         return commitOrRollbackOnNextListOperator(false);
     }
 
-    private <T> Operator<Boolean, Observable<T>> commitOrRollbackOnNextListOperator(final boolean isCommit) {
+    private <T> Operator<Boolean, Observable<T>> commitOrRollbackOnNextListOperator(
+            final boolean isCommit) {
         return RxUtil.toOperator(new Func1<Observable<Observable<T>>, Observable<Boolean>>() {
             @Override
             public Observable<Boolean> call(Observable<Observable<T>> source) {
@@ -706,8 +711,8 @@ final public class Database {
         });
     }
 
-    private static <T> Observable<Boolean> commitOrRollbackOnCompleteOperatorIfAtLeastOneValue(final boolean isCommit,
-            final Database db, Observable<T> source) {
+    private static <T> Observable<Boolean> commitOrRollbackOnCompleteOperatorIfAtLeastOneValue(
+            final boolean isCommit, final Database db, Observable<T> source) {
         CountingAction<T> counter = RxUtil.counter();
         Observable<Boolean> commit = counter
         // get count
@@ -737,8 +742,8 @@ final public class Database {
      * @param source
      * @return
      */
-    private static <T> Observable<Boolean> commitOrRollbackOnNext(final boolean isCommit, final Database db,
-            Observable<T> source) {
+    private static <T> Observable<Boolean> commitOrRollbackOnNext(final boolean isCommit,
+            final Database db, Observable<T> source) {
         return source.concatMap(new Func1<T, Observable<Boolean>>() {
             @Override
             public Observable<Boolean> call(T t) {
@@ -802,7 +807,8 @@ final public class Database {
      * @return
      */
     public Observable<Integer> run(InputStream is, String delimiter) {
-        return StringObservable.split(StringObservable.from(new InputStreamReader(is)), ";").lift(run());
+        return StringObservable.split(StringObservable.from(new InputStreamReader(is)), ";").lift(
+                run());
     }
 
     /**
@@ -813,6 +819,38 @@ final public class Database {
      */
     public Database asynchronous() {
         return new Database(cp, IO_SCHEDULER_FACTORY);
+    }
+
+    /**
+     * Sentinel object used to indicate in parameters of a query that rather
+     * than calling {@link PreparedStatement#setObject(int, Object)} with a null
+     * we call {@link PreparedStatement#setNull(int, int)} with
+     * {@link Types#CLOB}. This is required by many databases for setting CLOB
+     * and BLOB fields to null.
+     */
+    public static Object NULL_CLOB = new Object();
+
+    public static Object toSentinelIfNull(String s) {
+        if (s == null)
+            return NULL_CLOB;
+        else
+            return s;
+    }
+
+    /**
+     * Sentinel object used to indicate in parameters of a query that rather
+     * than calling {@link PreparedStatement#setObject(int, Object)} with a null
+     * we call {@link PreparedStatement#setNull(int, int)} with
+     * {@link Types#CLOB}. This is required by many databases for setting CLOB
+     * and BLOB fields to null.
+     */
+    public static Object NULL_BLOB = new Object();
+
+    public static Object toSentinelIfNull(byte[] bytes) {
+        if (bytes == null)
+            return NULL_BLOB;
+        else
+            return bytes;
     }
 
 }
