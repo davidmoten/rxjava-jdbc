@@ -1,6 +1,6 @@
 Release Notes
 ---------------
-###Version 0.1.4-SNAPSHOT
+###Version 0.2-SNAPSHOT
 * upgrade rxjava dependency to 0.19.6
 * use lazy evaluation in logging
 * [pull 6] (https://github.com/davidmoten/rxjava-jdbc/pull/3) add support for null insert/update of clobs and blobs

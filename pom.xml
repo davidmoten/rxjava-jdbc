@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>com.github.davidmoten</groupId>
 	<artifactId>rxjava-jdbc</artifactId>
-	<version>0.1.4-SNAPSHOT</version>
+	<version>0.2-SNAPSHOT</version>
 
 	<name>${project.artifactId}</name>
 	<description>rx-java Observables for jdbc</description>
@@ -24,7 +24,7 @@
 		<cobertura.version>2.6</cobertura.version>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<checkstyle.version>2.11</checkstyle.version>
-		<findbugs.version>2.5.3</findbugs.version>
+		<findbugs.version>3.0.0</findbugs.version>
 		<javadoc.version>2.9.1</javadoc.version>
 		<pmd.version>3.0.1</pmd.version>
 		<jdepend.version>2.0-beta-2</jdepend.version>
@@ -32,7 +32,7 @@
 		<project.info.version>2.4</project.info.version>
 		<jxr.version>2.4</jxr.version>
 		<taglist.version>2.4</taglist.version>
-		<m3.site.version>3.3</m3.site.version>
+		<m3.site.version>3.4</m3.site.version>
 		<changelog.version>2.2</changelog.version>
 		<coverage.reports.dir>${project.build.directory}/target/coverage-reports</coverage.reports.dir>
 		<slf4j.version>1.7.7</slf4j.version>
