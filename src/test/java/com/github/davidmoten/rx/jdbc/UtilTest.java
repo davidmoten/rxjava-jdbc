@@ -1,27 +1,23 @@
 package com.github.davidmoten.rx.jdbc;
 
-import static com.github.davidmoten.rx.jdbc.Util.autoMap;
-import static com.github.davidmoten.rx.jdbc.Util.closeQuietly;
-import static com.github.davidmoten.rx.jdbc.Util.closeQuietlyIfAutoCommit;
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertEquals;
+import org.easymock.EasyMock;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Arrays;
 
-import org.easymock.EasyMock;
-import org.junit.Test;
+import static com.github.davidmoten.rx.jdbc.Util.*;
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.assertEquals;
 
 public class UtilTest {
 
@@ -307,5 +303,91 @@ public class UtilTest {
         Util.rollback(con);
         verify(con);
     }
+
+
+    @Test
+    public void testMapObjectExistingClob() throws SQLException, IOException {
+
+        final Clob mock = Mockito.mock(Clob.class);
+        Mockito.when(mock.getCharacterStream()).thenAnswer(new Answer<Reader>() {
+            @Override
+            public Reader answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return new StringReader("test");
+            }
+        });
+
+        final ResultSetMetaData metaData = Mockito.mock(ResultSetMetaData.class);
+        Mockito.when(metaData.getColumnType(1)).thenAnswer(new Answer<Integer>() {
+            @Override
+            public Integer answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return Types.CLOB;
+            }
+        });
+
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        Mockito.when(resultSet.getObject(1)).thenAnswer(new Answer<Clob>() {
+            @Override
+            public Clob answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return mock;
+            }
+        });
+
+        Mockito.when(resultSet.getClob(1)).thenAnswer(new Answer<Clob>() {
+            @Override
+            public Clob answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return mock;
+            }
+        });
+
+        Mockito.when(resultSet.getMetaData()).thenAnswer(new Answer<ResultSetMetaData>() {
+            @Override
+            public ResultSetMetaData answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return metaData;
+            }
+        });
+
+        assertEquals(Util.mapObject(resultSet, String.class, 1), "test");
+
+    }
+
+    @Test
+    public void testMapObjectNullClob() throws SQLException, IOException {
+
+        final ResultSetMetaData metaData = Mockito.mock(ResultSetMetaData.class);
+        Mockito.when(metaData.getColumnType(1)).thenAnswer(new Answer<Integer>() {
+            @Override
+            public Integer answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return Types.CLOB;
+            }
+        });
+
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        Mockito.when(resultSet.getObject(1)).thenAnswer(new Answer<Clob>() {
+            @Override
+            public Clob answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return null;
+            }
+        });
+
+        Mockito.when(resultSet.getClob(1)).thenAnswer(new Answer<Clob>() {
+            @Override
+            public Clob answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return null;
+            }
+        });
+
+        Mockito.when(resultSet.getMetaData()).thenAnswer(new Answer<ResultSetMetaData>() {
+            @Override
+            public ResultSetMetaData answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return metaData;
+            }
+        });
+
+        assertEquals(Util.mapObject(resultSet, String.class, 1), null);
+
+    }
+
 
 }
