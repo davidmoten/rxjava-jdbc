@@ -1,9 +1,12 @@
 Release Notes
 ---------------
-###Version 0.2-SNAPSHOT
+###Version 0.3-SNAPSHOT
+
+###Version 0.2
 * upgrade rxjava dependency to 0.19.6
 * use lazy evaluation in logging
-* [pull 6] (https://github.com/davidmoten/rxjava-jdbc/pull/3) add support for null insert/update of clobs and blobs
+* [pull 4] (https://github.com/davidmoten/rxjava-jdbc/pull/4) Add test scope to mockito dependency
+* [pull 6] (https://github.com/davidmoten/rxjava-jdbc/pull/6) add support for null insert/update of clobs and blobs
 
 ###Version 0.1.3 ([Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.davidmoten%7Crxjava-jdbc%7C0.1.3%7Cjar))
 * upgrade rxjava dependency to 0.17.6 (retry operator was broken in 0.17.5)
