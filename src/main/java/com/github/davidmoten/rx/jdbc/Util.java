@@ -598,6 +598,10 @@ public final class Util {
             try {
                 if (o == null)
                     ps.setObject(i, null);
+                else if (o == Database.NULL_CLOB)
+                    ps.setNull(i, Types.CLOB);
+                else if (o == Database.NULL_BLOB)
+                    ps.setNull(i, Types.BLOB);
                 else {
                     Class<?> cls = o.getClass();
                     if (Clob.class.isAssignableFrom(cls)) {
