@@ -104,6 +104,8 @@ public class ConnectionNonClosingTest {
 		verify(con).setCatalog(null);
 		c.setClientInfo(null);
 		verify(con).setClientInfo(null);
+		c.setClientInfo(null,null);
+		verify(con).setClientInfo(null,null);
 		c.setHoldability(0);
 		verify(con).setHoldability(0);
 		c.setNetworkTimeout(null, 0);
