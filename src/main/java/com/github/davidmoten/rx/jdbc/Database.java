@@ -828,7 +828,7 @@ final public class Database {
      * {@link Types#CLOB}. This is required by many databases for setting CLOB
      * and BLOB fields to null.
      */
-    public static Object NULL_CLOB = new Object();
+    public static final Object NULL_CLOB = new Object();
 
     public static Object toSentinelIfNull(String s) {
         if (s == null)
@@ -844,7 +844,7 @@ final public class Database {
      * {@link Types#CLOB}. This is required by many databases for setting CLOB
      * and BLOB fields to null.
      */
-    public static Object NULL_BLOB = new Object();
+    public static final Object NULL_BLOB = new Object();
 
     public static Object toSentinelIfNull(byte[] bytes) {
         if (bytes == null)
