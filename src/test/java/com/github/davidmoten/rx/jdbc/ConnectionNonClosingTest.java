@@ -88,11 +88,13 @@ public class ConnectionNonClosingTest {
 		verify(con).prepareStatement(null, new int[] {});
 		c.prepareStatement(null, new String[] {});
 		verify(con).prepareStatement(null, new String[] {});
-		c.prepareStatement(null, 0, 0,0);
-		verify(con).prepareStatement(null,0,0,0);
+		c.prepareStatement(null, 0, 0);
+		verify(con).prepareStatement(null, 0, 0);
+		c.prepareStatement(null, 0, 0, 0);
+		verify(con).prepareStatement(null, 0, 0, 0);
 		c.releaseSavepoint(null);
 		verify(con).releaseSavepoint(null);
-		c.rollback();;
+		c.rollback();
 		verify(con).rollback();
 		c.rollback(null);
 		verify(con).rollback(null);
@@ -110,6 +112,8 @@ public class ConnectionNonClosingTest {
 		verify(con).setReadOnly(true);
 		c.setSavepoint();
 		verify(con).setSavepoint();
+		c.setSavepoint(null);
+		verify(con).setSavepoint(null);
 		c.setSchema(null);
 		verify(con).setSchema(null);
 		c.setTransactionIsolation(0);
@@ -118,6 +122,8 @@ public class ConnectionNonClosingTest {
 		verify(con).setTypeMap(null);
 		c.unwrap(null);
 		verify(con).unwrap(null);
+		c.abort(null);
+		verify(con).abort(null);
 	}
 
 }
