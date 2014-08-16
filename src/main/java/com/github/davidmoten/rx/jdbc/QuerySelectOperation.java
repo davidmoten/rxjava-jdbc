@@ -65,11 +65,11 @@ final class QuerySelectOperation {
                 while (keepGoing) {
                     processRow(subscriber);
                 }
-                close();
+                closeQuietly();
                 complete(subscriber);
             } catch (Exception e) {
                 try {
-                    close();
+                    closeQuietly();
                 } finally {
                     handleException(e, subscriber);
                 }
@@ -169,7 +169,7 @@ final class QuerySelectOperation {
          * Closes connection resources (connection, prepared statement and
          * result set).
          */
-        private void close() {
+        private void closeQuietly() {
             log.debug("closing rs");
             Util.closeQuietly(rs);
             log.debug("closing ps");
