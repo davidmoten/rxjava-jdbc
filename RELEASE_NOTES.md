@@ -1,6 +1,7 @@
 Release Notes
 ---------------
 ###Version 0.3-SNAPSHOT
+* add ```Database.run``` overload with ```Charset``` parameter
 
 ###Version 0.2
 * upgrade rxjava dependency to 0.19.6
