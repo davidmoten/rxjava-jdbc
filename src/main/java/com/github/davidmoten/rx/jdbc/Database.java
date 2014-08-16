@@ -5,6 +5,7 @@ import static com.github.davidmoten.rx.RxUtil.greaterThanZero;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Types;
@@ -807,7 +808,21 @@ final public class Database {
      * @return
      */
     public Observable<Integer> run(InputStream is, String delimiter) {
-        return StringObservable.split(StringObservable.from(new InputStreamReader(is)), ";").lift(
+        return run(is, Charset.defaultCharset(), delimiter);
+    }
+    
+    /**
+     * Returns an {@link Observable} that is the result of running a sequence of
+     * update commands (insert/update/delete, ddl) commands read from an
+     * {@link InputStream} with the given {@link Charset} using the given delimiter as the statement delimiter (for
+     * example semicolon).
+     * 
+     * @param is
+     * @param delimiter
+     * @return
+     */
+    public Observable<Integer> run(InputStream is, Charset charset, String delimiter) {
+        return StringObservable.split(StringObservable.from(new InputStreamReader(is,charset)), ";").lift(
                 run());
     }
 
