@@ -88,6 +88,36 @@ public class ConnectionNonClosingTest {
 		verify(con).prepareStatement(null, new int[] {});
 		c.prepareStatement(null, new String[] {});
 		verify(con).prepareStatement(null, new String[] {});
+		c.prepareStatement(null, 0, 0,0);
+		verify(con).prepareStatement(null,0,0,0);
+		c.releaseSavepoint(null);
+		verify(con).releaseSavepoint(null);
+		c.rollback();;
+		verify(con).rollback();
+		c.rollback(null);
+		verify(con).rollback(null);
+		c.setAutoCommit(true);
+		verify(con).setAutoCommit(true);
+		c.setCatalog(null);
+		verify(con).setCatalog(null);
+		c.setClientInfo(null);
+		verify(con).setClientInfo(null);
+		c.setHoldability(0);
+		verify(con).setHoldability(0);
+		c.setNetworkTimeout(null, 0);
+		verify(con).setNetworkTimeout(null, 0);
+		c.setReadOnly(true);
+		verify(con).setReadOnly(true);
+		c.setSavepoint();
+		verify(con).setSavepoint();
+		c.setSchema(null);
+		verify(con).setSchema(null);
+		c.setTransactionIsolation(0);
+		verify(con).setTransactionIsolation(0);
+		c.setTypeMap(null);
+		verify(con).setTypeMap(null);
+		c.unwrap(null);
+		verify(con).unwrap(null);
 	}
 
 }
