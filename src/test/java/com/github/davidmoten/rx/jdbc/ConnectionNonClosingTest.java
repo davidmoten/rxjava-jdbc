@@ -10,7 +10,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.junit.Test;
-import org.mockito.Mockito;
 
 public class ConnectionNonClosingTest {
 

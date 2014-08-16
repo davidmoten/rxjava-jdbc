@@ -5,7 +5,6 @@ import rx.Observable.Operator;
 import rx.Subscriber;
 import rx.functions.Func1;
 
-import com.github.davidmoten.rx.OperationToOperator;
 import com.github.davidmoten.rx.RxUtil;
 
 /**
