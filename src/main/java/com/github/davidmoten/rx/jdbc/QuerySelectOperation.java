@@ -62,11 +62,8 @@ final class QuerySelectOperation {
             try {
                 connectAndPrepareStatement(subscriber);
                 executeQuery(subscriber);
-                while (keepGoing) {
-                    processRow(subscriber);
-                }
-                closeQuietly();
-                complete(subscriber);
+                subscriber
+                        .setProducer(new QuerySelectProducer<T>(function, subscriber, con, ps, rs));
             } catch (Exception e) {
                 try {
                     closeQuietly();
@@ -115,38 +112,6 @@ final class QuerySelectOperation {
                 } catch (SQLException e) {
                     throw new SQLException("failed to run sql=" + query.sql(), e);
                 }
-            }
-        }
-
-        /**
-         * Processes each row of the {@link ResultSet}.
-         * 
-         * @param subscriber
-         * 
-         * @throws SQLException
-         */
-        private void processRow(Subscriber<? super T> subscriber) throws SQLException {
-            checkSubscription(subscriber);
-            if (!keepGoing)
-                return;
-            if (rs.next()) {
-                log.trace("onNext");
-                subscriber.onNext(function.call(rs));
-            } else
-                keepGoing = false;
-        }
-
-        /**
-         * Tells observer that stream is complete and closes resources.
-         * 
-         * @param subscriber
-         */
-        private void complete(Subscriber<? super T> subscriber) {
-            if (subscriber.isUnsubscribed()) {
-                log.debug("unsubscribed");
-            } else {
-                log.debug("onCompleted");
-                subscriber.onCompleted();
             }
         }
 
