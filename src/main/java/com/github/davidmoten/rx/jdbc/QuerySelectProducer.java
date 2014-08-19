@@ -26,8 +26,8 @@ class QuerySelectProducer<T> implements Producer {
 
     private final AtomicLong requested = new AtomicLong(0);
 
-    public QuerySelectProducer(Func1<? super ResultSet, T> function,
-            Subscriber<? super T> subscriber, Connection con, PreparedStatement ps, ResultSet rs) {
+    QuerySelectProducer(Func1<? super ResultSet, T> function, Subscriber<? super T> subscriber,
+            Connection con, PreparedStatement ps, ResultSet rs) {
         this.function = function;
         this.subscriber = subscriber;
         this.con = con;
@@ -48,6 +48,7 @@ class QuerySelectProducer<T> implements Producer {
     }
 
     private void requestAll() {
+        // fast path
         try {
             requested.set(Long.MAX_VALUE);
             while (keepGoing) {
@@ -61,8 +62,11 @@ class QuerySelectProducer<T> implements Producer {
     }
 
     private void requestSome(long n) {
+        // back pressure path
+        // this algorithm copied generally from OnSubscribeFromIterable.java
         long previousCount = requested.getAndAdd(n);
         if (previousCount == 0) {
+            log.info("getting some " + n);
             try {
                 while (true) {
                     long r = requested.get();
@@ -77,6 +81,7 @@ class QuerySelectProducer<T> implements Producer {
                     } else {
                         closeQuietly();
                         complete(subscriber);
+                        return;
                     }
                 }
             } catch (Exception e) {
