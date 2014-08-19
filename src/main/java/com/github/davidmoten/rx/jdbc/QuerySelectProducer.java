@@ -63,10 +63,11 @@ class QuerySelectProducer<T> implements Producer {
     private void requestSome(long n) {
         long previousCount = requested.getAndAdd(n);
         if (previousCount == 0) {
-            while (true) {
-                long r = requested.get();
-                long numToEmit = r;
-                try {
+            try {
+                while (true) {
+                    long r = requested.get();
+                    long numToEmit = r;
+
                     while (keepGoing && --numToEmit >= 0) {
                         processRow(subscriber);
                     }
@@ -77,9 +78,9 @@ class QuerySelectProducer<T> implements Producer {
                         closeQuietly();
                         complete(subscriber);
                     }
-                } catch (Exception e) {
-                    closeAndHandleException(e);
                 }
+            } catch (Exception e) {
+                closeAndHandleException(e);
             }
         }
     }
