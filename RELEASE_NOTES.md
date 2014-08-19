@@ -2,7 +2,7 @@ Release Notes
 ---------------
 ###Version 0.3-SNAPSHOT
 * add ```Database.run``` overload with ```Charset``` parameter
-* [pull 10] Add backpressure suppport for QuerySelectOperator  
+* [pull 10](https://github.com/davidmoten/rxjava-jdbc/pull/10) Add backpressure suppport for QuerySelectOperator  
 
 ###Version 0.2
 * upgrade rxjava dependency to 0.19.6
