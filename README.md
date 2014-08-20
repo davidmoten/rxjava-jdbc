@@ -531,6 +531,10 @@ Observable.from(asList(1,2,3))
                   .parameterOperator());
 ```
 
+Backpressure
+-----------------
+```Database.select``` supports reactive pull backpressure as introduced in RxJava 0.20.0. This means that the pushing of items from the results of a query can be optionally slowed down by the operators downstream to assist in preventing out of memory exceptions or thread starvation. 
+
 Logging
 -----------------
 Logging is handled by slf4j which bridges to the logging framework of your choice. Add
