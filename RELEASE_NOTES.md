@@ -1,10 +1,13 @@
 Release Notes
 ---------------
-###Version 0.3-SNAPSHOT
+###Version 0.4-SNAPSHOT
+
+###Version 0.3 ([Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.davidmoten%7Crxjava-jdbc%7C0.3%7Cjar))
 * add ```Database.run``` overload with ```Charset``` parameter
 * [pull 10](https://github.com/davidmoten/rxjava-jdbc/pull/10) Add backpressure suppport for QuerySelectOperator  
+* upgrade rxjava dependency to 0.20.0 which includes backpressure
 
-###Version 0.2
+###Version 0.2 ([Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.davidmoten%7Crxjava-jdbc%7C0.2%7Cjar))
 * upgrade rxjava dependency to 0.19.6
 * use lazy evaluation in logging
 * [pull 4] (https://github.com/davidmoten/rxjava-jdbc/pull/4) Add test scope to mockito dependency
