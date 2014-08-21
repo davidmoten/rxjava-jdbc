@@ -4,7 +4,7 @@ Release Notes
 
 ###Version 0.3 ([Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.davidmoten%7Crxjava-jdbc%7C0.3%7Cjar))
 * add ```Database.run``` overload with ```Charset``` parameter
-* [pull 10](https://github.com/davidmoten/rxjava-jdbc/pull/10) Add backpressure suppport for QuerySelectOperator  
+* [pull 10](https://github.com/davidmoten/rxjava-jdbc/pull/10) Add backpressure suppport for ```QuerySelectOperator```
 * upgrade rxjava dependency to 0.20.0 which includes backpressure
 
 ###Version 0.2 ([Maven Central](http://search.maven.org/#artifactdetails%7Ccom.github.davidmoten%7Crxjava-jdbc%7C0.2%7Cjar))
