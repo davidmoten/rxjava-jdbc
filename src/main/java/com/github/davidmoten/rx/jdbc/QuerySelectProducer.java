@@ -66,7 +66,6 @@ class QuerySelectProducer<T> implements Producer {
         // this algorithm copied generally from OnSubscribeFromIterable.java
         long previousCount = requested.getAndAdd(n);
         if (previousCount == 0) {
-            log.info("getting some " + n);
             try {
                 while (true) {
                     long r = requested.get();
