@@ -27,7 +27,7 @@ final class QuerySelectOperator<T, R> implements Operator<T, R> {
      * @param function
      * @param operatorType
      */
-    QuerySelectOperator(final QuerySelect.Builder builder, final Func1<ResultSet, T> function,
+    QuerySelectOperator(final QuerySelect.Builder builder, final Func1<? super ResultSet, T> function,
             final OperatorType operatorType) {
         operator = toOperator(new ApplyQuerySelect<R,T>(builder, function, operatorType));
     }
@@ -40,10 +40,10 @@ final class QuerySelectOperator<T, R> implements Operator<T, R> {
     private static class ApplyQuerySelect<R, T> implements Func1<Observable<R>, Observable<T>> {
 
         private Builder builder;
-        private Func1<ResultSet, T> function;
+        private Func1<? super ResultSet, T> function;
         private OperatorType operatorType;
 
-        private ApplyQuerySelect(QuerySelect.Builder builder, Func1<ResultSet, T> function,
+        private ApplyQuerySelect(QuerySelect.Builder builder, Func1<? super ResultSet, T> function,
                 OperatorType operatorType) {
             this.builder = builder;
             this.function = function;

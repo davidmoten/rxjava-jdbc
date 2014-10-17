@@ -17,7 +17,7 @@ class QuerySelectProducer<T> implements Producer {
 
     private static final Logger log = LoggerFactory.getLogger(QuerySelectProducer.class);
 
-    private final Func1<? super ResultSet, T> function;
+    private final Func1<? super ResultSet, ? extends T> function;
     private final Subscriber<? super T> subscriber;
     private final Connection con;
     private final PreparedStatement ps;
@@ -26,7 +26,7 @@ class QuerySelectProducer<T> implements Producer {
 
     private final AtomicLong requested = new AtomicLong(0);
 
-    QuerySelectProducer(Func1<? super ResultSet, T> function, Subscriber<? super T> subscriber,
+    QuerySelectProducer(Func1<? super ResultSet, ? extends T> function, Subscriber<? super T> subscriber,
             Connection con, PreparedStatement ps, ResultSet rs) {
         this.function = function;
         this.subscriber = subscriber;

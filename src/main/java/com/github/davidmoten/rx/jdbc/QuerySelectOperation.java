@@ -27,7 +27,7 @@ final class QuerySelectOperation {
      * @return
      */
     static <T> Observable<T> execute(QuerySelect query, List<Parameter> parameters,
-            Func1<? super ResultSet, T> function) {
+            Func1<? super ResultSet, ? extends T> function) {
         return Observable.create(new QuerySelectOnSubscribe<T>(query, parameters, function));
     }
 
@@ -42,7 +42,7 @@ final class QuerySelectOperation {
         private Connection con;
         private PreparedStatement ps;
         private ResultSet rs;
-        private final Func1<? super ResultSet, T> function;
+        private final Func1<? super ResultSet, ? extends T> function;
 
         /**
          * Constructor.
@@ -51,7 +51,7 @@ final class QuerySelectOperation {
          * @param parameters
          */
         private QuerySelectOnSubscribe(QuerySelect query, List<Parameter> parameters,
-                Func1<? super ResultSet, T> function) {
+                Func1<? super ResultSet, ? extends T> function) {
             this.query = query;
             this.parameters = parameters;
             this.function = function;
