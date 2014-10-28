@@ -11,7 +11,6 @@ import static org.easymock.EasyMock.createMock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static rx.Observable.from;
 import static rx.Observable.just;
 
 import java.io.IOException;
@@ -189,7 +188,7 @@ public abstract class DatabaseTestBase {
 
     @Test
     public void testRunScript() {
-        Observable<String> commands = from("create table temp1(id integer)", "drop table temp1");
+        Observable<String> commands = just("create table temp1(id integer)", "drop table temp1");
         db().run(commands).count().toBlocking().single();
     }
 
@@ -549,7 +548,7 @@ public abstract class DatabaseTestBase {
 
     @Test
     public void testRC4() {
-        Observable.<Object> empty().concatWith(Observable.from(10, 20, 30)).buffer(3)
+        Observable.<Object> empty().concatWith(just(10, 20, 30)).buffer(3)
                 .concatMap(new Func1<List<Object>, Observable<Object>>() {
 
                     @Override
@@ -860,7 +859,7 @@ public abstract class DatabaseTestBase {
     @Test
     public void testLiftUpdateWithParameters() {
         Database db = db();
-        Observable<Integer> count = Observable.from(4, "FRED").lift(
+        Observable<Integer> count = just(4, "FRED").lift(
                 db.update("update person set score=? where name=?").parameterOperator());
         assertIs(1, count);
     }
@@ -870,7 +869,7 @@ public abstract class DatabaseTestBase {
         Database db = db();
         Observable<Integer> score = Observable
         // parameters for coming update
-                .from(4, "FRED")
+                .just(4, "FRED")
                 // update Fred's score to 4
                 .lift(db.update("update person set score=? where name=?").parameterOperator())
                 // update everyone with score of 4 to 14
@@ -1134,7 +1133,7 @@ public abstract class DatabaseTestBase {
         // start transaction
                 .beginTransaction()
                 // push parameters
-                .concatMap(constant(from(99, 88)))
+                .concatMap(constant(just(99, 88)))
                 // log
                 .doOnEach(log())
                 // update twice
@@ -1159,7 +1158,7 @@ public abstract class DatabaseTestBase {
         Database db = db();
         Observable<Integer> min = Observable
         // do 3 times
-                .from(11, 12, 13)
+                .just(11, 12, 13)
                 // begin transaction for each item
                 .lift(db.beginTransactionOnNextOperator())
                 // update all scores to the item
@@ -1291,7 +1290,7 @@ public abstract class DatabaseTestBase {
         // get a synchronous database
         Database db = DatabaseCreator.db();
         final Set<String> set = Collections.newSetFromMap(new HashMap<String, Boolean>());
-        Observable<Integer> count = Observable.from(1, 2, 3, 4, 5)
+        Observable<Integer> count = Observable.just(1, 2, 3, 4, 5)
         // select
                 .lift(db.select("select name from person where score >?")
                 // push parameters to this query
@@ -1318,7 +1317,7 @@ public abstract class DatabaseTestBase {
         Observable<Boolean> begin = db.beginTransaction();
         Observable<Integer> count = Observable
         // generate 1,2,3
-                .from(1, 2, 3)
+                .just(1, 2, 3)
                 // update score with that value
                 .lift(db.update("update person set score = ?")
                 // participates in a transaction
