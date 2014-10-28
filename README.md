@@ -497,6 +497,8 @@ List<Integer> mins = Observable
 assertEquals(Arrays.asList(16, 17, 18), mins);
 ```
 
+Note that for each ```commit*``` method there is an corresponding ```rollback``` method as well.
+
 Asynchronous queries
 --------------------------
 Unless run within a transaction all queries are synchronous by default. However, if you request an asynchronous 
