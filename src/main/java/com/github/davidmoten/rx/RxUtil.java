@@ -33,11 +33,14 @@ public final class RxUtil {
      * sequence will be emitted in its entirety and ignored before o2 starts
      * emitting.
      * 
+     * @param <T> 
+     *            the generic type of the second observable
      * @param o1
      *            the sequence to ignore
      * @param o2
      *            the sequence to emit after o1 ignored
-     * @return
+     * @return 
+     *            observable result of concatenating two observables, ignoring the first
      */
     @SuppressWarnings("unchecked")
     public static <T> Observable<T> concatButIgnoreFirstSequence(Observable<?> o1, Observable<T> o2) {
@@ -47,7 +50,10 @@ public final class RxUtil {
     /**
      * Logs errors and onNext at info level using slf4j {@link Logger}.
      * 
-     * @return
+     * @param <T> 
+     *            the return generic type
+     * @return 
+     *            a logging {@link Observer}
      */
     public static <T> Observer<? super T> log() {
         return new Observer<T>() {
@@ -72,8 +78,10 @@ public final class RxUtil {
     /**
      * Returns a constant value.
      * 
+     * @param <R> from type
+     * @param <S> to type
      * @param s
-     * @return
+     * @return a constant function with value s
      */
     public static <R, S> Func1<R, S> constant(final S s) {
         return new Func1<R, S>() {
@@ -89,8 +97,10 @@ public final class RxUtil {
      * an {@link Operator} suitable for use with
      * {@link Observable#lift(Operator)} for instance.
      * 
+     * @param <R> from generic type
+     * @param <T> to generic type
      * @param operation
-     * @return
+     * @return an operator form of the given function
      */
     public static <R, T> Operator<R, T> toOperator(Func1<Observable<T>, Observable<R>> operation) {
         return OperationToOperator.toOperator(operation);
@@ -99,8 +109,9 @@ public final class RxUtil {
     /**
      * Returns a detector of unsubscribe events. Insert this operator using lift
      * just after the {@link Observable} you want to monitor unsubscribe on.
-     * 
-     * @return
+     *
+     * @param <T> generic type of stream being monitored for unsubscription
+     * @return a detector of unsubscription
      */
     public static <T> UnsubscribeDetector<T> detectUnsubscribe() {
         return UnsubscribeDetector.detect();
@@ -110,6 +121,7 @@ public final class RxUtil {
      * Returns an {@link Action1} that increments a counter when the call method
      * is called.
      * 
+     * @param <T> generic type of item being counted
      * @return {@link Action1} to count calls.
      */
     public static <T> CountingAction<T> counter() {

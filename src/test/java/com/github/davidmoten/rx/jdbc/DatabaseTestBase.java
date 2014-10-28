@@ -1107,7 +1107,7 @@ public abstract class DatabaseTestBase {
         // start transaction
                 .beginTransaction()
                 // push parameters
-                .concatMap(constant(from(99, 88)))
+                .concatMap(constant(just(99, 88)))
                 // log
                 .doOnEach(log())
                 // update twice
