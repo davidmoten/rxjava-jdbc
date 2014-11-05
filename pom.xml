@@ -79,22 +79,23 @@
 	</scm>
 
 	<dependencies>
+    
+    <dependency>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxjava</artifactId>
+            <version>1.0.0-rc.9</version>
+        </dependency>
+        <dependency>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxjava-string</artifactId>
+            <version>0.21.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.reactivex</groupId>
+            <artifactId>rxjava-math</artifactId>
+            <version>0.21.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>com.netflix.rxjava</groupId>
-			<artifactId>rxjava-core</artifactId>
-			<version>${rxjava.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.netflix.rxjava</groupId>
-			<artifactId>rxjava-math</artifactId>
-			<version>${rxjava.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.netflix.rxjava</groupId>
-			<artifactId>rxjava-string</artifactId>
-			<version>${rxjava.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
@@ -162,6 +163,7 @@
 		    <version>1.9.5</version>
 		    <scope>test</scope>
 		</dependency>
+		
 	</dependencies>
 
 	<build>
