@@ -36,7 +36,6 @@
 		<changelog.version>2.2</changelog.version>
 		<coverage.reports.dir>${project.build.directory}/target/coverage-reports</coverage.reports.dir>
 		<slf4j.version>1.7.7</slf4j.version>
-		<rxjava.version>0.20.6</rxjava.version>
 	</properties>
 
 	<licenses>
@@ -83,12 +82,12 @@
     <dependency>
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava</artifactId>
-            <version>1.0.0-rc.9</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava-string</artifactId>
-            <version>0.21.0</version>
+            <version>0.22.0</version>
         </dependency>
         <dependency>
             <groupId>io.reactivex</groupId>
