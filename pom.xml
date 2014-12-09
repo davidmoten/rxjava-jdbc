@@ -16,7 +16,7 @@
 	<packaging>jar</packaging>
 
 	<url>http://github.com/davidmoten/rx-java-jdbc</url>
-
+    
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
