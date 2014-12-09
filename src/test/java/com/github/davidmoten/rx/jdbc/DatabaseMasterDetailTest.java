@@ -37,9 +37,13 @@ public class DatabaseMasterDetailTest {
         Connection con = connectionProvider().get();
         createDatabase(con);
         final Database db = Database.from(con);
-        List<MasterAndDetails> list = db.select("select id, name from master order by id")
-        // map to class
-                .autoMap(Master.class).flatMap(new Func1<Master, Observable<MasterAndDetails>>() {
+        List<MasterAndDetails> list = db
+        // get masters
+                .select("select id, name from master order by id")
+                // map to class
+                .autoMap(Master.class)
+                // combine master and details
+                .flatMap(new Func1<Master, Observable<MasterAndDetails>>() {
                     @Override
                     public Observable<MasterAndDetails> call(final Master master) {
                         return db
@@ -49,7 +53,9 @@ public class DatabaseMasterDetailTest {
                                 // to Detail
                                 .autoMap(Detail.class)
                                 // to a list
-                                .toList().map(new Func1<List<Detail>, MasterAndDetails>() {
+                                .toList()
+                                // now combine master and details in a MasterAndDetails object
+                                .map(new Func1<List<Detail>, MasterAndDetails>() {
                                     @Override
                                     public MasterAndDetails call(List<Detail> details) {
                                         return new MasterAndDetails(master.id(), master.name(),
