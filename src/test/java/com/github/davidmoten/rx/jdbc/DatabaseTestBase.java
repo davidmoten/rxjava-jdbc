@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -1333,6 +1334,7 @@ public abstract class DatabaseTestBase {
         assertIs(3, count);
     }
 
+   
     private static class CountDownConnectionProvider implements ConnectionProvider {
         private final ConnectionProvider cp;
         private final CountDownLatch closesLatch;
