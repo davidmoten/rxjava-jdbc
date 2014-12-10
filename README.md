@@ -1,5 +1,6 @@
 rxjava-jdbc
 ============
+<a href="https://travis-ci.org/davidmoten/rtree"><img src="https://travis-ci.org/davidmoten/rxjava-jdbc.svg"/></a>
 
 Efficient execution, concise code, and functional composition of database calls
 using JDBC and [RxJava](https://github.com/Netflix/RxJava/wiki) [Observable](http://netflix.github.io/RxJava/javadoc/rx/Observable.html). 
@@ -18,8 +19,6 @@ Features
 * All the RxJava goodness!
 * Automatically maps query result rows into typed tuples or your own classes
 * CLOB and BLOB handling is simplified greatly
-
-Continuous integration with Jenkins: <a href="https://xuml-tools.ci.cloudbees.com/"><img src="https://xuml-tools.ci.cloudbees.com/job/rxjava-jdbc/badge/icon"/></a>
 
 Maven site reports are [here](http://davidmoten.github.io/rxjava-jdbc/index.html) including [javadoc](http://davidmoten.github.io/rxjava-jdbc/apidocs/index.html).
 
