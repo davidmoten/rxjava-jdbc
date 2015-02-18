@@ -562,6 +562,17 @@ db.close();
 ```
 This will close the connection pool and  release its resources.
 
+Using a custom connection pool
+---------------------------------
+If Hikari doesn't suit you or you have container imposed constraints this is how you can use a different connection pool. 
+
+Write an implmentation of the ```ConnectionProvider``` interface (two methods, ```getConnection()``` and ```close()```) and use it like so:
+
+```java
+ConnectionProvider cp = new CustomConnectionProvider();
+Database db = Database.builder().connectionProvider(cp).build();
+```
+
 Use a single Connection
 ---------------------------
 A ```Database``` can be instantiated from a single ```java.sql.Connection``` which will 
