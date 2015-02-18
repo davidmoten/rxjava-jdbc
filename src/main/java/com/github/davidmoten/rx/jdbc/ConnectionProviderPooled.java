@@ -4,17 +4,17 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.zaxxer.hikari.HikariDataSource;
 
 /**
- * Provides database connection pooling using c3p0.
+ * Provides database connection pooling using HikariCP.
  */
 public final class ConnectionProviderPooled implements ConnectionProvider {
 
     /**
-     * C3p0 connection pool.
+     * HikariCP connection pool.
      */
-    private final ComboPooledDataSource pool;
+    private final HikariDataSource pool;
 
     /**
      * Ensure idempotency of this.close() method.
@@ -33,7 +33,7 @@ public final class ConnectionProviderPooled implements ConnectionProvider {
     }
 
     // Visible for testing
-    ConnectionProviderPooled(ComboPooledDataSource pool) {
+    ConnectionProviderPooled(HikariDataSource pool) {
         this.pool = pool;
     }
 
@@ -46,7 +46,8 @@ public final class ConnectionProviderPooled implements ConnectionProvider {
      * @param minPoolSize
      * @param maxPoolSize
      */
-    public ConnectionProviderPooled(String url, String username, String password, int minPoolSize, int maxPoolSize) {
+    public ConnectionProviderPooled(String url, String username, String password, int minPoolSize,
+            int maxPoolSize) {
         this(createPool(url, username, password, minPoolSize, maxPoolSize));
     }
 
@@ -60,17 +61,16 @@ public final class ConnectionProviderPooled implements ConnectionProvider {
      * @param maxPoolSize
      * @return
      */
-    private static ComboPooledDataSource createPool(String url, String username, String password, int minPoolSize,
-            int maxPoolSize) {
-        ComboPooledDataSource pool = new ComboPooledDataSource();
-        pool.setJdbcUrl(url);
-        pool.setUser(username);
-        pool.setPassword(password);
-        pool.setMinPoolSize(minPoolSize);
-        pool.setMaxPoolSize(maxPoolSize);
-        pool.setAcquireIncrement(1);
-        pool.setInitialPoolSize(0);
-        return pool;
+    private static HikariDataSource createPool(String url, String username, String password,
+            int minPoolSize, int maxPoolSize) {
+
+        HikariDataSource ds = new HikariDataSource();
+        ds.setJdbcUrl(url);
+        ds.setUsername(username);
+        ds.setPassword(password);
+        ds.setMinimumIdle(minPoolSize);
+        ds.setMaximumPoolSize(maxPoolSize);
+        return ds;
     }
 
     @Override

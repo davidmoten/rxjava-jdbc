@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -50,7 +49,7 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuple5;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple6;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple7;
 import com.github.davidmoten.rx.jdbc.tuple.TupleN;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.zaxxer.hikari.HikariDataSource;
 
 public abstract class DatabaseTestBase {
 
@@ -715,9 +714,8 @@ public abstract class DatabaseTestBase {
 
     @Test(expected = RuntimeException.class)
     public void testConnectionPoolWhenExceptionThrown() throws SQLException {
-        ComboPooledDataSource pool = new ComboPooledDataSource();
+        HikariDataSource pool = new HikariDataSource();
         pool.setJdbcUrl("invalid");
-        pool.setAcquireRetryAttempts(0);
         new ConnectionProviderPooled(pool).get();
     }
 
