@@ -547,12 +547,12 @@ Database Connection Pools
 Include the dependency below:
 ```xml
 <dependency>
-	<groupId>com.mchange</groupId>
-	<artifactId>c3p0</artifactId>
-	<version>0.9.5-pre8</version>
+    <groupId>com.zaxxer</groupId>
+    <artifactId>HikariCP-java6</artifactId>
+    <version>2.3.2</version>
 </dependency>
 ```
-and you can use a c3p0 database connection pool like so:
+and you can use a [Hikari](https://github.com/brettwooldridge/HikariCP) database connection pool like so:
 ```java
 Database db = Database.builder().url(url).pool(minPoolSize,maxPoolSize).build();
 ```
@@ -561,8 +561,6 @@ Once finished with a ``Database`` that has used a connection pool you should cal
 db.close();
 ```
 This will close the connection pool and  release its resources.
-
-Note: do not use a c3p0 version earlier than the one above as a c3p0 bug may prevent proper closure of connections.
 
 Use a single Connection
 ---------------------------
