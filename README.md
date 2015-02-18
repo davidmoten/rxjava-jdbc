@@ -573,6 +573,8 @@ ConnectionProvider cp = new CustomConnectionProvider();
 Database db = Database.builder().connectionProvider(cp).build();
 ```
 
+This method could be used to supply a JNDI datasource for example.
+
 Use a single Connection
 ---------------------------
 A ```Database``` can be instantiated from a single ```java.sql.Connection``` which will 
