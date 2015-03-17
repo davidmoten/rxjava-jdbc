@@ -844,6 +844,8 @@ final public class Database {
      * and BLOB fields to null.
      */
     public static final Object NULL_CLOB = new Object();
+    
+    public static final Object NULL_NUMBER = new Object();
 
     public static Object toSentinelIfNull(String s) {
         if (s == null)
@@ -851,7 +853,7 @@ final public class Database {
         else
             return s;
     }
-
+    
     /**
      * Sentinel object used to indicate in parameters of a query that rather
      * than calling {@link PreparedStatement#setObject(int, Object)} with a null
