@@ -271,7 +271,7 @@ Typed tuples can be returned in an ```Observable```:
 Tuple2<String, Integer> tuple = db
 		.select("select name,score from person where name >? order by name")
 		.parameter("ALEX").create()
-		.execute(String.class, Integer.class).last()
+		.getAs(String.class, Integer.class).last()
 		.toBlocking().single();
 assertEquals("MARMADUKE", tuple.value1());
 assertEquals(25, (int) tuple.value2());
@@ -282,7 +282,7 @@ Similarly for ```Tuple3```, ```Tuple4```, ```Tuple5```, ```Tuple6```, ```Tuple7`
 TupleN<String> tuple = db
 		.select("select name, lower(name) from person order by name")
 		.create()
-		.executeN(String.class).first()
+		.getTupleN(String.class).first()
 		.toBlocking().single();
 assertEquals("FRED", tuple.values().get(0));
 assertEquals("fred", tuple.values().get(1));
