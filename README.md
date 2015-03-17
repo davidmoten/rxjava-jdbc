@@ -133,7 +133,7 @@ Observable<Integer> score = db
 		.getAs(Integer.class)
 		.last();
 String name = db
-		.query("select name from person where score < ? order by name")
+		.select("select name from person where score < ? order by name")
 		.parameters(score)
 		.getAs(String.class)
 		.first()
@@ -190,7 +190,7 @@ Mixing explicit and Observable parameters
 Example:
 ```java
 String name= db
-	.query("select name from person where name > ?  and score < ? order by name")
+	.select("select name from person where name > ?  and score < ? order by name")
 	.parameter("BARRY")
 	.parameters(Observable.from(100))
 	.getAs(String.class)
@@ -207,7 +207,7 @@ This causes the statement to be run twice.
 
 ```java
 List<Integer> list = 
-	db.query("select score from person where name=?")
+	db.select("select score from person where name=?")
 	    .parameter("FRED").parameter("JOSEPH")
 		.getAs(Integer.class).toList().toBlocking().single();
 assertEquals(Arrays.asList(21,34),list);
@@ -221,7 +221,7 @@ a result that does not depend on an open ```java.sql.Connection```. Use the ```g
 to specify this function as below.
 
 ```java
-Observable<Integer> scores = db.query("select score from person where name=?")
+Observable<Integer> scores = db.select("select score from person where name=?")
 	    .parameter("FRED")
 		.getAs(Integer.class);
 ```
@@ -269,7 +269,7 @@ Typed tuples can be returned in an ```Observable```:
 ###Tuple2
 ```java
 Tuple2<String, Integer> tuple = db
-		.query("select name,score from person where name >? order by name")
+		.select("select name,score from person where name >? order by name")
 		.parameter("ALEX").create()
 		.execute(String.class, Integer.class).last()
 		.toBlocking().single();
@@ -280,7 +280,7 @@ Similarly for ```Tuple3```, ```Tuple4```, ```Tuple5```, ```Tuple6```, ```Tuple7`
 ###TupleN
 ```java
 TupleN<String> tuple = db
-		.query("select name, lower(name) from person order by name")
+		.select("select name, lower(name) from person order by name")
 		.create()
 		.executeN(String.class).first()
 		.toBlocking().single();
