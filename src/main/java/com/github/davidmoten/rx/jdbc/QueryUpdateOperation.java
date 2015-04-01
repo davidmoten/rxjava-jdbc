@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +62,7 @@ class QueryUpdateOperation {
             volatile boolean keepGoing = true;
             volatile Connection con;
             volatile PreparedStatement ps;
+            final AtomicBoolean closed = new AtomicBoolean(false);
         }
 
         /**
@@ -260,11 +262,14 @@ class QueryUpdateOperation {
          * Connection but only if auto commit mode.
          */
         private void close(State state) {
+            //ensure close happens once only to avoid race conditions
+            if (state.closed.compareAndSet(false, true)) {
             Util.closeQuietly(state.ps);
             if (isCommit() || isRollback())
                 Util.closeQuietly(state.con);
             else
                 Util.closeQuietlyIfAutoCommit(state.con);
+            }
         }
 
         private void checkSubscription(Subscriber<? super Integer> subscriber, State state) {
