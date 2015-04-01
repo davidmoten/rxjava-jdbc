@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
-import rx.Subscription;
 import rx.functions.Action0;
 import rx.functions.Func1;
 import rx.subscriptions.Subscriptions;
