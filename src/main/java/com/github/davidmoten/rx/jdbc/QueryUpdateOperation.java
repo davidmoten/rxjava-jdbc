@@ -45,8 +45,6 @@ class QueryUpdateOperation {
 
     private static class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
 
-        private boolean keepGoing = true;
-
         /**
          * The query to be executed.
          */
@@ -59,15 +57,11 @@ class QueryUpdateOperation {
          */
         private final List<Parameter> parameters;
 
-        /**
-         * Query connection.
-         */
-        private Connection con;
-
-        /**
-         * Prepared statement for the query.
-         */
-        private PreparedStatement ps;
+        private static class State {
+            volatile boolean keepGoing = true;
+            volatile Connection con;
+            volatile PreparedStatement ps;
+        }
 
         /**
          * Constructor.
@@ -82,26 +76,27 @@ class QueryUpdateOperation {
 
         @Override
         public void call(Subscriber<? super Integer> subscriber) {
+            final State state = new State();
             try {
 
                 if (isBeginTransaction())
                     performBeginTransaction(subscriber);
                 else {
-                    getConnection();
+                    getConnection(state);
                     if (isCommit())
-                        performCommit(subscriber);
+                        performCommit(subscriber, state);
                     else if (isRollback())
-                        performRollback(subscriber);
+                        performRollback(subscriber, state);
                     else
-                        performUpdate(subscriber);
-                    close();
+                        performUpdate(subscriber, state);
+                    close(state);
                 }
 
                 complete(subscriber);
 
             } catch (Exception e) {
                 try {
-                    close();
+                    close(state);
                 } finally {
                     handleException(e, subscriber);
                 }
@@ -122,9 +117,9 @@ class QueryUpdateOperation {
         /**
          * Gets the current connection.
          */
-        private void getConnection() {
+        private void getConnection(State state) {
             log.debug("getting connection");
-            con = query.context().connectionProvider().get();
+            state.con = query.context().connectionProvider().get();
             log.debug("cp={}", query.context().connectionProvider());
         }
 
@@ -151,22 +146,23 @@ class QueryUpdateOperation {
          * connection is in autoCommit mode.
          * 
          * @param subscriber
+         * @param state
          */
-        private void performCommit(Subscriber<? super Integer> subscriber) {
+        private void performCommit(Subscriber<? super Integer> subscriber, State state) {
             query.context().endTransactionObserve();
-            checkSubscription(subscriber);
-            if (!keepGoing)
+            checkSubscription(subscriber, state);
+            if (!state.keepGoing)
                 return;
 
             log.debug("committing");
-            Conditions.checkTrue(!Util.isAutoCommit(con));
-            Util.commit(con);
+            Conditions.checkTrue(!Util.isAutoCommit(state.con));
+            Util.commit(state.con);
             // must close before onNext so that connection is released and is
             // available to a query that might process the onNext
-            close();
+            close(state);
 
-            checkSubscription(subscriber);
-            if (!keepGoing)
+            checkSubscription(subscriber, state);
+            if (!state.keepGoing)
                 return;
 
             subscriber.onNext(Integer.valueOf(1));
@@ -178,15 +174,16 @@ class QueryUpdateOperation {
          * if connection is in autoCommit mode.
          * 
          * @param subscriber
+         * @param state
          */
-        private void performRollback(Subscriber<? super Integer> subscriber) {
+        private void performRollback(Subscriber<? super Integer> subscriber, State state) {
             log.debug("rolling back");
             query.context().endTransactionObserve();
-            Conditions.checkTrue(!Util.isAutoCommit(con));
-            Util.rollback(con);
+            Conditions.checkTrue(!Util.isAutoCommit(state.con));
+            Util.rollback(state.con);
             // must close before onNext so that connection is released and is
             // available to a query that might process the onNext
-            close();
+            close(state);
             subscriber.onNext(Integer.valueOf(0));
             log.debug("rolled back");
         }
@@ -198,31 +195,32 @@ class QueryUpdateOperation {
          * 
          * @throws SQLException
          */
-        private void performUpdate(Subscriber<? super Integer> subscriber) throws SQLException {
-            checkSubscription(subscriber);
-            if (!keepGoing)
+        private void performUpdate(Subscriber<? super Integer> subscriber, State state)
+                throws SQLException {
+            checkSubscription(subscriber, state);
+            if (!state.keepGoing)
                 return;
 
-            ps = con.prepareStatement(query.sql());
-            Util.setParameters(ps, parameters);
+            state.ps = state.con.prepareStatement(query.sql());
+            Util.setParameters(state.ps, parameters);
 
-            checkSubscription(subscriber);
-            if (!keepGoing)
+            checkSubscription(subscriber, state);
+            if (!state.keepGoing)
                 return;
 
             int count;
             try {
                 log.debug("executing sql={}, parameters {}", query.sql(), parameters);
-                count = ps.executeUpdate();
-                log.debug("executed ps={}", ps);
+                count = state.ps.executeUpdate();
+                log.debug("executed ps={}", state.ps);
             } catch (SQLException e) {
                 throw new SQLException("failed to execute sql=" + query.sql(), e);
             }
             // must close before onNext so that connection is released and is
             // available to a query that might process the onNext
-            close();
-            checkSubscription(subscriber);
-            if (!keepGoing)
+            close(state);
+            checkSubscription(subscriber, state);
+            if (!state.keepGoing)
                 return;
             log.debug("onNext");
             subscriber.onNext(count);
@@ -232,6 +230,7 @@ class QueryUpdateOperation {
          * Notify observer that sequence is complete.
          * 
          * @param subscriber
+         * @param state
          */
         private void complete(Subscriber<? super Integer> subscriber) {
             if (!subscriber.isUnsubscribed()) {
@@ -260,17 +259,17 @@ class QueryUpdateOperation {
          * Cancels a running PreparedStatement, closing it and the current
          * Connection but only if auto commit mode.
          */
-        private void close() {
-            Util.closeQuietly(ps);
+        private void close(State state) {
+            Util.closeQuietly(state.ps);
             if (isCommit() || isRollback())
-                Util.closeQuietly(con);
+                Util.closeQuietly(state.con);
             else
-                Util.closeQuietlyIfAutoCommit(con);
+                Util.closeQuietlyIfAutoCommit(state.con);
         }
 
-        private void checkSubscription(Subscriber<? super Integer> subscriber) {
+        private void checkSubscription(Subscriber<? super Integer> subscriber, State state) {
             if (subscriber.isUnsubscribed()) {
-                keepGoing = false;
+                state.keepGoing = false;
                 log.debug("unsubscribing");
             }
         }
