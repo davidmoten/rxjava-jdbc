@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import rx.Observable;
 import rx.Observable.Operator;
+import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.observables.MathObservable;
@@ -1411,7 +1412,25 @@ public abstract class DatabaseTestBase {
 		assertIs(3, count);
 	}
 
-	public static class CountDownConnectionProvider implements
+	@Test
+    public void testTwoConnectionsOpenedAndClosedWhenTakeOneUsedWithSelectThatReturnsOneRow()
+            throws InterruptedException {
+        Action0 completed = new Action0() {
+
+            @Override
+            public void call() {
+                System.out.println("completed");
+            }
+        };
+        CountDownConnectionProvider cp = new CountDownConnectionProvider(1, 1);
+        Database db = new Database(cp);
+        db.select("select count(*) from person").getAs(Long.class).doOnCompleted(completed).take(1)
+                .toBlocking().single();
+        assertTrue(cp.getsLatch().await(6, TimeUnit.SECONDS));
+        assertTrue(cp.closesLatch().await(6, TimeUnit.SECONDS));
+    }
+	
+	private static class CountDownConnectionProvider implements
 			ConnectionProvider {
 		private final ConnectionProvider cp;
 		private final CountDownLatch closesLatch;
