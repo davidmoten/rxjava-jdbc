@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,10 +44,13 @@ final class QuerySelectOperation {
         private final List<Parameter> parameters;
 
         private static class State {
-            boolean keepGoing = true;
-            Connection con;
-            PreparedStatement ps;
-            ResultSet rs;
+            // fields need to be volatile because unsub could be from another
+            // thread
+            volatile boolean keepGoing = true;
+            volatile Connection con;
+            volatile PreparedStatement ps;
+            volatile ResultSet rs;
+            final AtomicBoolean closed = new AtomicBoolean(false);
         }
 
         /**
@@ -66,10 +70,10 @@ final class QuerySelectOperation {
         public void call(Subscriber<? super T> subscriber) {
             final State state = new State();
             try {
-                connectAndPrepareStatement(subscriber,state);
-                executeQuery(subscriber,state);
-                subscriber
-                        .setProducer(new QuerySelectProducer<T>(function, subscriber, state.con, state.ps, state.rs));
+                connectAndPrepareStatement(subscriber, state);
+                executeQuery(subscriber, state);
+                subscriber.setProducer(new QuerySelectProducer<T>(function, subscriber, state.con,
+                        state.ps, state.rs));
                 // this is required for the case when
                 // "select count(*) from tbl".take(1) is called which enables
                 // the backpressure path and 1 is requested and end of result
@@ -95,14 +99,14 @@ final class QuerySelectOperation {
          * to the prepared statement.
          * 
          * @param subscriber
-         * @param state 
+         * @param state
          * 
          * @throws SQLException
          */
         private void connectAndPrepareStatement(Subscriber<? super T> subscriber, State state)
                 throws SQLException {
             log.debug("connectionProvider={}", query.context().connectionProvider());
-            checkSubscription(subscriber,state);
+            checkSubscription(subscriber, state);
             if (state.keepGoing) {
                 log.debug("getting connection");
                 state.con = query.context().connectionProvider().get();
@@ -117,12 +121,13 @@ final class QuerySelectOperation {
          * Executes the prepared statement.
          * 
          * @param subscriber
-         * @param state 
+         * @param state
          * 
          * @throws SQLException
          */
-        private void executeQuery(Subscriber<? super T> subscriber, State state) throws SQLException {
-            checkSubscription(subscriber,state);
+        private void executeQuery(Subscriber<? super T> subscriber, State state)
+                throws SQLException {
+            checkSubscription(subscriber, state);
             if (state.keepGoing) {
                 try {
                     log.debug("executing ps");
@@ -152,16 +157,22 @@ final class QuerySelectOperation {
         /**
          * Closes connection resources (connection, prepared statement and
          * result set).
-         * @param state 
+         * 
+         * @param state
          */
         private void closeQuietly(State state) {
-            log.debug("closing rs");
-            Util.closeQuietly(state.rs);
-            log.debug("closing ps");
-            Util.closeQuietly(state.ps);
-            log.debug("closing con");
-            Util.closeQuietlyIfAutoCommit(state.con);
-            log.debug("closed");
+            //ensure only closed once and avoid race conditions
+            if (state.closed.compareAndSet(false, true)) {
+                // set the state fields to null after closing for garbage
+                // collection purposes
+                log.debug("closing rs");
+                Util.closeQuietly(state.rs);
+                log.debug("closing ps");
+                Util.closeQuietly(state.ps);
+                log.debug("closing con");
+                Util.closeQuietlyIfAutoCommit(state.con);
+                log.debug("closed");
+            }
         }
 
         /**
@@ -169,7 +180,7 @@ final class QuerySelectOperation {
          * 
          * @param subscriber
          */
-        private void checkSubscription(Subscriber<? super T> subscriber,State state) {
+        private void checkSubscription(Subscriber<? super T> subscriber, State state) {
             if (subscriber.isUnsubscribed()) {
                 state.keepGoing = false;
                 log.debug("unsubscribing");
