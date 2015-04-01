@@ -39,13 +39,16 @@ final class QuerySelectOperation {
      */
     private static class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
 
-        private boolean keepGoing = true;
-        private final List<Parameter> parameters;
-        private final QuerySelect query;
-        private Connection con;
-        private PreparedStatement ps;
-        private ResultSet rs;
         private final Func1<? super ResultSet, ? extends T> function;
+        private final QuerySelect query;
+        private final List<Parameter> parameters;
+
+        private static class State {
+            boolean keepGoing = true;
+            Connection con;
+            PreparedStatement ps;
+            ResultSet rs;
+        }
 
         /**
          * Constructor.
@@ -62,24 +65,26 @@ final class QuerySelectOperation {
 
         @Override
         public void call(Subscriber<? super T> subscriber) {
+            final State state = new State();
             try {
-                connectAndPrepareStatement(subscriber);
-                executeQuery(subscriber);
+                connectAndPrepareStatement(subscriber,state);
+                executeQuery(subscriber,state);
                 subscriber
-                        .setProducer(new QuerySelectProducer<T>(function, subscriber, con, ps, rs));
+                        .setProducer(new QuerySelectProducer<T>(function, subscriber, state.con, state.ps, state.rs));
                 // this is required for the case when
                 // "select count(*) from tbl".take(1) is called which enables
                 // the backpressure path and 1 is requested and end of result
-                // set is is not detected so onComplete action of closing does not happen.
+                // set is is not detected so onComplete action of closing does
+                // not happen.
                 subscriber.add(Subscriptions.create(new Action0() {
                     @Override
                     public void call() {
-                        closeQuietly();
+                        closeQuietly(state);
                     }
                 }));
             } catch (Exception e) {
                 try {
-                    closeQuietly();
+                    closeQuietly(state);
                 } finally {
                     handleException(e, subscriber);
                 }
@@ -91,20 +96,21 @@ final class QuerySelectOperation {
          * to the prepared statement.
          * 
          * @param subscriber
+         * @param state 
          * 
          * @throws SQLException
          */
-        private void connectAndPrepareStatement(Subscriber<? super T> subscriber)
+        private void connectAndPrepareStatement(Subscriber<? super T> subscriber, State state)
                 throws SQLException {
             log.debug("connectionProvider={}", query.context().connectionProvider());
-            checkSubscription(subscriber);
-            if (keepGoing) {
+            checkSubscription(subscriber,state);
+            if (state.keepGoing) {
                 log.debug("getting connection");
-                con = query.context().connectionProvider().get();
+                state.con = query.context().connectionProvider().get();
                 log.debug("preparing statement,sql={}", query.sql());
-                ps = con.prepareStatement(query.sql());
+                state.ps = state.con.prepareStatement(query.sql());
                 log.debug("setting parameters");
-                Util.setParameters(ps, parameters);
+                Util.setParameters(state.ps, parameters);
             }
         }
 
@@ -112,16 +118,17 @@ final class QuerySelectOperation {
          * Executes the prepared statement.
          * 
          * @param subscriber
+         * @param state 
          * 
          * @throws SQLException
          */
-        private void executeQuery(Subscriber<? super T> subscriber) throws SQLException {
-            checkSubscription(subscriber);
-            if (keepGoing) {
+        private void executeQuery(Subscriber<? super T> subscriber, State state) throws SQLException {
+            checkSubscription(subscriber,state);
+            if (state.keepGoing) {
                 try {
                     log.debug("executing ps");
-                    rs = ps.executeQuery();
-                    log.debug("executed ps={}", ps);
+                    state.rs = state.ps.executeQuery();
+                    log.debug("executed ps={}", state.ps);
                 } catch (SQLException e) {
                     throw new SQLException("failed to run sql=" + query.sql(), e);
                 }
@@ -146,14 +153,15 @@ final class QuerySelectOperation {
         /**
          * Closes connection resources (connection, prepared statement and
          * result set).
+         * @param state 
          */
-        private void closeQuietly() {
+        private void closeQuietly(State state) {
             log.debug("closing rs");
-            Util.closeQuietly(rs);
+            Util.closeQuietly(state.rs);
             log.debug("closing ps");
-            Util.closeQuietly(ps);
+            Util.closeQuietly(state.ps);
             log.debug("closing con");
-            Util.closeQuietlyIfAutoCommit(con);
+            Util.closeQuietlyIfAutoCommit(state.con);
             log.debug("closed");
         }
 
@@ -162,9 +170,9 @@ final class QuerySelectOperation {
          * 
          * @param subscriber
          */
-        private void checkSubscription(Subscriber<? super T> subscriber) {
+        private void checkSubscription(Subscriber<? super T> subscriber,State state) {
             if (subscriber.isUnsubscribed()) {
-                keepGoing = false;
+                state.keepGoing = false;
                 log.debug("unsubscribing");
             }
         }
