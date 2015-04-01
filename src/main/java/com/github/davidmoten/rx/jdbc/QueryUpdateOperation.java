@@ -262,13 +262,13 @@ class QueryUpdateOperation {
          * Connection but only if auto commit mode.
          */
         private void close(State state) {
-            //ensure close happens once only to avoid race conditions
+            // ensure close happens once only to avoid race conditions
             if (state.closed.compareAndSet(false, true)) {
-            Util.closeQuietly(state.ps);
-            if (isCommit() || isRollback())
-                Util.closeQuietly(state.con);
-            else
-                Util.closeQuietlyIfAutoCommit(state.con);
+                Util.closeQuietly(state.ps);
+                if (isCommit() || isRollback())
+                    Util.closeQuietly(state.con);
+                else
+                    Util.closeQuietlyIfAutoCommit(state.con);
             }
         }
 
