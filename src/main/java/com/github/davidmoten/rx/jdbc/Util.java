@@ -605,8 +605,6 @@ public final class Util {
                     ps.setNull(i, Types.CLOB);
                 else if (o == Database.NULL_BLOB)
                     ps.setNull(i, Types.BLOB);
-                else if (o instanceof NullSentinel)
-                    ps.setNull(i, ((NullSentinel) o).getJdbcType());
                 else {
                     Class<?> cls = o.getClass();
                     if (Clob.class.isAssignableFrom(cls)) {
