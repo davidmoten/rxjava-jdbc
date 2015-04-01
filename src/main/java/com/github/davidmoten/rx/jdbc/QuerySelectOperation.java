@@ -12,7 +12,10 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
+import rx.Subscription;
+import rx.functions.Action0;
 import rx.functions.Func1;
+import rx.subscriptions.Subscriptions;
 
 final class QuerySelectOperation {
 
@@ -64,6 +67,16 @@ final class QuerySelectOperation {
                 executeQuery(subscriber);
                 subscriber
                         .setProducer(new QuerySelectProducer<T>(function, subscriber, con, ps, rs));
+                // this is required for the case when
+                // "select count(*) from tbl".take(1) is called which enables
+                // the backpressure path and 1 is requested and end of result
+                // set is is not detected so onComplete action of closing does not happen.
+                subscriber.add(Subscriptions.create(new Action0() {
+                    @Override
+                    public void call() {
+                        closeQuietly();
+                    }
+                }));
             } catch (Exception e) {
                 try {
                     closeQuietly();

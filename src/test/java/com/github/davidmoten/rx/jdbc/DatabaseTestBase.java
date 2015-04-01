@@ -109,7 +109,8 @@ public abstract class DatabaseTestBase {
 				.toBlocking().single();
 		assertEquals(3, count);
 	}
-
+	
+	
 	@Test
 	public void testTransactionUsingCount() {
 		Database db = db();
@@ -1410,7 +1411,7 @@ public abstract class DatabaseTestBase {
 		assertIs(3, count);
 	}
 
-	private static class CountDownConnectionProvider implements
+	public static class CountDownConnectionProvider implements
 			ConnectionProvider {
 		private final ConnectionProvider cp;
 		private final CountDownLatch closesLatch;

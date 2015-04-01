@@ -75,8 +75,9 @@ class QuerySelectProducer<T> implements Producer {
                         processRow(subscriber);
                     }
                     if (keepGoing) {
-                        if (requested.addAndGet(-r) == 0)
+                        if (requested.addAndGet(-r) == 0) {
                             return;
+                        }
                     } else {
                         closeQuietly();
                         complete(subscriber);
