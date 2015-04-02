@@ -107,7 +107,7 @@ public final class RxUtil {
 	 */
 	public static <R, T> Operator<R, T> toOperator(
 			Func1<Observable<T>, Observable<R>> operation) {
-		return OperationToOperator.toOperator(operation);
+		return OperationOperator.toOperator(operation);
 	}
 
 	/**

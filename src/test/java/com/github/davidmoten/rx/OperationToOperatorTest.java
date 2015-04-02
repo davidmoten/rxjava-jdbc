@@ -1,6 +1,6 @@
 package com.github.davidmoten.rx;
 
-import static com.github.davidmoten.rx.OperationToOperator.toOperator;
+import static com.github.davidmoten.rx.OperationOperator.toOperator;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
