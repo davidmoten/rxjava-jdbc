@@ -27,9 +27,9 @@ final class QuerySelectOperator<T, R> implements Operator<T, R> {
      * @param function
      * @param operatorType
      */
-    QuerySelectOperator(final QuerySelect.Builder builder, final Func1<? super ResultSet, T> function,
-            final OperatorType operatorType) {
-        operator = toOperator(new ApplyQuerySelect<R,T>(builder, function, operatorType));
+    QuerySelectOperator(final QuerySelect.Builder builder,
+            final Func1<? super ResultSet, T> function, final OperatorType operatorType) {
+        operator = toOperator(new ApplyQuerySelect<R, T>(builder, function, operatorType));
     }
 
     @Override

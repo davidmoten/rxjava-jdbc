@@ -26,8 +26,8 @@ class QuerySelectProducer<T> implements Producer {
 
     private final AtomicLong requested = new AtomicLong(0);
 
-    QuerySelectProducer(Func1<? super ResultSet, ? extends T> function, Subscriber<? super T> subscriber,
-            Connection con, PreparedStatement ps, ResultSet rs) {
+    QuerySelectProducer(Func1<? super ResultSet, ? extends T> function,
+            Subscriber<? super T> subscriber, Connection con, PreparedStatement ps, ResultSet rs) {
         this.function = function;
         this.subscriber = subscriber;
         this.con = con;

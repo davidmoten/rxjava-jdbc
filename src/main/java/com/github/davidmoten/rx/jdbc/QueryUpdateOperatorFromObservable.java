@@ -21,8 +21,8 @@ class QueryUpdateOperatorFromObservable<R> implements Operator<Observable<Intege
      * @param operatorType
      */
     QueryUpdateOperatorFromObservable(final QueryUpdate.Builder builder) {
-        operator = RxUtil.toOperator(
-                new Func1<Observable<Observable<R>>, Observable<Observable<Integer>>>() {
+        operator = RxUtil
+                .toOperator(new Func1<Observable<Observable<R>>, Observable<Observable<Integer>>>() {
 
                     @Override
                     public Observable<Observable<Integer>> call(Observable<Observable<R>> observable) {

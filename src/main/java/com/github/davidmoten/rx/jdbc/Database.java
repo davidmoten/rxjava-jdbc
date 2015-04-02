@@ -810,20 +810,20 @@ final public class Database {
     public Observable<Integer> run(InputStream is, String delimiter) {
         return run(is, Charset.defaultCharset(), delimiter);
     }
-    
+
     /**
      * Returns an {@link Observable} that is the result of running a sequence of
      * update commands (insert/update/delete, ddl) commands read from an
-     * {@link InputStream} with the given {@link Charset} using the given delimiter as the statement delimiter (for
-     * example semicolon).
+     * {@link InputStream} with the given {@link Charset} using the given
+     * delimiter as the statement delimiter (for example semicolon).
      * 
      * @param is
      * @param delimiter
      * @return
      */
     public Observable<Integer> run(InputStream is, Charset charset, String delimiter) {
-        return StringObservable.split(StringObservable.from(new InputStreamReader(is,charset)), ";").lift(
-                run());
+        return StringObservable.split(StringObservable.from(new InputStreamReader(is, charset)),
+                ";").lift(run());
     }
 
     /**
@@ -844,7 +844,7 @@ final public class Database {
      * and BLOB fields to null.
      */
     public static final Object NULL_CLOB = new Object();
-    
+
     public static final Object NULL_NUMBER = new Object();
 
     public static Object toSentinelIfNull(String s) {
@@ -853,7 +853,7 @@ final public class Database {
         else
             return s;
     }
-    
+
     /**
      * Sentinel object used to indicate in parameters of a query that rather
      * than calling {@link PreparedStatement#setObject(int, Object)} with a null

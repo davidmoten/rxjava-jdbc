@@ -304,7 +304,6 @@ public class UtilTest {
         verify(con);
     }
 
-
     @Test
     public void testMapObjectExistingClob() throws SQLException, IOException {
 
@@ -388,6 +387,5 @@ public class UtilTest {
         assertEquals(Util.mapObject(resultSet, String.class, 1), null);
 
     }
-
 
 }

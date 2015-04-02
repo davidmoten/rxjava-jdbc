@@ -91,7 +91,8 @@ public class Tuple4<T1, T2, T3, T4> {
 
     @Override
     public String toString() {
-        return "Tuple4 [value1=" + value1 + ", value2=" + value2 + ", value3=" + value3 + ", value4=" + value4 + "]";
+        return "Tuple4 [value1=" + value1 + ", value2=" + value2 + ", value3=" + value3
+                + ", value4=" + value4 + "]";
     }
 
 }

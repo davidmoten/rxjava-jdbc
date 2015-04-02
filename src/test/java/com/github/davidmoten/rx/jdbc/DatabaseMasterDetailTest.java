@@ -54,7 +54,8 @@ public class DatabaseMasterDetailTest {
                                 .autoMap(Detail.class)
                                 // to a list
                                 .toList()
-                                // now combine master and details in a MasterAndDetails object
+                                // now combine master and details in a
+                                // MasterAndDetails object
                                 .map(new Func1<List<Detail>, MasterAndDetails>() {
                                     @Override
                                     public MasterAndDetails call(List<Detail> details) {

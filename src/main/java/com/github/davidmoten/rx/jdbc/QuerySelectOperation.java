@@ -161,7 +161,7 @@ final class QuerySelectOperation {
          * @param state
          */
         private void closeQuietly(State state) {
-            //ensure only closed once and avoid race conditions
+            // ensure only closed once and avoid race conditions
             if (state.closed.compareAndSet(false, true)) {
                 // set the state fields to null after closing for garbage
                 // collection purposes

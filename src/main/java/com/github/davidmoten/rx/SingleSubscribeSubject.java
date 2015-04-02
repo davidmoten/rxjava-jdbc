@@ -4,59 +4,56 @@ import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
 
-public final class SingleSubscribeSubject<T> extends Observable<T> implements
-		Observer<T> {
+public final class SingleSubscribeSubject<T> extends Observable<T> implements Observer<T> {
 
-    //Visible for testing
+    // Visible for testing
     static final String ONLY_ONE_SUBSCRIPTION_IS_ALLOWED = "only one subscription is allowed";
-    
-	private final SingleSubscribeOnSubscribe<T> subscriberHolder;
 
-	private SingleSubscribeSubject(SingleSubscribeOnSubscribe<T> onSubscribe) {
-		super(onSubscribe);
-		subscriberHolder = onSubscribe;
-	}
+    private final SingleSubscribeOnSubscribe<T> subscriberHolder;
 
-	private SingleSubscribeSubject() {
-		this(new SingleSubscribeOnSubscribe<T>());
-	}
+    private SingleSubscribeSubject(SingleSubscribeOnSubscribe<T> onSubscribe) {
+        super(onSubscribe);
+        subscriberHolder = onSubscribe;
+    }
 
-	public static <T> SingleSubscribeSubject<T> create(){
-	    return new SingleSubscribeSubject<T>();
-	}
+    private SingleSubscribeSubject() {
+        this(new SingleSubscribeOnSubscribe<T>());
+    }
 
-	@Override
-	public void onCompleted() {
-		if (subscriberHolder.subscriber != null) {
-			subscriberHolder.subscriber.onCompleted();
-		}
-	}
+    public static <T> SingleSubscribeSubject<T> create() {
+        return new SingleSubscribeSubject<T>();
+    }
 
-	@Override
-	public void onError(Throwable e) {
-		if (subscriberHolder.subscriber != null)
-			subscriberHolder.subscriber.onError(e);
-	}
+    @Override
+    public void onCompleted() {
+        if (subscriberHolder.subscriber != null) {
+            subscriberHolder.subscriber.onCompleted();
+        }
+    }
 
-	@Override
-	public void onNext(T t) {
-		if (subscriberHolder.subscriber != null)
-			subscriberHolder.subscriber.onNext(t);
-	}
+    @Override
+    public void onError(Throwable e) {
+        if (subscriberHolder.subscriber != null)
+            subscriberHolder.subscriber.onError(e);
+    }
 
-	private static class SingleSubscribeOnSubscribe<T> implements
-			OnSubscribe<T> {
+    @Override
+    public void onNext(T t) {
+        if (subscriberHolder.subscriber != null)
+            subscriberHolder.subscriber.onNext(t);
+    }
 
-		
+    private static class SingleSubscribeOnSubscribe<T> implements OnSubscribe<T> {
+
         volatile Subscriber<? super T> subscriber;
 
-		@Override
-		public void call(Subscriber<? super T> subscriber) {
-			if (this.subscriber != null)
-				throw new RuntimeException(ONLY_ONE_SUBSCRIPTION_IS_ALLOWED);
-			this.subscriber = subscriber;
-		}
+        @Override
+        public void call(Subscriber<? super T> subscriber) {
+            if (this.subscriber != null)
+                throw new RuntimeException(ONLY_ONE_SUBSCRIPTION_IS_ALLOWED);
+            this.subscriber = subscriber;
+        }
 
-	}
+    }
 
 }
