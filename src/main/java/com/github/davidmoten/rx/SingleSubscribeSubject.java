@@ -4,9 +4,12 @@ import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
 
-public class SingleSubscribeSubject<T> extends Observable<T> implements
+public final class SingleSubscribeSubject<T> extends Observable<T> implements
 		Observer<T> {
 
+    //Visible for testing
+    static final String ONLY_ONE_SUBSCRIPTION_IS_ALLOWED = "only one subscription is allowed";
+    
 	private final SingleSubscribeOnSubscribe<T> subscriberHolder;
 
 	private SingleSubscribeSubject(SingleSubscribeOnSubscribe<T> onSubscribe) {
@@ -17,15 +20,16 @@ public class SingleSubscribeSubject<T> extends Observable<T> implements
 	private SingleSubscribeSubject() {
 		this(new SingleSubscribeOnSubscribe<T>());
 	}
-	
+
 	public static <T> SingleSubscribeSubject<T> create(){
 	    return new SingleSubscribeSubject<T>();
 	}
 
 	@Override
 	public void onCompleted() {
-		if (subscriberHolder.subscriber != null)
+		if (subscriberHolder.subscriber != null) {
 			subscriberHolder.subscriber.onCompleted();
+		}
 	}
 
 	@Override
@@ -43,12 +47,13 @@ public class SingleSubscribeSubject<T> extends Observable<T> implements
 	private static class SingleSubscribeOnSubscribe<T> implements
 			OnSubscribe<T> {
 
-		volatile Subscriber<? super T> subscriber;
+		
+        volatile Subscriber<? super T> subscriber;
 
 		@Override
 		public void call(Subscriber<? super T> subscriber) {
 			if (this.subscriber != null)
-				throw new RuntimeException("only once subscription is allowed");
+				throw new RuntimeException(ONLY_ONE_SUBSCRIPTION_IS_ALLOWED);
 			this.subscriber = subscriber;
 		}
 
