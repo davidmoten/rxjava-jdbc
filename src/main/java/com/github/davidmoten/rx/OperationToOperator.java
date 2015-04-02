@@ -49,7 +49,7 @@ public final class OperationToOperator<R, T> implements Operator<R, T> {
 
     private static class SingleSubscribeSubject<T> extends Observable<T> implements Observer<T> {
 
-        private SingleSubscribeOnSubscribe<T> subscriberHolder;
+        private final SingleSubscribeOnSubscribe<T> subscriberHolder;
 
         protected SingleSubscribeSubject(SingleSubscribeOnSubscribe<T> onSubscribe) {
             super(onSubscribe);
