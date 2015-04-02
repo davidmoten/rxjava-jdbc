@@ -39,7 +39,7 @@ public final class OperationOperator<R, T> implements Operator<R, T> {
 
 	@Override
 	public Subscriber<? super T> call(Subscriber<? super R> subscriber) {
-		SingleSubscribeSubject<T> subject = new SingleSubscribeSubject<T>();
+		SingleSubscribeSubject<T> subject = SingleSubscribeSubject.create();
 		Subscriber<T> result = Subscribers.from(subject);
 		subscriber.add(result);
 		operation.call(subject).unsafeSubscribe(subscriber);

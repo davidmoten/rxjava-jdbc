@@ -14,8 +14,12 @@ public class SingleSubscribeSubject<T> extends Observable<T> implements
 		subscriberHolder = onSubscribe;
 	}
 
-	public SingleSubscribeSubject() {
+	private SingleSubscribeSubject() {
 		this(new SingleSubscribeOnSubscribe<T>());
+	}
+	
+	public static <T> SingleSubscribeSubject<T> create(){
+	    return new SingleSubscribeSubject<T>();
 	}
 
 	@Override
