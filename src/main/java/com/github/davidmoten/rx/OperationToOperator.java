@@ -80,7 +80,7 @@ public final class OperationToOperator<R, T> implements Operator<R, T> {
 
         private static class SingleSubscribeOnSubscribe<T> implements OnSubscribe<T> {
 
-            Subscriber<? super T> subscriber;
+            volatile Subscriber<? super T> subscriber;
 
             @Override
             public void call(Subscriber<? super T> subscriber) {
