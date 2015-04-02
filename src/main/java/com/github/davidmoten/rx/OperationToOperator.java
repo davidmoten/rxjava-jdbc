@@ -1,11 +1,12 @@
 package com.github.davidmoten.rx;
 
 import rx.Observable;
+import rx.Observable.OnSubscribe;
 import rx.Observable.Operator;
+import rx.Observer;
 import rx.Subscriber;
 import rx.functions.Func1;
 import rx.observers.Subscribers;
-import rx.subjects.PublishSubject;
 
 /**
  * Converts an Operation (a function converting one Observable into another)
@@ -39,11 +40,57 @@ public final class OperationToOperator<R, T> implements Operator<R, T> {
 
     @Override
     public Subscriber<? super T> call(Subscriber<? super R> subscriber) {
-        final PublishSubject<T> subject = PublishSubject.create();
+        SingleSubscribeSubject<T> subject = new SingleSubscribeSubject<T>();
         Subscriber<T> result = Subscribers.from(subject);
         subscriber.add(result);
         operation.call(subject).unsafeSubscribe(subscriber);
         return result;
     }
+
+    private static class SingleSubscribeSubject<T> extends Observable<T> implements Observer<T> {
+
+        private SingleSubscribeOnSubscribe<T> subscriberHolder;
+
+        protected SingleSubscribeSubject(SingleSubscribeOnSubscribe<T> onSubscribe) {
+            super(onSubscribe);
+            subscriberHolder = onSubscribe;
+        }
+
+        SingleSubscribeSubject() {
+            this(new SingleSubscribeOnSubscribe<T>());
+        }
+
+        @Override
+        public void onCompleted() {
+            if (subscriberHolder.subscriber != null)
+                subscriberHolder.subscriber.onCompleted();
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            if (subscriberHolder.subscriber != null)
+                subscriberHolder.subscriber.onError(e);
+        }
+
+        @Override
+        public void onNext(T t) {
+            if (subscriberHolder.subscriber != null)
+                subscriberHolder.subscriber.onNext(t);
+        }
+
+        private static class SingleSubscribeOnSubscribe<T> implements OnSubscribe<T> {
+
+            volatile Subscriber<? super T> subscriber;
+
+            @Override
+            public void call(Subscriber<? super T> subscriber) {
+                this.subscriber = subscriber;
+            }
+
+        }
+        
+    }
+
+
 
 }
