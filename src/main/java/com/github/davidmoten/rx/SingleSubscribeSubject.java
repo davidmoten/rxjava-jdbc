@@ -48,6 +48,7 @@ public final class SingleSubscribeSubject<T> extends Observable<T> implements Ob
     private static class SingleSubscribeOnSubscribe<T> implements OnSubscribe<T> {
 
         volatile Subscriber<? super T> subscriber;
+
         @SuppressWarnings("rawtypes")
         private AtomicReferenceFieldUpdater<SingleSubscribeOnSubscribe, Subscriber> SUBSCRIBER = AtomicReferenceFieldUpdater
                 .newUpdater(SingleSubscribeOnSubscribe.class, Subscriber.class, "subscriber");
