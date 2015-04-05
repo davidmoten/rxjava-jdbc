@@ -43,7 +43,7 @@ Include this maven dependency in your pom (available in Maven Central):
 <dependency>
     <groupId>com.github.davidmoten</groupId>
     <artifactId>rxjava-jdbc</artifactId>
-    <version>0.5.4</version>
+    <version>0.5.5</version>
 </dependency>
 ```
 
