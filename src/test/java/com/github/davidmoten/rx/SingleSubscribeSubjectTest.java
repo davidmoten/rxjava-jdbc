@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import rx.Notification;
 import rx.Notification.Kind;
-import rx.exceptions.OnErrorNotImplementedException;
+import rx.Subscriber;
 import rx.functions.Action1;
 
 public class SingleSubscribeSubjectTest {
@@ -78,5 +78,10 @@ public class SingleSubscribeSubjectTest {
         assertEquals(Kind.OnError, list.get(0).getKind());
         assertEquals(SingleSubscribeSubject.ONLY_ONE_SUBSCRIPTION_IS_ALLOWED, list.get(0)
                 .getThrowable().getMessage());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testThrowsExceptionWhenSubscribedWithNull() {
+        SingleSubscribeSubject.create().subscribe((Subscriber) null);
     }
 }

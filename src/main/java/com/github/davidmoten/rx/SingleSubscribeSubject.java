@@ -1,5 +1,7 @@
 package com.github.davidmoten.rx;
 
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
@@ -46,12 +48,16 @@ public final class SingleSubscribeSubject<T> extends Observable<T> implements Ob
     private static class SingleSubscribeOnSubscribe<T> implements OnSubscribe<T> {
 
         volatile Subscriber<? super T> subscriber;
+        @SuppressWarnings("rawtypes")
+        private AtomicReferenceFieldUpdater<SingleSubscribeOnSubscribe, Subscriber> SUBSCRIBER = AtomicReferenceFieldUpdater
+                .newUpdater(SingleSubscribeOnSubscribe.class, Subscriber.class, "subscriber");
 
         @Override
         public void call(Subscriber<? super T> subscriber) {
-            if (this.subscriber != null)
+            if (SUBSCRIBER.compareAndSet(this, null, subscriber))
+                this.subscriber = subscriber;
+            else
                 throw new RuntimeException(ONLY_ONE_SUBSCRIPTION_IS_ALLOWED);
-            this.subscriber = subscriber;
         }
 
     }
