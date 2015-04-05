@@ -2,6 +2,7 @@ package com.github.davidmoten.rx.jdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Provides a singleton {@link Connection} sourced from a
@@ -13,6 +14,11 @@ final class ConnectionProviderSingletonManualCommit implements ConnectionProvide
      * Singleton connection.
      */
     private Connection con;
+
+    /**
+     * Ensures thread-safe setting of con
+     */
+    private AtomicBoolean connectionSet = new AtomicBoolean(false);
 
     /**
      * Provides the singleton connection.
@@ -30,8 +36,8 @@ final class ConnectionProviderSingletonManualCommit implements ConnectionProvide
     }
 
     @Override
-    public synchronized Connection get() {
-        if (con == null) {
+    public Connection get() {
+        if (connectionSet.compareAndSet(false, true)) {
             con = cp.get();
             try {
                 con.setAutoCommit(false);
