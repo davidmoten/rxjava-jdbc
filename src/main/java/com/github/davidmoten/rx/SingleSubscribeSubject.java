@@ -5,7 +5,16 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscriber;
+import rx.subjects.Subject;
 
+/**
+ * A {@link Subject} that supports a maximum of one {@link Subscriber}. When
+ * there is no subscriber any notifications (<code>onNext</code>,
+ * <code>onError</code>, <code>onCompleted</code>) are ignored.
+ * 
+ * @param <T>
+ *            type of items being emitted/observed by this subject
+ */
 public final class SingleSubscribeSubject<T> extends Observable<T> implements Observer<T> {
 
     // Visible for testing
@@ -22,6 +31,11 @@ public final class SingleSubscribeSubject<T> extends Observable<T> implements Ob
         this(new SingleSubscribeOnSubscribe<T>());
     }
 
+    /**
+     * Returns a new instance of a {@link SingleSubscribeSubject}.
+     * 
+     * @return the new instance
+     */
     public static <T> SingleSubscribeSubject<T> create() {
         return new SingleSubscribeSubject<T>();
     }
