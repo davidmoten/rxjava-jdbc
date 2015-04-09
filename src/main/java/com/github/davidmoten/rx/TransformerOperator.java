@@ -7,7 +7,7 @@ import rx.functions.Func1;
 import rx.observers.Subscribers;
 
 /**
- * Converts an Operation (a function converting one Observable into another)
+ * Converts an Transformer (a function converting one Observable into another)
  * into an {@link Operator}.
  * 
  * @param <R>
@@ -15,12 +15,12 @@ import rx.observers.Subscribers;
  * @param <T>
  *            from type
  */
-public final class OperationOperator<R, T> implements Operator<R, T> {
+public final class TransformerOperator<R, T> implements Operator<R, T> {
 
     public static <R, T> Operator<R, T> toOperator(Func1<Observable<T>, Observable<R>> operation) {
-        return new OperationOperator<R, T>(operation);
+        return new TransformerOperator<R, T>(operation);
     }
-
+    
     /**
      * The operation to convert.
      */
@@ -32,7 +32,7 @@ public final class OperationOperator<R, T> implements Operator<R, T> {
      * @param operation
      *            to be converted into {@link Operator}
      */
-    public OperationOperator(Func1<Observable<T>, Observable<R>> operation) {
+    public TransformerOperator(Func1<Observable<T>, Observable<R>> operation) {
         this.operation = operation;
     }
 

@@ -105,7 +105,7 @@ public final class RxUtil {
      * @return an operator form of the given function
      */
     public static <R, T> Operator<R, T> toOperator(Func1<Observable<T>, Observable<R>> operation) {
-        return OperationOperator.toOperator(operation);
+        return TransformerOperator.toOperator(operation);
     }
 
     /**

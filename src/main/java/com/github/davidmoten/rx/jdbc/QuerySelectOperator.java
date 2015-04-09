@@ -1,6 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
-import static com.github.davidmoten.rx.OperationOperator.toOperator;
+import static com.github.davidmoten.rx.TransformerOperator.toOperator;
 
 import java.sql.ResultSet;
 
