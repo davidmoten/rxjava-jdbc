@@ -1,6 +1,5 @@
 package com.github.davidmoten.rx.jdbc;
 
-import static com.github.davidmoten.rx.RxUtil.constant;
 import static com.github.davidmoten.rx.RxUtil.greaterThanZero;
 
 import java.io.InputStream;
@@ -22,6 +21,7 @@ import rx.functions.Func2;
 import rx.observables.StringObservable;
 import rx.schedulers.Schedulers;
 
+import com.github.davidmoten.rx.Functions;
 import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.RxUtil.CountingAction;
 
@@ -403,7 +403,7 @@ final public class Database {
      * @return
      */
     public Observable<Boolean> beginTransaction(Observable<?> dependency) {
-        return update("begin").dependsOn(dependency).count().map(constant(true));
+        return update("begin").dependsOn(dependency).count().map(Functions.constant(true));
     }
 
     /**
@@ -760,7 +760,7 @@ final public class Database {
         return source.concatMap(new Func1<T, Observable<T>>() {
             @Override
             public Observable<T> call(T t) {
-                return db.beginTransaction().map(constant(t));
+                return db.beginTransaction().map(Functions.constant(t));
             }
         });
     }

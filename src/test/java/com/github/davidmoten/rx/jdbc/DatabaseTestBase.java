@@ -1,6 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
-import static com.github.davidmoten.rx.RxUtil.constant;
+import static com.github.davidmoten.rx.Functions.constant;
 import static com.github.davidmoten.rx.RxUtil.log;
 import static com.github.davidmoten.rx.RxUtil.toEmpty;
 import static com.github.davidmoten.rx.jdbc.DatabaseCreator.connectionProvider;
@@ -42,6 +42,7 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.observables.MathObservable;
 
+import com.github.davidmoten.rx.Functions;
 import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
@@ -261,7 +262,7 @@ public abstract class DatabaseTestBase {
     @Test
     public void testTakeFewerThanAvailable() {
         int count = db().select("select name from person where name >?").parameter("ALEX")
-                .get(RxUtil.<ResultSet, Integer> constant(1)).take(2).count().first().toBlocking()
+                .get(Functions.<ResultSet, Integer> constant(1)).take(2).count().first().toBlocking()
                 .single();
         assertEquals(2, count);
     }

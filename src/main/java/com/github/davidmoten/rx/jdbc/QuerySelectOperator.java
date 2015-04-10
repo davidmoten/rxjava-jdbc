@@ -1,15 +1,14 @@
 package com.github.davidmoten.rx.jdbc;
 
-import static com.github.davidmoten.rx.TransformerOperator.toOperator;
-
 import java.sql.ResultSet;
-
-import com.github.davidmoten.rx.jdbc.QuerySelect.Builder;
 
 import rx.Observable;
 import rx.Observable.Operator;
 import rx.Subscriber;
 import rx.functions.Func1;
+
+import com.github.davidmoten.rx.Transformers;
+import com.github.davidmoten.rx.jdbc.QuerySelect.Builder;
 
 /**
  * Operator corresponding to the QuerySelectOperation.
@@ -29,7 +28,7 @@ final class QuerySelectOperator<T, R> implements Operator<T, R> {
      */
     QuerySelectOperator(final QuerySelect.Builder builder,
             final Func1<? super ResultSet, T> function, final OperatorType operatorType) {
-        operator = toOperator(new ApplyQuerySelect<R, T>(builder, function, operatorType));
+        operator = Transformers.toOperator(new ApplyQuerySelect<R, T>(builder, function, operatorType));
     }
 
     @Override

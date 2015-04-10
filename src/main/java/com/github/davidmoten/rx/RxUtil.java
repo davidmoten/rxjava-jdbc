@@ -74,25 +74,6 @@ public final class RxUtil {
     }
 
     /**
-     * Returns a constant value.
-     * 
-     * @param <R>
-     *            from type
-     * @param <S>
-     *            to type
-     * @param s
-     * @return a constant function with value s
-     */
-    public static <R, S> Func1<R, S> constant(final S s) {
-        return new Func1<R, S>() {
-            @Override
-            public S call(R t1) {
-                return s;
-            }
-        };
-    }
-
-    /**
      * Converts a transformation of an Observable into another Observable into
      * an {@link Operator} suitable for use with
      * {@link Observable#lift(Operator)} for instance.
@@ -105,7 +86,7 @@ public final class RxUtil {
      * @return an operator form of the given function
      */
     public static <R, T> Operator<R, T> toOperator(Func1<Observable<T>, Observable<R>> operation) {
-        return TransformerOperator.toOperator(operation);
+        return Transformers.toOperator(operation);
     }
 
     /**
@@ -156,7 +137,7 @@ public final class RxUtil {
      * @return
      */
     public static <T> Func1<T, Observable<Object>> toEmpty() {
-        return constant(Observable.<Object> empty());
+        return Functions.constant(Observable.<Object> empty());
     }
 
     /**
@@ -172,18 +153,9 @@ public final class RxUtil {
 
             @Override
             public Observable<T> call(Observable<Observable<T>> source) {
-                return source.flatMap(RxUtil.<Observable<T>> identity());
+                return source.flatMap(Functions.<Observable<T>> identity());
             }
         });
-    }
-
-    public static <T> Func1<T, T> identity() {
-        return new Func1<T, T>() {
-            @Override
-            public T call(T t) {
-                return t;
-            }
-        };
     }
 
     public static <T> Operator<T, Observable<T>> concat() {

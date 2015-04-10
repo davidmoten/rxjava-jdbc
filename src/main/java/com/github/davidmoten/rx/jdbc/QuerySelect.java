@@ -10,6 +10,7 @@ import rx.Observable;
 import rx.Observable.Operator;
 import rx.functions.Func1;
 
+import com.github.davidmoten.rx.Functions;
 import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
@@ -375,7 +376,7 @@ final public class QuerySelect implements Query {
         }
 
         public Observable<Integer> count() {
-            return get(RxUtil.<ResultSet, Integer> constant(1)).count();
+            return get(Functions.<ResultSet, Integer> constant(1)).count();
         }
 
         /**

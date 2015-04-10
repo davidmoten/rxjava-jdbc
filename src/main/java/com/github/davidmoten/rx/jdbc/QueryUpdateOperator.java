@@ -1,10 +1,11 @@
 package com.github.davidmoten.rx.jdbc;
 
-import static com.github.davidmoten.rx.TransformerOperator.toOperator;
 import rx.Observable;
 import rx.Observable.Operator;
 import rx.Subscriber;
 import rx.functions.Func1;
+
+import com.github.davidmoten.rx.Transformers;
 
 /**
  * {@link Operator} corresonding to {@link QueryUpdateOperation}.
@@ -20,7 +21,7 @@ final class QueryUpdateOperator<R> implements Operator<Integer, R> {
      * @param operatorType
      */
     QueryUpdateOperator(final QueryUpdate.Builder builder, final OperatorType operatorType) {
-        operator = toOperator(new Func1<Observable<R>, Observable<Integer>>() {
+        operator = Transformers.toOperator(new Func1<Observable<R>, Observable<Integer>>() {
             @Override
             public Observable<Integer> call(Observable<R> observable) {
                 if (operatorType == OperatorType.PARAMETER)
