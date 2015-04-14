@@ -1,7 +1,7 @@
 rxjava-jdbc
 ============
 <a href="https://travis-ci.org/davidmoten/rtree"><img src="https://travis-ci.org/davidmoten/rxjava-jdbc.svg"/></a><br/>
-<a href="https://scan.coverity.com/projects/4834"><img src="https://scan.coverity.com/projects/4834/badge.svg?flat=1"/></a></br/>
+<a href="https://scan.coverity.com/projects/4834"><img src="https://scan.coverity.com/projects/4834/badge.svg?flat=1"/></a><br/>
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.davidmoten/rxjava-jdbc/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.github.davidmoten/rxjava-jdbc)
 
 Efficient execution, concise code, and functional composition of database calls
