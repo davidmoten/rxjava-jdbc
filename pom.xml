@@ -21,7 +21,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.target>1.7</maven.compiler.target>
-		<cobertura.version>2.6</cobertura.version>
+		<cobertura.version>2.7</cobertura.version>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<checkstyle.version>2.11</checkstyle.version>
 		<findbugs.version>3.0.1</findbugs.version>
