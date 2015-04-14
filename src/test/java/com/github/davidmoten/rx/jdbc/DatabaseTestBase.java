@@ -1256,7 +1256,7 @@ public abstract class DatabaseTestBase {
         return Observable.from(objects);
     }
 
-    private static Observable<Observable<Object>> objects(Observable<Object>... objects) {
+    private static Observable<Observable<Object>> objects(@SuppressWarnings("unchecked") Observable<Object>... objects) {
         return Observable.from(objects);
     }
 

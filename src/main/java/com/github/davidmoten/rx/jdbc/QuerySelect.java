@@ -11,7 +11,6 @@ import rx.Observable.Operator;
 import rx.functions.Func1;
 
 import com.github.davidmoten.rx.Functions;
-import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple4;
