@@ -101,16 +101,6 @@ final public class Database {
     }
 
     /**
-     * Schedules on {@link Schedulers#io()}.
-     */
-    private final Func0<Scheduler> IO_SCHEDULER_FACTORY = new Func0<Scheduler>() {
-        @Override
-        public Scheduler call() {
-            return Schedulers.io();
-        }
-    };
-
-    /**
      * Schedules using {@link Schedulers}.trampoline().
      */
     private static final Func0<Scheduler> CURRENT_THREAD_SCHEDULER_FACTORY = new Func0<Scheduler>() {
@@ -827,15 +817,40 @@ final public class Database {
     }
 
     /**
-     * Returns a Database based on the current Database except all queries run
+     * Returns a Database based on the current Database except all non-transactional queries run
      * {@link Schedulers#io}.
      * 
-     * @return
+     * @return new Database instance
      */
     public Database asynchronous() {
-        return new Database(cp, IO_SCHEDULER_FACTORY);
+        return asynchronous(Schedulers.io());
     }
 
+    
+    /**
+     * Returns a Database based on the current Database except all non-transactional queries run
+     * on the given scheduler.
+     * 
+     * @return new Database instance
+     */
+    public Database asynchronous(final Scheduler nonTransactionalScheduler) {
+        return asynchronous(new Func0<Scheduler>() {
+            @Override
+            public Scheduler call() {
+                return nonTransactionalScheduler;
+            }});
+    }
+    
+    /**
+     * Returns a Database based on the current Database except all non-transactional queries run
+     * on the scheduler provided by the given factory.
+     * 
+     * @return new Database instance
+     */
+    public Database asynchronous(final Func0<Scheduler> nonTransactionalSchedulerFactory) {
+        return new Database(cp, nonTransactionalSchedulerFactory);
+    }
+    
     /**
      * Sentinel object used to indicate in parameters of a query that rather
      * than calling {@link PreparedStatement#setObject(int, Object)} with a null
