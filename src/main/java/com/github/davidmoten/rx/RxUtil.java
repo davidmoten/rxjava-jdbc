@@ -1,6 +1,7 @@
 package com.github.davidmoten.rx;
 
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,4 +169,59 @@ public final class RxUtil {
         });
     }
 
+    /**
+     * Adds {@code n} to {@code requested} field and returns the value prior to
+     * addition once the addition is successful (uses CAS semantics). If
+     * overflows then sets {@code requested} field to {@code Long.MAX_VALUE}.
+     * 
+     * @param requested
+     *            atomic field updater for a request count
+     * @param object
+     *            contains the field updated by the updater
+     * @param n
+     *            the number of requests to add to the requested count
+     * @return requested value just prior to successful addition
+     */
+    public static <T> long getAndAddRequest(AtomicLongFieldUpdater<T> requested, T object, long n) {
+        // add n to field but check for overflow
+        while (true) {
+            long current = requested.get(object);
+            long next = current + n;
+            // check for overflow
+            if (next < 0) {
+                next = Long.MAX_VALUE;
+            }
+            if (requested.compareAndSet(object, current, next)) {
+                return current;
+            }
+        }
+    }
+
+    /**
+     * Adds {@code n} to {@code requested} and returns the value prior to addition once the
+     * addition is successful (uses CAS semantics). If overflows then sets
+     * {@code requested} field to {@code Long.MAX_VALUE}.
+     * 
+     * @param requested
+     *            atomic field updater for a request count
+     * @param object
+     *            contains the field updated by the updater
+     * @param n
+     *            the number of requests to add to the requested count
+     * @return requested value just prior to successful addition
+     */
+    public static long getAndAddRequest(AtomicLong requested, long n) {
+        // add n to field but check for overflow
+        while (true) {
+            long current = requested.get();
+            long next = current + n;
+            // check for overflow
+            if (next < 0) {
+                next = Long.MAX_VALUE;
+            }
+            if (requested.compareAndSet(current, next)) {
+                return current;
+            }
+        }
+    }
 }

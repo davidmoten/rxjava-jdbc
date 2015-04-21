@@ -9,6 +9,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.davidmoten.rx.RxUtil;
+
 import rx.Producer;
 import rx.Subscriber;
 import rx.functions.Func1;
@@ -64,7 +66,7 @@ class QuerySelectProducer<T> implements Producer {
     private void requestSome(long n) {
         // back pressure path
         // this algorithm copied generally from OnSubscribeFromIterable.java
-        long previousCount = requested.getAndAdd(n);
+        long previousCount = RxUtil.getAndAddRequest(requested, n);
         if (previousCount == 0) {
             try {
                 while (true) {
