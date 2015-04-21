@@ -40,7 +40,7 @@ class QuerySelectProducer<T> implements Producer {
         if (requested.get() == Long.MAX_VALUE)
             // already started with fast path
             return;
-        else if (n == Long.MAX_VALUE) {
+        else if (n == Long.MAX_VALUE && requested.compareAndSet(0,Long.MAX_VALUE)) {
             requestAll();
         } else if (n > 0) {
             requestSome(n);
