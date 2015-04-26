@@ -52,7 +52,6 @@ class QuerySelectProducer<T> implements Producer {
     private void requestAll() {
         // fast path
         try {
-            requested.set(Long.MAX_VALUE);
             while (keepGoing) {
                 processRow(subscriber);
             }
