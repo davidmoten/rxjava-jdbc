@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.sql.DataSource;
+
 public class DatabaseCreator {
 
     private static AtomicInteger dbNumber = new AtomicInteger();
@@ -26,6 +28,10 @@ public class DatabaseCreator {
             throw new RuntimeException(e);
         }
         return new Database(cp);
+    }
+    
+    public static Database createDatabase(DataSource dataSource) {
+        return createDatabase(new ConnectionProviderFromDataSource(dataSource));
     }
 
     public static Database createDatabase(ConnectionProvider cp) {

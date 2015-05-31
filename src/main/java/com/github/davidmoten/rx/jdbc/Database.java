@@ -9,6 +9,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Types;
 
+import javax.naming.Context;
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,14 +184,24 @@ final public class Database {
 
     /**
      * Returns a {@link Database} based on connections obtained from a
-     * javax.activation.DataSource based on looking up the current
-     * javax.naming.Context.
+     * {@link DataSource} based on looking up the current {@link Context}
      * 
      * @param jndiResource
      * @return
      */
     public static Database fromContext(String jndiResource) {
         return new Database(new ConnectionProviderFromContext(jndiResource));
+    }
+    
+    /**
+     * Returns a {@link Database} based on connections obtained from a
+     * {@link DataSource}
+     * 
+     * @param jndiResource
+     * @return
+     */
+    public static Database fromDataSource(DataSource dataSource) {
+        return new Database(new ConnectionProviderFromDataSource(dataSource));
     }
 
     /**
