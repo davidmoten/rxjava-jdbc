@@ -97,12 +97,14 @@ class QueryUpdateOperation {
                 complete(subscriber);
 
             } catch (Exception e) {
+                query.context().endTransactionObserve();
+                query.context().endTransactionSubscribe();
                 try {
                     close(state);
                 } finally {
                     handleException(e, subscriber);
                 }
-            }
+            } 
         }
 
         private boolean isBeginTransaction() {

@@ -86,6 +86,8 @@ final class QuerySelectOperation {
                     }
                 }));
             } catch (Exception e) {
+                query.context().endTransactionObserve();
+                query.context().endTransactionSubscribe();
                 try {
                     closeQuietly(state);
                 } finally {

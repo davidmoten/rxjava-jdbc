@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.easymock.EasyMock;
 import org.junit.Test;
@@ -37,13 +38,18 @@ import org.slf4j.LoggerFactory;
 
 import rx.Observable;
 import rx.Observable.Operator;
+import rx.Observer;
+import rx.Subscriber;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.observables.MathObservable;
+import rx.observers.Observers;
+import rx.observers.Subscribers;
 
 import com.github.davidmoten.rx.Functions;
 import com.github.davidmoten.rx.RxUtil;
+import com.github.davidmoten.rx.jdbc.exceptions.TransactionAlreadyOpenException;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple4;
@@ -169,6 +175,71 @@ public abstract class DatabaseTestBase {
                 // get answer
                 .toBlocking().single();
         assertEquals(3, count);
+    }
+    
+    @Test
+    public void testSelectErrorResetsTransactionContextInDatabaseClass() {
+        Database db = db();
+        Observable<Integer> select = db
+        // select names
+                .select("select namez from person where name=?")
+                // set name parameter
+                .parameter("FRED")
+                // is part of transaction
+                .dependsOn(db.beginTransaction())
+                // get result count
+                .count();
+        final AtomicBoolean transactionClosed = new AtomicBoolean(true); 
+        db.commit(select).doOnError(new Action1<Throwable>() {
+            @Override
+            public void call(Throwable t) {
+                System.out.println(t.getMessage());
+                if (t instanceof TransactionAlreadyOpenException)
+                    transactionClosed.set(false);
+            }}).retry(1).subscribe(ignore());
+        assertTrue(transactionClosed.get());
+    }
+    
+    @Test
+    public void testUpdateErrorResetsTransactionContextInDatabaseClass() {
+        Database db = db();
+        Observable<Integer> update = db
+        // select names
+                .update("zzz")
+                // set name parameter
+                .parameter("FRED")
+                // is part of transaction
+                .dependsOn(db.beginTransaction())
+                // get result count
+                .count();
+        final AtomicBoolean transactionClosed = new AtomicBoolean(true); 
+        db.commit(update).doOnError(new Action1<Throwable>() {
+            @Override
+            public void call(Throwable t) {
+                System.out.println(t.getMessage());
+                if (t instanceof TransactionAlreadyOpenException)
+                    transactionClosed.set(false);
+            }}).retry(1).subscribe(ignore());
+        assertTrue(transactionClosed.get());
+    }
+
+    private static <T> Observer<T> ignore() {
+        return new Observer<T>() {
+
+            @Override
+            public void onCompleted() {
+                
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                
+            }
+
+            @Override
+            public void onNext(T t) {
+                
+            }};
     }
 
     @Test
@@ -1351,6 +1422,8 @@ public abstract class DatabaseTestBase {
         assertTrue(cp.getsLatch().await(6, TimeUnit.SECONDS));
         assertTrue(cp.closesLatch().await(6, TimeUnit.SECONDS));
     }
+    
+    
 
     private static class CountDownConnectionProvider implements ConnectionProvider {
         private final ConnectionProvider cp;

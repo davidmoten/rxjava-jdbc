@@ -24,6 +24,7 @@ import rx.schedulers.Schedulers;
 import com.github.davidmoten.rx.Functions;
 import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.RxUtil.CountingAction;
+import com.github.davidmoten.rx.jdbc.exceptions.TransactionAlreadyOpenException;
 
 /**
  * Main entry point for manipulations of a database using rx-java-jdbc style
@@ -564,7 +565,7 @@ final public class Database {
         log.debug("beginTransactionObserve");
         currentConnectionProvider.set(new ConnectionProviderSingletonManualCommit(cp));
         if (isTransactionOpen.get() != null && isTransactionOpen.get())
-            throw new RuntimeException("cannot begin transaction as transaction open already");
+            throw new TransactionAlreadyOpenException();
         isTransactionOpen.set(true);
     }
 
