@@ -1448,7 +1448,7 @@ public abstract class DatabaseTestBase {
     }
 
     @Test
-    public void testAutoMapWithSql() {
+    public void testAutoMapWithQueryAnnotation() {
         List<NameScore2> list = db().select().autoMap(NameScore2.class).toList().toBlocking()
                 .single();
         assertEquals(3, list.size());
