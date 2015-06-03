@@ -234,8 +234,8 @@ public final class Util {
      * @param cls
      * @return
      */
-    static <T> Func1<ResultSet, T> autoMap(final Class<T> cls) {
-        return new Func1<ResultSet, T>() {
+    static <T> ResultSetMapper<T> autoMap(final Class<T> cls) {
+        return new ResultSetMapper<T>() {
             @Override
             public T call(ResultSet rs) {
                 return autoMap(rs, cls);
@@ -351,6 +351,7 @@ public final class Util {
                     new Class[] { cls }, new ProxyService<T>(rs, cls));
         }
 
+        @Override
         public Object invoke(Object proxy, Method m, Object[] args) throws Throwable {
             return values.get(m.getName());
         }

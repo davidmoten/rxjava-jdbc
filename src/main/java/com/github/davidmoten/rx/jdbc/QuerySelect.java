@@ -10,7 +10,6 @@ import rx.Observable;
 import rx.Observable.Operator;
 import rx.functions.Func1;
 
-import com.github.davidmoten.rx.Functions;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple4;
@@ -81,7 +80,7 @@ final public class QuerySelect implements Query {
      * 
      * @return
      */
-    public <T> Observable<T> execute(Func1<? super ResultSet, ? extends T> function) {
+    public <T> Observable<T> execute(ResultSetMapper<? extends T> function) {
         return bufferedParameters(this)
         // execute once per set of parameters
                 .concatMap(executeOnce(function));
@@ -95,7 +94,7 @@ final public class QuerySelect implements Query {
      * @return
      */
     private <T> Func1<List<Parameter>, Observable<T>> executeOnce(
-            final Func1<? super ResultSet, T> function) {
+            final ResultSetMapper<? extends T> function) {
         return new Func1<List<Parameter>, Observable<T>>() {
             @Override
             public Observable<T> call(List<Parameter> params) {
@@ -113,7 +112,7 @@ final public class QuerySelect implements Query {
      * @return
      */
     private <T> Observable<T> executeOnce(final List<Parameter> params,
-            Func1<? super ResultSet, ? extends T> function) {
+            ResultSetMapper<? extends T> function) {
         return QuerySelectOperation.execute(this, params, function)
                 .subscribeOn(context.scheduler());
     }
@@ -208,7 +207,7 @@ final public class QuerySelect implements Query {
          * @param function
          * @return
          */
-        public <T> Observable<T> get(Func1<? super ResultSet, ? extends T> function) {
+        public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
             return new QuerySelect(builder.sql(), builder.parameters(), builder.depends(),
                     builder.context()).execute(function);
         }
@@ -375,7 +374,12 @@ final public class QuerySelect implements Query {
         }
 
         public Observable<Integer> count() {
-            return get(Functions.<ResultSet, Integer> constant(1)).count();
+            return get(new ResultSetMapper<Integer>() {
+                @Override
+                public Integer call(ResultSet rs) {
+                    return 1;
+                }
+            }).count();
         }
 
         /**
@@ -435,7 +439,7 @@ final public class QuerySelect implements Query {
          * @param function
          * @return
          */
-        public <T> Operator<T, R> get(Func1<? super ResultSet, T> function) {
+        public <T> Operator<T, R> get(ResultSetMapper<? extends T> function) {
             return new QuerySelectOperator<T, R>(builder, function, operatorType);
         }
 

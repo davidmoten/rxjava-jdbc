@@ -44,7 +44,6 @@ import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.observables.MathObservable;
 
-import com.github.davidmoten.rx.Functions;
 import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.jdbc.annotations.Column;
 import com.github.davidmoten.rx.jdbc.annotations.Index;
@@ -175,7 +174,7 @@ public abstract class DatabaseTestBase {
                 .toBlocking().single();
         assertEquals(3, count);
     }
-    
+
     @Test
     public void testSelectErrorResetsTransactionContextInDatabaseClass() {
         Database db = db();
@@ -188,17 +187,18 @@ public abstract class DatabaseTestBase {
                 .dependsOn(db.beginTransaction())
                 // get result count
                 .count();
-        final AtomicBoolean transactionClosed = new AtomicBoolean(true); 
+        final AtomicBoolean transactionClosed = new AtomicBoolean(true);
         db.commit(select).doOnError(new Action1<Throwable>() {
             @Override
             public void call(Throwable t) {
                 System.out.println(t.getMessage());
                 if (t instanceof TransactionAlreadyOpenException)
                     transactionClosed.set(false);
-            }}).retry(1).subscribe(ignore());
+            }
+        }).retry(1).subscribe(ignore());
         assertTrue(transactionClosed.get());
     }
-    
+
     @Test
     public void testUpdateErrorResetsTransactionContextInDatabaseClass() {
         Database db = db();
@@ -211,14 +211,15 @@ public abstract class DatabaseTestBase {
                 .dependsOn(db.beginTransaction())
                 // get result count
                 .count();
-        final AtomicBoolean transactionClosed = new AtomicBoolean(true); 
+        final AtomicBoolean transactionClosed = new AtomicBoolean(true);
         db.commit(update).doOnError(new Action1<Throwable>() {
             @Override
             public void call(Throwable t) {
                 System.out.println(t.getMessage());
                 if (t instanceof TransactionAlreadyOpenException)
                     transactionClosed.set(false);
-            }}).retry(1).subscribe(ignore());
+            }
+        }).retry(1).subscribe(ignore());
         assertTrue(transactionClosed.get());
     }
 
@@ -227,18 +228,19 @@ public abstract class DatabaseTestBase {
 
             @Override
             public void onCompleted() {
-                
+
             }
 
             @Override
             public void onError(Throwable e) {
-                
+
             }
 
             @Override
             public void onNext(T t) {
-                
-            }};
+
+            }
+        };
     }
 
     @Test
@@ -332,8 +334,12 @@ public abstract class DatabaseTestBase {
     @Test
     public void testTakeFewerThanAvailable() {
         int count = db().select("select name from person where name >?").parameter("ALEX")
-                .get(Functions.<ResultSet, Integer> constant(1)).take(2).count().first().toBlocking()
-                .single();
+                .get(new ResultSetMapper<Integer>() {
+                    @Override
+                    public Integer call(ResultSet rs) throws SQLException {
+                        return 1;
+                    }
+                }).take(2).count().first().toBlocking().single();
         assertEquals(2, count);
     }
 
@@ -353,14 +359,10 @@ public abstract class DatabaseTestBase {
         assertEquals(19, count);
     }
 
-    private static final Func1<ResultSet, Integer> COUNT_LETTERS_IN_NAME = new Func1<ResultSet, Integer>() {
+    private static final ResultSetMapper<Integer> COUNT_LETTERS_IN_NAME = new ResultSetMapper<Integer>() {
         @Override
-        public Integer call(ResultSet rs) {
-            try {
-                return rs.getString("name").length();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
+        public Integer call(ResultSet rs) throws SQLException {
+            return rs.getString("name").length();
         }
     };
 
@@ -1326,7 +1328,8 @@ public abstract class DatabaseTestBase {
         return Observable.from(objects);
     }
 
-    private static Observable<Observable<Object>> objects(@SuppressWarnings("unchecked") Observable<Object>... objects) {
+    private static Observable<Observable<Object>> objects(
+            @SuppressWarnings("unchecked") Observable<Object>... objects) {
         return Observable.from(objects);
     }
 
@@ -1421,7 +1424,7 @@ public abstract class DatabaseTestBase {
         assertTrue(cp.getsLatch().await(6, TimeUnit.SECONDS));
         assertTrue(cp.closesLatch().await(6, TimeUnit.SECONDS));
     }
-    
+
     @Test
     public void testAutoMapInterface() {
         // test dynamic proxying
@@ -1433,17 +1436,27 @@ public abstract class DatabaseTestBase {
         assertEquals("JOSEPH", list.get(1).name());
         assertEquals(34, list.get(1).score());
     }
-    
+
     static interface NameScore {
-        
+
         @Index(1)
         String name();
-        
+
         @Column("score")
         int score();
     }
-    
-    
+
+    @Test
+    public void testCustomMapper() {
+        String name = db().select("select name from person order by name")
+                .get(new ResultSetMapper<String>() {
+                    @Override
+                    public String call(ResultSet rs) throws SQLException {
+                        return rs.getString(1);
+                    }
+                }).first().toBlocking().single();
+        assertEquals("FRED", name);
+    }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {
         private final ConnectionProvider cp;

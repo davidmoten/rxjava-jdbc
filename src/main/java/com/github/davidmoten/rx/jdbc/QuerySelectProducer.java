@@ -9,17 +9,16 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.davidmoten.rx.RxUtil;
-
 import rx.Producer;
 import rx.Subscriber;
-import rx.functions.Func1;
+
+import com.github.davidmoten.rx.RxUtil;
 
 class QuerySelectProducer<T> implements Producer {
 
     private static final Logger log = LoggerFactory.getLogger(QuerySelectProducer.class);
 
-    private final Func1<? super ResultSet, ? extends T> function;
+    private final ResultSetMapper<? extends T> function;
     private final Subscriber<? super T> subscriber;
     private final Connection con;
     private final PreparedStatement ps;
@@ -28,8 +27,8 @@ class QuerySelectProducer<T> implements Producer {
 
     private final AtomicLong requested = new AtomicLong(0);
 
-    QuerySelectProducer(Func1<? super ResultSet, ? extends T> function,
-            Subscriber<? super T> subscriber, Connection con, PreparedStatement ps, ResultSet rs) {
+    QuerySelectProducer(ResultSetMapper<? extends T> function, Subscriber<? super T> subscriber,
+            Connection con, PreparedStatement ps, ResultSet rs) {
         this.function = function;
         this.subscriber = subscriber;
         this.con = con;
@@ -42,7 +41,7 @@ class QuerySelectProducer<T> implements Producer {
         if (requested.get() == Long.MAX_VALUE)
             // already started with fast path
             return;
-        else if (n == Long.MAX_VALUE && requested.compareAndSet(0,Long.MAX_VALUE)) {
+        else if (n == Long.MAX_VALUE && requested.compareAndSet(0, Long.MAX_VALUE)) {
             requestAll();
         } else if (n > 0) {
             requestSome(n);

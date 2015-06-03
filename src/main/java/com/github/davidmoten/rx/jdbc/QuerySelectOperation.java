@@ -14,7 +14,6 @@ import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
 import rx.functions.Action0;
-import rx.functions.Func1;
 import rx.subscriptions.Subscriptions;
 
 final class QuerySelectOperation {
@@ -30,7 +29,7 @@ final class QuerySelectOperation {
      * @return
      */
     static <T> Observable<T> execute(QuerySelect query, List<Parameter> parameters,
-            Func1<? super ResultSet, ? extends T> function) {
+            ResultSetMapper<? extends T> function) {
         return Observable.create(new QuerySelectOnSubscribe<T>(query, parameters, function));
     }
 
@@ -39,7 +38,7 @@ final class QuerySelectOperation {
      */
     private static class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
 
-        private final Func1<? super ResultSet, ? extends T> function;
+        private final ResultSetMapper<? extends T> function;
         private final QuerySelect query;
         private final List<Parameter> parameters;
 
@@ -60,7 +59,7 @@ final class QuerySelectOperation {
          * @param parameters
          */
         private QuerySelectOnSubscribe(QuerySelect query, List<Parameter> parameters,
-                Func1<? super ResultSet, ? extends T> function) {
+                ResultSetMapper<? extends T> function) {
             this.query = query;
             this.parameters = parameters;
             this.function = function;

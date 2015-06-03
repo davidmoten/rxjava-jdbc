@@ -1,7 +1,5 @@
 package com.github.davidmoten.rx.jdbc;
 
-import java.sql.ResultSet;
-
 import rx.Observable;
 import rx.Observable.Operator;
 import rx.Subscriber;
@@ -27,8 +25,9 @@ final class QuerySelectOperator<T, R> implements Operator<T, R> {
      * @param operatorType
      */
     QuerySelectOperator(final QuerySelect.Builder builder,
-            final Func1<? super ResultSet, T> function, final OperatorType operatorType) {
-        operator = Transformers.toOperator(new ApplyQuerySelect<R, T>(builder, function, operatorType));
+            final ResultSetMapper<? extends T> function, final OperatorType operatorType) {
+        operator = Transformers.toOperator(new ApplyQuerySelect<R, T>(builder, function,
+                operatorType));
     }
 
     @Override
@@ -39,11 +38,11 @@ final class QuerySelectOperator<T, R> implements Operator<T, R> {
     private static class ApplyQuerySelect<R, T> implements Func1<Observable<R>, Observable<T>> {
 
         private Builder builder;
-        private Func1<? super ResultSet, T> function;
+        private ResultSetMapper<? extends T> function;
         private OperatorType operatorType;
 
-        private ApplyQuerySelect(QuerySelect.Builder builder, Func1<? super ResultSet, T> function,
-                OperatorType operatorType) {
+        private ApplyQuerySelect(QuerySelect.Builder builder,
+                ResultSetMapper<? extends T> function, OperatorType operatorType) {
             this.builder = builder;
             this.function = function;
             this.operatorType = operatorType;
