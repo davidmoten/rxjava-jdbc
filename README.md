@@ -227,8 +227,25 @@ Observable<Integer> scores = db.select("select score from person where name=?")
 		.getAs(Integer.class);
 ```
 
+Mapping
+-----------------
+A common requirement is to map the rows of a ResultSet to an object. There are two main options: explicit mapping and automap.
+
+Explicit mapping
+----------------------
+Using `get` you can map the `ResultSet` as you wish:
+
+```java
+db.select("select name, score from person")
+  .get( rs -> new Person(rs.getString(1), rs.getInt(2)));
+```
+
 Automap
 ------------------------------
+`automap` does more for you than explicit mapping. You can provide just an annotated interface and objects will be created that implement that interface and types will be converted for you (See *Auto mappings* section below).
+
+There is some reflection overhead with using auto mapping. Use your own benchmarks to determine if its important to you (the reflection overhead may not be significant compared to the network latencies involved in database calls).
+
 The `autoMap` method maps result set rows to instances of the class you nominate. 
 
 If you nominate an interface then dynamic proxies (a java reflection feature) are used to build instances. 
@@ -325,15 +342,6 @@ The automatic mappings below of objects are used in the ```autoMap()``` method a
 * ```java.math.BigDecimal``` ==> ```Long```, ```Integer```, ```Decimal```, ```Float```, ```Short```, ```java.math.BigInteger```
 
 Note that automappings do not occur to primitives so use ```Long``` instead of ```long```.
-
-Custom mapping
-------------------
-If you want to avoid the reflection and type conversion overhead of `autoMap` then you can use `get` and map the `ResultSet` as you please:
-
-```java
-db.select("select name, score from person")
-  .get( rs -> new Person(rs.get(1), rs.get(2)));
-```
 
 Tuples
 ---------------
