@@ -9,7 +9,7 @@ using JDBC and [RxJava](https://github.com/Netflix/RxJava/wiki) [Observable](htt
 
 Status: Released to Maven Central
 
-[Release Notes](RELEASE_NOTES.md)
+[Release Notes](https://github.com/davidmoten/rxjava-jdbc/releases)
 
 Features
 --------------------------
@@ -44,7 +44,7 @@ Include this maven dependency in your pom (available in Maven Central):
 <dependency>
     <groupId>com.github.davidmoten</groupId>
     <artifactId>rxjava-jdbc</artifactId>
-    <version>0.5.7</version>
+    <version>0.5.8</version>
 </dependency>
 ```
 
