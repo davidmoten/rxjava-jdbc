@@ -9,7 +9,7 @@ using JDBC and [RxJava](https://github.com/Netflix/RxJava/wiki) [Observable](htt
 
 Status: Released to Maven Central
 
-[Release Notes](RELEASE_NOTES.md)
+[Release Notes](https://github.com/davidmoten/rxjava-jdbc/releases)
 
 Features
 --------------------------
@@ -44,7 +44,7 @@ Include this maven dependency in your pom (available in Maven Central):
 <dependency>
     <groupId>com.github.davidmoten</groupId>
     <artifactId>rxjava-jdbc</artifactId>
-    <version>0.5.7</version>
+    <version>0.5.8</version>
 </dependency>
 ```
 
@@ -307,6 +307,16 @@ The automatic mappings below of objects are used in the ```autoMap()``` method a
 * ```java.math.BigDecimal``` ==> ```Long```, ```Integer```, ```Decimal```, ```Float```, ```Short```, ```java.math.BigInteger```
 
 Note that automappings do not occur to primitives so use ```Long``` instead of ```long```.
+
+Custom mapping
+------------------
+If you want to avoid the reflection and type conversion overhead of `autoMap` then you can use `get` and map the `ResultSet` as you please:
+
+```java
+db.select("select name, score from person")
+  .get( rs -> { try { return new Person(rs.get(1), rs.get(2));}
+                catch (SqlException e) { throw new RuntimeException(e);}});
+```
 
 Tuples
 ---------------
