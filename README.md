@@ -270,6 +270,24 @@ public interface Person {
     int score();
 }
 ``` 
+You can also specify the sql to be run in the annotation:
+
+```java
+@Query("select name, score from person order by name")
+public interface Person {
+
+    @Column("name")
+    String name();
+
+    @Column("score")
+    int score();
+}
+``` 
+Then run like this:
+```java
+Observable<Person> persons = db
+                 .select().autoMap(Person.class);
+```
 
 
 ###Automap using a concrete class 
@@ -314,8 +332,7 @@ If you want to avoid the reflection and type conversion overhead of `autoMap` th
 
 ```java
 db.select("select name, score from person")
-  .get( rs -> { try { return new Person(rs.get(1), rs.get(2));}
-                catch (SqlException e) { throw new RuntimeException(e);}});
+  .get( rs -> new Person(rs.get(1), rs.get(2)));
 ```
 
 Tuples
