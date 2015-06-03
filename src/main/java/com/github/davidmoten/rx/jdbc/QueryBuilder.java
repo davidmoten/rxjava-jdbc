@@ -10,7 +10,7 @@ final class QueryBuilder {
     /**
      * JDBC sql either select/update/insert.
      */
-    private final String sql;
+    private String sql;
 
     /**
      * Parameters for the query corresponding to ? characters in the sql.
@@ -140,5 +140,9 @@ final class QueryBuilder {
 
     void clearParameters() {
         this.parameters = Observable.empty();
+    }
+
+    void setSql(String sql) {
+        this.sql = sql;
     }
 }

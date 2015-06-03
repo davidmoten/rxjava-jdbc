@@ -47,6 +47,7 @@ import rx.observables.MathObservable;
 import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.jdbc.annotations.Column;
 import com.github.davidmoten.rx.jdbc.annotations.Index;
+import com.github.davidmoten.rx.jdbc.annotations.Query;
 import com.github.davidmoten.rx.jdbc.exceptions.TransactionAlreadyOpenException;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
@@ -1438,6 +1439,27 @@ public abstract class DatabaseTestBase {
     }
 
     static interface NameScore {
+
+        @Index(1)
+        String name();
+
+        @Column("score")
+        int score();
+    }
+
+    @Test
+    public void testAutoMapWithSql() {
+        List<NameScore2> list = db().select().autoMap(NameScore2.class).toList().toBlocking()
+                .single();
+        assertEquals(3, list.size());
+        assertEquals("FRED", list.get(0).name());
+        assertEquals(21, list.get(0).score());
+        assertEquals("JOSEPH", list.get(1).name());
+        assertEquals(34, list.get(1).score());
+    }
+
+    @Query("select name, score from person order by name")
+    static interface NameScore2 {
 
         @Index(1)
         String name();

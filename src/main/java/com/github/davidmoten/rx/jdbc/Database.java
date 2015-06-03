@@ -56,9 +56,9 @@ final public class Database {
     private final ThreadLocal<ConnectionProvider> currentConnectionProvider = new ThreadLocal<ConnectionProvider>();
 
     private final ThreadLocal<Boolean> isTransactionOpen = new ThreadLocal<Boolean>();
-    
+
     static final ThreadLocal<ResultSetCache> rsCache = new ThreadLocal<ResultSetCache>();
-    
+
     static final ThreadLocal<AutoMapCache> autoMapCache = new ThreadLocal<AutoMapCache>();
 
     /**
@@ -375,6 +375,16 @@ final public class Database {
      */
     public QuerySelect.Builder select(String sql) {
         return new QuerySelect.Builder(sql, this);
+    }
+
+    /**
+     * Returns a {@link QuerySelect.Builder} builder and defers specifying sql
+     * to the `autoMap` Class parameter.
+     * 
+     * @return query builder
+     */
+    public QuerySelect.Builder select() {
+        return new QuerySelect.Builder(null, this);
     }
 
     /**
@@ -824,8 +834,8 @@ final public class Database {
     }
 
     /**
-     * Returns a Database based on the current Database except all non-transactional queries run
-     * {@link Schedulers#io}.
+     * Returns a Database based on the current Database except all
+     * non-transactional queries run {@link Schedulers#io}.
      * 
      * @return new Database instance
      */
@@ -833,10 +843,9 @@ final public class Database {
         return asynchronous(Schedulers.io());
     }
 
-    
     /**
-     * Returns a Database based on the current Database except all non-transactional queries run
-     * on the given scheduler.
+     * Returns a Database based on the current Database except all
+     * non-transactional queries run on the given scheduler.
      * 
      * @return new Database instance
      */
@@ -845,19 +854,21 @@ final public class Database {
             @Override
             public Scheduler call() {
                 return nonTransactionalScheduler;
-            }});
+            }
+        });
     }
-    
+
     /**
-     * Returns a Database based on the current Database except all non-transactional queries run
-     * on the scheduler provided by the given factory.
+     * Returns a Database based on the current Database except all
+     * non-transactional queries run on the scheduler provided by the given
+     * factory.
      * 
      * @return new Database instance
      */
     public Database asynchronous(final Func0<Scheduler> nonTransactionalSchedulerFactory) {
         return new Database(cp, nonTransactionalSchedulerFactory);
     }
-    
+
     /**
      * Sentinel object used to indicate in parameters of a query that rather
      * than calling {@link PreparedStatement#setObject(int, Object)} with a null

@@ -243,6 +243,18 @@ final public class QuerySelect implements Query {
          * @return
          */
         public <T> Observable<T> autoMap(Class<T> cls) {
+            if (builder.sql() == null) {
+                com.github.davidmoten.rx.jdbc.annotations.Query query = cls
+                        .getAnnotation(com.github.davidmoten.rx.jdbc.annotations.Query.class);
+                if (query != null && query.value() != null) {
+                    String sql = query.value();
+                    builder.setSql(sql);
+                } else
+                    throw new RuntimeException(
+                            "Class "
+                                    + cls
+                                    + " must be annotated with @Query(sql) or sql must be specified to the builder.select() call");
+            }
             return get(Util.autoMap(cls));
         }
 
