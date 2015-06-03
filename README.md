@@ -227,7 +227,6 @@ Observable<Integer> scores = db.select("select score from person where name=?")
 		.getAs(Integer.class);
 ```
 
-
 Automap
 ------------------------------
 The `autoMap` method maps result set rows to instances of the class you nominate. 
@@ -258,6 +257,20 @@ Observable<Person> persons = db
                  .autoMap(Person.class);
 ```
 Easy eh!
+
+An alternative is to annotate the interface with the indexes of the columns in the result set row:
+
+```java
+public interface Person {
+
+    @Index(1)
+    String name();
+
+    @Index(2)
+    int score();
+}
+``` 
+
 
 ###Automap using a concrete class 
 

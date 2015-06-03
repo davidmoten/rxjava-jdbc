@@ -26,10 +26,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -38,8 +36,6 @@ import org.slf4j.LoggerFactory;
 import rx.functions.Func1;
 
 import com.github.davidmoten.rx.jdbc.QuerySelect.Builder;
-import com.github.davidmoten.rx.jdbc.annotations.Column;
-import com.github.davidmoten.rx.jdbc.annotations.Index;
 
 /**
  * Utility methods.
