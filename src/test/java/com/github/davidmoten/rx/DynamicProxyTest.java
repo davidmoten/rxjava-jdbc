@@ -1,35 +1,16 @@
 package com.github.davidmoten.rx;
 
-import static java.lang.annotation.ElementType.METHOD;
 import static org.junit.Assert.assertEquals;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 
 import org.junit.Test;
 
+import com.github.davidmoten.rx.jdbc.annotations.Column;
+import com.github.davidmoten.rx.jdbc.annotations.Index;
+
 public class DynamicProxyTest {
 
-    @Target({ METHOD })
-    @Retention(RetentionPolicy.RUNTIME)
-    public static @interface Column {
-        String value();
-    }
-
-    @Target({ METHOD })
-    @Retention(RetentionPolicy.RUNTIME)
-    public static @interface Index {
-        /**
-         * 1 based index corresponding the index in a
-         * <code>ResultSet.getObject(index)</code> call.
-         * 
-         * @return the 1 based index that the annotated method corresponds to in
-         *         the ResultSet
-         */
-        int value();
-    }
 
     public static interface Thing {
         @Column("table_id")

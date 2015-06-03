@@ -39,16 +39,15 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Observable.Operator;
 import rx.Observer;
-import rx.Subscriber;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.observables.MathObservable;
-import rx.observers.Observers;
-import rx.observers.Subscribers;
 
 import com.github.davidmoten.rx.Functions;
 import com.github.davidmoten.rx.RxUtil;
+import com.github.davidmoten.rx.jdbc.annotations.Column;
+import com.github.davidmoten.rx.jdbc.annotations.Index;
 import com.github.davidmoten.rx.jdbc.exceptions.TransactionAlreadyOpenException;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
@@ -1421,6 +1420,27 @@ public abstract class DatabaseTestBase {
                 .toBlocking().single();
         assertTrue(cp.getsLatch().await(6, TimeUnit.SECONDS));
         assertTrue(cp.closesLatch().await(6, TimeUnit.SECONDS));
+    }
+    
+    @Test
+    public void testAutoMapInterface() {
+        // test dynamic proxying
+        List<NameScore> list = db().select("select name, score from person order by name")
+                .autoMap(NameScore.class).toList().toBlocking().single();
+        assertEquals(3, list.size());
+        assertEquals("FRED", list.get(0).name());
+        assertEquals(21, list.get(0).score());
+        assertEquals("JOSEPH", list.get(1).name());
+        assertEquals(34, list.get(1).score());
+    }
+    
+    static interface NameScore {
+        
+        @Index(1)
+        String name();
+        
+        @Column("score")
+        int score();
     }
     
     

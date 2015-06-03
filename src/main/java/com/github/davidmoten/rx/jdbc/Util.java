@@ -9,6 +9,7 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Blob;
@@ -24,7 +25,11 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -33,6 +38,8 @@ import org.slf4j.LoggerFactory;
 import rx.functions.Func1;
 
 import com.github.davidmoten.rx.jdbc.QuerySelect.Builder;
+import com.github.davidmoten.rx.jdbc.annotations.Column;
+import com.github.davidmoten.rx.jdbc.annotations.Index;
 
 /**
  * Utility methods.
@@ -253,6 +260,10 @@ public final class Util {
     @SuppressWarnings("unchecked")
     static <T> T autoMap(ResultSet rs, Class<T> cls) {
         try {
+        if (cls.isInterface()) {
+            return autoMapInterface(rs, cls);
+        }
+        else { 
             int n = rs.getMetaData().getColumnCount();
             for (Constructor<?> c : cls.getDeclaredConstructors()) {
                 if (n == c.getParameterTypes().length) {
@@ -261,10 +272,115 @@ public final class Util {
             }
             throw new RuntimeException("constructor with number of parameters=" + n
                     + "  not found in " + cls);
+        }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
+    private static <T> T autoMapInterface(ResultSet rs, Class<T> cls) {
+        return ProxyService.newInstance(rs, cls);
+    }
+    
+    static interface Col {
+        Class<?> returnType();
+    }
+    
+    static class NamedCol implements Col {
+        final String name;
+        private final Class<?> returnType;
+
+        public NamedCol(String name, Class<?> returnType) {
+            this.name = name;
+            this.returnType = returnType;
+        }
+
+        @Override
+        public Class<?> returnType() {
+            return returnType;
+        }
+    }
+
+    static class IndexedCol implements Col {
+        final int index;
+        private final Class<?> returnType;
+
+        public IndexedCol(int index, Class<?> returnType) {
+            this.index = index;
+            this.returnType = returnType;
+        }
+
+        @Override
+        public Class<?> returnType() {
+            return returnType;
+        }
+    }
+
+    
+    private static class ProxyService<T> implements java.lang.reflect.InvocationHandler {
+        Map<String, Object> values = new HashMap<String, Object>();
+
+        ProxyService(ResultSet rs, Class<T> cls) {
+            //TODO cache this in ThreadLocal too
+            Map<String, Integer> colIndexes = new HashMap<String, Integer>();
+            try {
+                ResultSetMetaData metadata = rs.getMetaData();
+                for (int i=1;i<=metadata.getColumnCount();i++) {
+                    colIndexes.put(metadata.getColumnName(i),i);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            //TODO cache methodCols in ThreadLocal
+            Map<String, Col> methodCols = getMethodCols(cls);
+            for (Method m: cls.getMethods()) {
+                String methodName = m.getName();
+                Col column = methodCols.get(methodName);
+                int index;
+                if (column instanceof NamedCol) {
+                    String name = ((NamedCol) column).name;
+                    index = colIndexes.get(name.toUpperCase());
+                } else {
+                    IndexedCol col = ((IndexedCol) column); 
+                    index = col.index;
+                }
+                Object value = autoMap(getObject(rs, column.returnType(), index), column.returnType());
+                values.put(methodName, value);
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        public static <T> T newInstance(ResultSet rs, Class<T> cls) {
+
+            return (T) java.lang.reflect.Proxy.newProxyInstance(cls.getClassLoader(),
+                    new Class[] { cls }, new ProxyService<T>(rs, cls));
+        }
+
+        public Object invoke(Object proxy, Method m, Object[] args) throws Throwable {
+            return values.get(m.getName());
+        }
+    }
+    
+    
+    private static Map<String, Col> getMethodCols(Class<?> cls) {
+        Map<String, Col> methodCols = new HashMap<String, Col>();
+        for (Method method : cls.getMethods()) {
+            String name = method.getName();
+            Column column = method.getAnnotation(Column.class);
+            if (column != null) {
+                //TODO check method has no params and has a mappable return type
+                methodCols.put(name, new NamedCol(column.value(), method.getReturnType()));
+            } else {
+                Index index = method.getAnnotation(Index.class);
+                if (index != null) {
+                    //TODO check method has no params and has a mappable return type
+                    methodCols.put(name, new IndexedCol(index.value(), method.getReturnType()));
+                }
+            }
+        }
+        return methodCols;
+    }
+
 
     /**
      * Converts the ResultSet column values into parameters to the given
