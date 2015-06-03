@@ -230,6 +230,37 @@ Observable<Integer> scores = db.select("select score from person where name=?")
 
 Automap
 ------------------------------
+The `autoMap` method maps result set rows to instances of the class you nominate. 
+
+If you nominate an interface then dynamic proxies (a java reflection feature) are used to build instances. 
+
+If you nominate a concrete class then the columns of the result set are mapped to parameters in the constructor (again using reflection).
+
+###Automap using an interface
+
+Create an annotated interface (introduced in *rxjava-jdbc* 0.5.8):
+
+```java
+public interface Person {
+
+    @Column("name")
+    String name();
+
+    @Column("score")
+    int score();
+}
+``` 
+
+Then run
+```java
+Observable<Person> persons = db
+                 .select("select name, score from person order by name")
+                 .autoMap(Person.class);
+```
+Easy eh!
+
+###Automap using a concrete class 
+
 Given this class:
 ```java
 static class Person {
@@ -242,7 +273,7 @@ static class Person {
 				Long registered) {
 				...
 ```
-We can get *rxjava-jdbc* to use reflection to auto map the fields in a result set to create an instance of ```Person```:
+Then run
 ```java
 Observable<Person> persons = db
 				.select("select name,score,dob,registered from person order by name")
