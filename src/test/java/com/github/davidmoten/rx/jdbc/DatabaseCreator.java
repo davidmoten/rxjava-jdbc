@@ -29,7 +29,7 @@ public class DatabaseCreator {
         }
         return new Database(cp);
     }
-    
+
     public static Database createDatabase(DataSource dataSource) {
         return createDatabase(new ConnectionProviderFromDataSource(dataSource));
     }

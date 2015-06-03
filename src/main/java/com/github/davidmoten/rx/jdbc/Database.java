@@ -192,7 +192,7 @@ final public class Database {
     public static Database fromContext(String jndiResource) {
         return new Database(new ConnectionProviderFromContext(jndiResource));
     }
-    
+
     /**
      * Returns a {@link Database} based on connections obtained from a
      * {@link DataSource}
