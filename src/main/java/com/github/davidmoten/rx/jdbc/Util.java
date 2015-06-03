@@ -260,19 +260,18 @@ public final class Util {
     @SuppressWarnings("unchecked")
     static <T> T autoMap(ResultSet rs, Class<T> cls) {
         try {
-        if (cls.isInterface()) {
-            return autoMapInterface(rs, cls);
-        }
-        else { 
-            int n = rs.getMetaData().getColumnCount();
-            for (Constructor<?> c : cls.getDeclaredConstructors()) {
-                if (n == c.getParameterTypes().length) {
-                    return autoMap(rs, (Constructor<T>) c);
+            if (cls.isInterface()) {
+                return autoMapInterface(rs, cls);
+            } else {
+                int n = rs.getMetaData().getColumnCount();
+                for (Constructor<?> c : cls.getDeclaredConstructors()) {
+                    if (n == c.getParameterTypes().length) {
+                        return autoMap(rs, (Constructor<T>) c);
+                    }
                 }
+                throw new RuntimeException("constructor with number of parameters=" + n
+                        + "  not found in " + cls);
             }
-            throw new RuntimeException("constructor with number of parameters=" + n
-                    + "  not found in " + cls);
-        }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -281,11 +280,11 @@ public final class Util {
     private static <T> T autoMapInterface(ResultSet rs, Class<T> cls) {
         return ProxyService.newInstance(rs, cls);
     }
-    
+
     static interface Col {
         Class<?> returnType();
     }
-    
+
     static class NamedCol implements Col {
         final String name;
         private final Class<?> returnType;
@@ -316,24 +315,23 @@ public final class Util {
         }
     }
 
-    
     private static class ProxyService<T> implements java.lang.reflect.InvocationHandler {
-        Map<String, Object> values = new HashMap<String, Object>();
+        private final Map<String, Object> values = new HashMap<String, Object>();
 
         ProxyService(ResultSet rs, Class<T> cls) {
-            //TODO cache this in ThreadLocal too
-            Map<String, Integer> colIndexes = new HashMap<String, Integer>();
-            try {
-                ResultSetMetaData metadata = rs.getMetaData();
-                for (int i=1;i<=metadata.getColumnCount();i++) {
-                    colIndexes.put(metadata.getColumnName(i),i);
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            //TODO cache methodCols in ThreadLocal
-            Map<String, Col> methodCols = getMethodCols(cls);
-            for (Method m: cls.getMethods()) {
+            // load information from cache about the result set
+            if (Database.rsCache.get() == null || Database.rsCache.get().rs != rs)
+                Database.rsCache.set(new ResultSetCache(rs));
+            Map<String, Integer> colIndexes = Database.rsCache.get().colIndexes;
+
+            // load information from cache about the class
+            if (Database.autoMapCache.get() == null || Database.autoMapCache.get().cls != cls)
+                Database.autoMapCache.set(new AutoMapCache(cls));
+            Map<String, Col> methodCols = Database.autoMapCache.get().methodCols;
+
+            // calculate values for all the interface methods and put them in a
+            // map
+            for (Method m : cls.getMethods()) {
                 String methodName = m.getName();
                 Col column = methodCols.get(methodName);
                 int index;
@@ -341,10 +339,11 @@ public final class Util {
                     String name = ((NamedCol) column).name;
                     index = colIndexes.get(name.toUpperCase());
                 } else {
-                    IndexedCol col = ((IndexedCol) column); 
+                    IndexedCol col = ((IndexedCol) column);
                     index = col.index;
                 }
-                Object value = autoMap(getObject(rs, column.returnType(), index), column.returnType());
+                Object value = autoMap(getObject(rs, column.returnType(), index),
+                        column.returnType());
                 values.put(methodName, value);
             }
         }
@@ -360,27 +359,6 @@ public final class Util {
             return values.get(m.getName());
         }
     }
-    
-    
-    private static Map<String, Col> getMethodCols(Class<?> cls) {
-        Map<String, Col> methodCols = new HashMap<String, Col>();
-        for (Method method : cls.getMethods()) {
-            String name = method.getName();
-            Column column = method.getAnnotation(Column.class);
-            if (column != null) {
-                //TODO check method has no params and has a mappable return type
-                methodCols.put(name, new NamedCol(column.value(), method.getReturnType()));
-            } else {
-                Index index = method.getAnnotation(Index.class);
-                if (index != null) {
-                    //TODO check method has no params and has a mappable return type
-                    methodCols.put(name, new IndexedCol(index.value(), method.getReturnType()));
-                }
-            }
-        }
-        return methodCols;
-    }
-
 
     /**
      * Converts the ResultSet column values into parameters to the given

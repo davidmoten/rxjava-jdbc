@@ -56,6 +56,10 @@ final public class Database {
     private final ThreadLocal<ConnectionProvider> currentConnectionProvider = new ThreadLocal<ConnectionProvider>();
 
     private final ThreadLocal<Boolean> isTransactionOpen = new ThreadLocal<Boolean>();
+    
+    static final ThreadLocal<ResultSetCache> rsCache = new ThreadLocal<ResultSetCache>();
+    
+    static final ThreadLocal<AutoMapCache> autoMapCache = new ThreadLocal<AutoMapCache>();
 
     /**
      * Records the result of the last finished transaction (committed =
@@ -584,6 +588,7 @@ final public class Database {
     void endTransactionSubscribe() {
         log.debug("endTransactionSubscribe");
         currentSchedulerFactory.set(null);
+        rsCache.set(null);
     }
 
     /**
@@ -593,6 +598,7 @@ final public class Database {
         log.debug("endTransactionObserve");
         currentConnectionProvider.set(cp);
         isTransactionOpen.set(false);
+        rsCache.set(null);
     }
 
     /**
