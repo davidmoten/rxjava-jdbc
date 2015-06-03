@@ -308,6 +308,16 @@ The automatic mappings below of objects are used in the ```autoMap()``` method a
 
 Note that automappings do not occur to primitives so use ```Long``` instead of ```long```.
 
+Custom mapping
+------------------
+If you want to avoid the reflection and type conversion overhead of `autoMap` then you can use `get` and map the `ResultSet` as you please:
+
+```java
+db.select("select name, score from person")
+  .get( rs -> { try { return new Person(rs.get(1), rs.get(2));}
+                catch (SqlException e) { throw new RuntimeException(e);}});
+```
+
 Tuples
 ---------------
 Typed tuples can be returned in an ```Observable```:
