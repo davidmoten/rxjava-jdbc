@@ -18,19 +18,24 @@ class AutoMapCache {
         this.cls = cls;
         this.methodCols = getMethodCols(cls);
     }
-    
+
     private static Map<String, Col> getMethodCols(Class<?> cls) {
         Map<String, Col> methodCols = new HashMap<String, Col>();
         for (Method method : cls.getMethods()) {
             String name = method.getName();
             Column column = method.getAnnotation(Column.class);
             if (column != null) {
-                //TODO check method has no params and has a mappable return type
-                methodCols.put(name, new NamedCol(column.value(), method.getReturnType()));
+                // TODO check method has no params and has a mappable return
+                // type
+                String col = column.value();
+                if (col.equals(Column.NOT_SPECIFIED))
+                    col = Util.camelCaseToUnderscore(name);
+                methodCols.put(name, new NamedCol(col, method.getReturnType()));
             } else {
                 Index index = method.getAnnotation(Index.class);
                 if (index != null) {
-                    //TODO check method has no params and has a mappable return type
+                    // TODO check method has no params and has a mappable return
+                    // type
                     methodCols.put(name, new IndexedCol(index.value(), method.getReturnType()));
                 }
             }
@@ -38,5 +43,4 @@ class AutoMapCache {
         return methodCols;
     }
 
-    
 }

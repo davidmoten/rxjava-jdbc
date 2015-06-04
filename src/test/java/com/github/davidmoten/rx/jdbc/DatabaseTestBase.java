@@ -1446,6 +1446,25 @@ public abstract class DatabaseTestBase {
         @Column("score")
         int score();
     }
+    
+    @Test
+    public void testAutoMapConvertsCamelCaseToUnderscoreColumnNames() {
+        // test dynamic proxying
+        List<Address> list = db().select("select address_id, full_address from address")
+                .autoMap(Address.class).toList().toBlocking().single();
+        assertEquals(1, list.size());
+        assertEquals(1, list.get(0).addressId());
+        assertTrue(list.get(0).fullAddress().contains("Something"));
+    }
+
+    static interface Address {
+
+        @Column 
+        int addressId();
+
+        @Column
+        String fullAddress();
+    }
 
     @Test
     public void testAutoMapWithQueryAnnotation() {

@@ -62,6 +62,10 @@ public class DatabaseCreator {
             c.prepareStatement(
                     "create table person_blob (name varchar(50) not null, document blob)")
                     .execute();
+            c.prepareStatement(
+                    "create table address (address_id int primary key, full_address varchar(255) not null)")
+                    .execute();
+            c.prepareStatement("insert into address(address_id, full_address) values(1,'57 Something St, El Barrio, Big Place')").execute();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

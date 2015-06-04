@@ -8,5 +8,8 @@ import static java.lang.annotation.ElementType.METHOD;
 @Target({ METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Column {
-    String value();
+    
+    public static final String NOT_SPECIFIED = "*COLUMN_NOT_SPECIFIED*";
+    
+    String value() default NOT_SPECIFIED;
 }

@@ -387,5 +387,36 @@ public class UtilTest {
         assertEquals(Util.mapObject(resultSet, String.class, 1), null);
 
     }
+    
+    @Test
+    public void testCamelCaseToUnderscore() {
+        assertEquals("a", Util.camelCaseToUnderscore("a"));
+    }
+    
+    @Test
+    public void testCamelCaseToUnderscore2() {
+        assertEquals("ab", Util.camelCaseToUnderscore("ab"));
+    }
+    
+    
+    @Test
+    public void testCamelCaseToUnderscore3() {
+        assertEquals("a_B", Util.camelCaseToUnderscore("aB"));
+    }
+    
+    @Test
+    public void testCamelCaseToUnderscore4() {
+        assertEquals("a_BC", Util.camelCaseToUnderscore("aBC"));
+    }
+    
+    @Test
+    public void testCamelCaseToUnderscore5() {
+        assertEquals("a_Before_Count", Util.camelCaseToUnderscore("aBeforeCount"));
+    }
+    
+    @Test
+    public void testCamelCaseToUnderscore6() {
+        assertEquals("", Util.camelCaseToUnderscore(""));
+    }
 
 }

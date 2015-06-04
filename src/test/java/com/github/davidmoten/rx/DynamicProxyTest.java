@@ -50,7 +50,7 @@ public class DynamicProxyTest {
         public Object invoke(Object proxy, Method m, Object[] args) throws Throwable {
             Column a = m.getAnnotation(Column.class);
             final String column;
-            if (a == null)
+            if (a == null || a.value().equals(Column.NOT_SPECIFIED))
                 column = null;
             else
                 column = a.value();
@@ -66,6 +66,8 @@ public class DynamicProxyTest {
             else
                 throw new RuntimeException("unexpected");
         }
-    }
 
+        
+    }
+    
 }

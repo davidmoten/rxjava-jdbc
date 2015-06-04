@@ -42,6 +42,7 @@ import com.github.davidmoten.rx.jdbc.QuerySelect.Builder;
  */
 public final class Util {
 
+    
     /**
      * Private constructor to prevent instantiation.
      */
@@ -312,6 +313,7 @@ public final class Util {
     }
 
     private static class ProxyService<T> implements java.lang.reflect.InvocationHandler {
+        
         private final Map<String, Object> values = new HashMap<String, Object>();
 
         ProxyService(ResultSet rs, Class<T> cls) {
@@ -344,6 +346,7 @@ public final class Util {
             }
         }
 
+
         @SuppressWarnings("unchecked")
         public static <T> T newInstance(ResultSet rs, Class<T> cls) {
 
@@ -357,6 +360,21 @@ public final class Util {
         }
     }
 
+    static String camelCaseToUnderscore(String camelCased) {
+        //guava has best solution for this with CaseFormat class
+        //but don't want to add dependency just for this method
+        final String regex = "([a-z])([A-Z]+)";
+        final String replacement = "$1_$2";
+        return camelCased.replaceAll(regex, replacement);
+    }
+    
+    static String first(String[] value) {
+        if (value == null || value.length == 0)
+            return null;
+        else
+            return value[0];
+    }
+    
     /**
      * Converts the ResultSet column values into parameters to the given
      * constructor (with number of parameters equals the number of columns) of
