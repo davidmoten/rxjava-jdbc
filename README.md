@@ -288,7 +288,7 @@ public interface Person {
 }
 ```
 
-Camel cased method names will be converted to underscore by default:
+Camel cased method names will be converted to underscore by default (since 0.5.11):
 
 ```java
 public interface Address {
