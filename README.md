@@ -326,14 +326,14 @@ Observable<Person> persons = db
 Given this class:
 ```java
 static class Person {
-		private final String name;
-		private final double score;
-		private final Long dateOfBirth;
-		private final Long registered;
+	private final String name;
+	private final double score;
+	private final Long dateOfBirth;
+	private final Long registered;
 
-		Person(String name, Double score, Long dateOfBirth,
-				Long registered) {
-				...
+	Person(String name, Double score, Long dateOfBirth,
+			Long registered) {
+			...
 ```
 Then run
 ```java
