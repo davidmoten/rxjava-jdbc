@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.davidmoten.rx.jdbc.ResultSetMapper;
+import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
 
 /**
  * Utility methods for tuples.
@@ -134,7 +135,7 @@ public final class Tuples {
             }
             return new TupleN<T>(list);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
     }
 }

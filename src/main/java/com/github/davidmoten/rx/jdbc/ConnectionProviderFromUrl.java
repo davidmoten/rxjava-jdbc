@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
+
 /**
  * Provides {@link Connection}s from a url (using
  * DriverManager.getConnection()).
@@ -50,7 +52,7 @@ public final class ConnectionProviderFromUrl implements ConnectionProvider {
             else
                 return DriverManager.getConnection(url);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
     }
 

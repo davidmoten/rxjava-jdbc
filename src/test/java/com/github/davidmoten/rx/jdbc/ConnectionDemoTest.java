@@ -14,6 +14,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
+
 public class ConnectionDemoTest {
 
     @Test
@@ -32,7 +34,7 @@ public class ConnectionDemoTest {
             }
             assertEquals(asList("FRED", "JOSEPH", "MARMADUKE"), list);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         } finally {
             if (rs != null)
                 try {

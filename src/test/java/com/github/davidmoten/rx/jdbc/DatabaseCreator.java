@@ -6,6 +6,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
+import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
+
 public class DatabaseCreator {
 
     private static AtomicInteger dbNumber = new AtomicInteger();
@@ -25,7 +27,7 @@ public class DatabaseCreator {
         try {
             con.close();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
         return new Database(cp);
     }
@@ -41,7 +43,7 @@ public class DatabaseCreator {
         try {
             con.close();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
         return db;
     }
@@ -67,7 +69,7 @@ public class DatabaseCreator {
                     .execute();
             c.prepareStatement("insert into address(address_id, full_address) values(1,'57 Something St, El Barrio, Big Place')").execute();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
     }
 

@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import rx.functions.Func1;
 
 import com.github.davidmoten.rx.jdbc.QuerySelect.Builder;
+import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
 
 /**
  * Utility methods.
@@ -150,7 +151,7 @@ public final class Util {
             } else
                 return false;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
     }
 
@@ -165,7 +166,7 @@ public final class Util {
                 connection.commit();
                 log.debug("committed");
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new SQLRuntimeException(e);
             }
     }
 
@@ -180,7 +181,7 @@ public final class Util {
                 connection.rollback();
                 log.debug("rolled back");
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new SQLRuntimeException(e);
             }
     }
 
@@ -212,7 +213,7 @@ public final class Util {
         try {
             return con.getAutoCommit();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
     }
 
@@ -270,7 +271,7 @@ public final class Util {
                         + "  not found in " + cls);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
     }
 
@@ -439,7 +440,7 @@ public final class Util {
                 s.append(type);
             }
         } catch (SQLException e1) {
-            throw new RuntimeException(e1);
+            throw new SQLRuntimeException(e1);
         }
         return s.toString();
     }
@@ -589,7 +590,7 @@ public final class Util {
             } else
                 return rs.getObject(i);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
     }
 
@@ -610,7 +611,7 @@ public final class Util {
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
 
     }
@@ -631,7 +632,7 @@ public final class Util {
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
     }
 

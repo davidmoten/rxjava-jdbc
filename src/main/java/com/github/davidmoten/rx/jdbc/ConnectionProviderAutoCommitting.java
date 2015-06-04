@@ -3,6 +3,8 @@ package com.github.davidmoten.rx.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
+
 /**
  * Provides {@link Connection}s with autoCommit set to true.
  */
@@ -29,7 +31,7 @@ final class ConnectionProviderAutoCommitting implements ConnectionProvider {
         try {
             con.setAutoCommit(true);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
         return con;
     }

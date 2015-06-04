@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
+
 class ResultSetCache {
 
     final ResultSet rs;
@@ -26,7 +28,7 @@ class ResultSetCache {
             }
             return map;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
     }
 

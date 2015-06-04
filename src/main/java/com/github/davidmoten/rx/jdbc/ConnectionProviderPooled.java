@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
 import com.zaxxer.hikari.HikariDataSource;
 
 /**
@@ -78,7 +79,7 @@ public final class ConnectionProviderPooled implements ConnectionProvider {
         try {
             return pool.getConnection();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
     }
 

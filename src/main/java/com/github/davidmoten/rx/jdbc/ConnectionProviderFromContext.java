@@ -8,6 +8,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
+
 public final class ConnectionProviderFromContext implements ConnectionProvider {
 
     private final String jndiResource;
@@ -24,7 +26,7 @@ public final class ConnectionProviderFromContext implements ConnectionProvider {
             Connection conn = ds.getConnection();
             return conn;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         } catch (NamingException e) {
             throw new RuntimeException(e);
         }

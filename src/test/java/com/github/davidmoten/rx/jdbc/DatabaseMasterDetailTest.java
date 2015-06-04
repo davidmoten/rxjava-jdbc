@@ -14,6 +14,8 @@ import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
+import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
+
 public class DatabaseMasterDetailTest {
 
     @Test
@@ -197,7 +199,7 @@ public class DatabaseMasterDetailTest {
                     .execute();
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
     }
 

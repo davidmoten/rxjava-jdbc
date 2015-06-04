@@ -5,6 +5,8 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
+
 public class ConnectionProviderFromDataSource implements ConnectionProvider {
 
     private final DataSource dataSource;
@@ -18,7 +20,7 @@ public class ConnectionProviderFromDataSource implements ConnectionProvider {
         try {
             return dataSource.getConnection();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new SQLRuntimeException(e);
         }
     }
 
