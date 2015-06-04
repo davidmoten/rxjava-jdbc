@@ -286,7 +286,21 @@ public interface Person {
     @Index(2)
     int score();
 }
-``` 
+```
+
+Camel cased method names will be converted to underscore by default:
+
+```java
+public interface Address {
+
+    @Column // maps to address_id 
+    int addressId();
+
+    @Column // maps to full_address
+    String fullAddress();
+}
+```
+ 
 You can also specify the sql to be run in the annotation:
 
 ```java
