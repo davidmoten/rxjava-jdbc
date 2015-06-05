@@ -227,6 +227,10 @@ final public class QueryUpdate implements Query {
             return this;
         }
 
+        public ReturnGeneratedKeysBuilder<Object> returnGeneratedKeys() {
+            return new ReturnGeneratedKeysBuilder<Object>(builder);
+        }
+
         /**
          * Returns an {@link Observable} with the count of rows affected by the
          * update statement.
@@ -272,5 +276,26 @@ final public class QueryUpdate implements Query {
             builder.clearParameters();
             return this;
         }
+    }
+
+    static class ReturnGeneratedKeysBuilder<T> {
+
+        private final QueryBuilder builder;
+
+        public ReturnGeneratedKeysBuilder(QueryBuilder builder) {
+            this.builder = builder;
+        }
+
+        // /**
+        // * Transforms the results using the given function.
+        // *
+        // * @param function
+        // * @return
+        // */
+        // public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
+        // return new QuerySelect(builder.sql(), builder.parameters(),
+        // builder.depends(),
+        // builder.context()).execute(function);
+        // }
     }
 }
