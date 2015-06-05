@@ -23,8 +23,8 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuples;
  * A query and its executable context.
  */
 final public class QuerySelect implements Query {
-    
-    //Note has one ? to match the expected one parameter
+
+    // Note has one ? to match the expected one parameter
     static final String RETURN_GENERATED_KEYS = "RETURN_GENERATED_KEYS?";
 
     private final String sql;
@@ -43,7 +43,7 @@ final public class QuerySelect implements Query {
      * @param depends
      * @param context
      */
-    private QuerySelect(String sql, Observable<Parameter> parameters, Observable<?> depends,
+    QuerySelect(String sql, Observable<Parameter> parameters, Observable<?> depends,
             QueryContext context) {
         checkNotNull(sql);
         checkNotNull(parameters);
@@ -126,7 +126,7 @@ final public class QuerySelect implements Query {
     /**
      * Builds a {@link QuerySelect}.
      */
-    final public static class Builder {
+    public static final class Builder {
 
         /**
          * Builds the standard stuff.
@@ -214,6 +214,10 @@ final public class QuerySelect implements Query {
          * @return
          */
         public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
+            return get(function, builder);
+        }
+
+        static <T> Observable<T> get(ResultSetMapper<? extends T> function, QueryBuilder builder) {
             return new QuerySelect(builder.sql(), builder.parameters(), builder.depends(),
                     builder.context()).execute(function);
         }
@@ -249,6 +253,10 @@ final public class QuerySelect implements Query {
          * @return
          */
         public <T> Observable<T> autoMap(Class<T> cls) {
+            return autoMap(cls, builder);
+        }
+
+        static <T> Observable<T> autoMap(Class<T> cls, QueryBuilder builder) {
             if (builder.sql() == null) {
                 com.github.davidmoten.rx.jdbc.annotations.Query query = cls
                         .getAnnotation(com.github.davidmoten.rx.jdbc.annotations.Query.class);
@@ -261,7 +269,7 @@ final public class QuerySelect implements Query {
                                     + cls
                                     + " must be annotated with @Query(sql) or sql must be specified to the builder.select() call");
             }
-            return get(Util.autoMap(cls));
+            return get(Util.autoMap(cls), builder);
         }
 
         /**

@@ -3,7 +3,11 @@ package com.github.davidmoten.rx.jdbc;
 import static com.github.davidmoten.rx.jdbc.Conditions.checkNotNull;
 import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
 
+import java.sql.ResultSet;
 import java.util.List;
+
+import com.github.davidmoten.rx.jdbc.QuerySelect.Builder;
+import com.github.davidmoten.rx.jdbc.tuple.Tuples;
 
 import rx.Observable;
 import rx.Observable.Operator;
@@ -286,16 +290,49 @@ final public class QueryUpdate implements Query {
             this.builder = builder;
         }
 
-        // /**
-        // * Transforms the results using the given function.
-        // *
-        // * @param function
-        // * @return
-        // */
-        // public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
-        // return new QuerySelect(builder.sql(), builder.parameters(),
-        // builder.depends(),
-        // builder.context()).execute(function);
-        // }
+        /**
+         * Transforms the results using the given function.
+         *
+         * @param function
+         * @return
+         */
+        public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
+            return QuerySelect.Builder.get(function, builder);
+        }
+        
+        /**
+         * <p>
+         * Transforms each row of the {@link ResultSet} into an instance of
+         * <code>T</code> using <i>automapping</i> of the ResultSet columns into
+         * corresponding constructor parameters that are assignable. Beyond
+         * normal assignable criteria (for example Integer 123 is assignable to
+         * a Double) other conversions exist to facilitate the automapping:
+         * </p>
+         * <p>
+         * They are:
+         * <ul>
+         * <li>java.sql.Blob &#10143; byte[]</li>
+         * <li>java.sql.Blob &#10143; java.io.InputStream</li>
+         * <li>java.sql.Clob &#10143; String</li>
+         * <li>java.sql.Clob &#10143; java.io.Reader</li>
+         * <li>java.sql.Date &#10143; java.util.Date</li>
+         * <li>java.sql.Date &#10143; Long</li>
+         * <li>java.sql.Timestamp &#10143; java.util.Date</li>
+         * <li>java.sql.Timestamp &#10143; Long</li>
+         * <li>java.sql.Time &#10143; java.util.Date</li>
+         * <li>java.sql.Time &#10143; Long</li>
+         * <li>java.math.BigInteger &#10143;
+         * Short,Integer,Long,Float,Double,BigDecimal</li>
+         * <li>java.math.BigDecimal &#10143;
+         * Short,Integer,Long,Float,Double,BigInteger</li>
+         * </p>
+         * 
+         * @param cls
+         * @return
+         */
+        public <T> Observable<T> autoMap(Class<T> cls) {
+            return QuerySelect.Builder.autoMap(cls, builder);
+        }
+        
     }
 }
