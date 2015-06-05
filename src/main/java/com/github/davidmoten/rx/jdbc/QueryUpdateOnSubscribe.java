@@ -245,7 +245,9 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         if (!state.keepGoing)
             return;
         log.debug("onNext");
-        subscriber.onNext((T) (Integer) count);
+        if (!query.returnGeneratedKeys()) {
+            subscriber.onNext((T) (Integer) count);
+        }
     }
 
     /**
