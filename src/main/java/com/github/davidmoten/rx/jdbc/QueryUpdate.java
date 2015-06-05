@@ -25,7 +25,7 @@ final public class QueryUpdate<T> implements Query {
     private final QueryContext context;
     private final Observable<?> depends;
     // nullable!
-    private final ResultSetMapper<? extends T> function;
+    private final ResultSetMapper<? extends T> returnGeneratedKeysFunction;
 
     /**
      * Private constructor.
@@ -34,11 +34,11 @@ final public class QueryUpdate<T> implements Query {
      * @param parameters
      * @param depends
      * @param context
-     * @param function
+     * @param returnGeneratedKeysFunction
      *            nullable!
      */
     private QueryUpdate(String sql, Observable<Parameter> parameters, Observable<?> depends,
-            QueryContext context, ResultSetMapper<? extends T> function) {
+            QueryContext context, ResultSetMapper<? extends T> returnGeneratedKeysFunction) {
         checkNotNull(sql);
         checkNotNull(parameters);
         checkNotNull(depends);
@@ -47,7 +47,7 @@ final public class QueryUpdate<T> implements Query {
         this.parameters = parameters;
         this.depends = depends;
         this.context = context;
-        this.function = function;
+        this.returnGeneratedKeysFunction = returnGeneratedKeysFunction;
     }
 
     @Override
@@ -88,8 +88,12 @@ final public class QueryUpdate<T> implements Query {
         return (Observable<Integer>) QueryUpdate.get(this);
     }
     
-    public ResultSetMapper<? extends T> function() {
-        return function;
+    public ResultSetMapper<? extends T> returnGeneratedKeysFunction() {
+        return returnGeneratedKeysFunction;
+    }
+    
+    boolean returnGeneratedKeys() {
+        return returnGeneratedKeysFunction != null;
     }
 
     static <T> Observable<T> get(QueryUpdate<T> queryUpdate) {

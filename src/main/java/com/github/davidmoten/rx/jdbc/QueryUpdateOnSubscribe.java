@@ -3,6 +3,7 @@ package com.github.davidmoten.rx.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
+import rx.observers.Subscribers;
 
 /**
  * Executes the update query.
@@ -201,13 +203,17 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      * @throws SQLException
      */
     @SuppressWarnings("unchecked")
-    private void performUpdate(Subscriber<? super T> subscriber, State state)
-            throws SQLException {
+    private void performUpdate(Subscriber<? super T> subscriber, State state) throws SQLException {
         checkSubscription(subscriber, state);
         if (!state.keepGoing)
             return;
-
-        state.ps = state.con.prepareStatement(query.sql());
+        int keysOption;
+        if (query.returnGeneratedKeys()) {
+            keysOption = Statement.RETURN_GENERATED_KEYS;
+        } else {
+            keysOption = Statement.NO_GENERATED_KEYS;
+        }
+        state.ps = state.con.prepareStatement(query.sql(), keysOption);
         Util.setParameters(state.ps, parameters);
 
         checkSubscription(subscriber, state);
@@ -218,6 +224,16 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         try {
             log.debug("executing sql={}, parameters {}", query.sql(), parameters);
             count = state.ps.executeUpdate();
+            if (query.returnGeneratedKeys()) {
+                Observable<Parameter> params = Observable.just(new Parameter(state.ps
+                        .getResultSet()));
+                Observable<Object> depends = Observable.empty();
+                Observable<T> o = new QuerySelect(QuerySelect.RETURN_GENERATED_KEYS, params, depends,
+                        query.context()).execute(query.returnGeneratedKeysFunction());
+                Subscriber<T> sub = Subscribers.from(subscriber);
+                subscriber.add(sub);
+                o.subscribe(sub);
+            }
             log.debug("executed ps={}", state.ps);
         } catch (SQLException e) {
             throw new SQLException("failed to execute sql=" + query.sql(), e);
