@@ -39,6 +39,7 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
     private final ResultSetMapper<? extends T> function;
     private final QuerySelect query;
     private final List<Parameter> parameters;
+    private final boolean resultSetProvided;
 
     private static class State {
         // fields need to be volatile because unsub could be from another
@@ -61,14 +62,19 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
         this.query = query;
         this.parameters = parameters;
         this.function = function;
+        this.resultSetProvided = query.sql().equals(QuerySelect.RETURN_GENERATED_KEYS);
     }
 
     @Override
     public void call(Subscriber<? super T> subscriber) {
         final State state = new State();
         try {
-            connectAndPrepareStatement(subscriber, state);
-            executeQuery(subscriber, state);
+            if (resultSetProvided){
+                state.rs = (ResultSet) parameters.get(0).getValue();
+            } else  {
+                connectAndPrepareStatement(subscriber, state);
+                executeQuery(subscriber, state);
+            }
             subscriber.setProducer(new QuerySelectProducer<T>(function, subscriber, state.con,
                     state.ps, state.rs));
             // this is required for the case when

@@ -23,6 +23,9 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuples;
  * A query and its executable context.
  */
 final public class QuerySelect implements Query {
+    
+    //Note has one ? to match the expected one parameter
+    static final String RETURN_GENERATED_KEYS = "RETURN_GENERATED_KEYS?";
 
     private final String sql;
     private final Observable<Parameter> parameters;
@@ -33,7 +36,10 @@ final public class QuerySelect implements Query {
      * Constructor.
      * 
      * @param sql
+     *            jdbc select statement or the word RETURN_GENERATED_KEYS
      * @param parameters
+     *            if sql == RETURN_GENERATED_KEYS then the first parameter will
+     *            be the ResultSet to be used as source
      * @param depends
      * @param context
      */
@@ -113,8 +119,8 @@ final public class QuerySelect implements Query {
      */
     private <T> Observable<T> executeOnce(final List<Parameter> params,
             ResultSetMapper<? extends T> function) {
-        return QuerySelectOnSubscribe.execute(this, params, function)
-                .subscribeOn(context.scheduler());
+        return QuerySelectOnSubscribe.execute(this, params, function).subscribeOn(
+                context.scheduler());
     }
 
     /**
