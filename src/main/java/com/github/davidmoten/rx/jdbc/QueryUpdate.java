@@ -16,13 +16,19 @@ import rx.functions.Func1;
 /**
  * Always emits an Observable<Integer> of size 1 containing the number of
  * affected records.
+ * 
+ * @param <T>
+ *            type of returned observable (Integer for count, custom for
+ *            returning generated keys)
  */
-final public class QueryUpdate implements Query {
+final public class QueryUpdate<T> implements Query {
 
     private final String sql;
     private final Observable<Parameter> parameters;
     private final QueryContext context;
     private final Observable<?> depends;
+    // nullable!
+    private final ResultSetMapper<? extends T> function;
 
     /**
      * Private constructor.
@@ -31,9 +37,11 @@ final public class QueryUpdate implements Query {
      * @param parameters
      * @param depends
      * @param context
+     * @param function
+     *            nullable!
      */
     private QueryUpdate(String sql, Observable<Parameter> parameters, Observable<?> depends,
-            QueryContext context) {
+            QueryContext context, ResultSetMapper<? extends T> function) {
         checkNotNull(sql);
         checkNotNull(parameters);
         checkNotNull(depends);
@@ -42,6 +50,7 @@ final public class QueryUpdate implements Query {
         this.parameters = parameters;
         this.depends = depends;
         this.context = context;
+        this.function = function;
     }
 
     @Override
@@ -78,9 +87,13 @@ final public class QueryUpdate implements Query {
      * @return
      */
     public Observable<Integer> count() {
-        return bufferedParameters(this)
+        return (Observable<Integer>) QueryUpdate.get(this);
+    }
+
+    static <T> Observable<T> get(QueryUpdate<T> queryUpdate) {
+        return bufferedParameters(queryUpdate)
         // execute query for each set of parameters
-                .concatMap(executeOnce());
+                .concatMap(queryUpdate.<T> executeOnce());
     }
 
     /**
@@ -90,18 +103,18 @@ final public class QueryUpdate implements Query {
      * @param query
      * @return
      */
-    private Func1<List<Parameter>, Observable<Integer>> executeOnce() {
-        return new Func1<List<Parameter>, Observable<Integer>>() {
+    private Func1<List<Parameter>, Observable<T>> executeOnce() {
+        return new Func1<List<Parameter>, Observable<T>>() {
             @Override
-            public Observable<Integer> call(final List<Parameter> params) {
+            public Observable<T> call(final List<Parameter> params) {
                 if (sql.equals(QueryUpdateOnSubscribe.BEGIN_TRANSACTION)) {
                     context.beginTransactionSubscribe();
                 }
-                Observable<Integer> result = executeOnce(params).subscribeOn(context.scheduler());
+                Observable<T> result = executeOnce(params).subscribeOn(context.scheduler());
                 if (sql.equals(QueryUpdateOnSubscribe.COMMIT)
                         || sql.equals(QueryUpdateOnSubscribe.ROLLBACK))
                     context.endTransactionSubscribe();
-                return result;
+                return (Observable<T>) result;
             }
         };
     }
@@ -114,8 +127,8 @@ final public class QueryUpdate implements Query {
      * @param parameters
      * @return
      */
-    private Observable<Integer> executeOnce(final List<Parameter> parameters) {
-        return QueryUpdateOnSubscribe.execute(this, parameters);
+    private Observable<T> executeOnce(final List<Parameter> parameters) {
+        return (Observable<T>) QueryUpdateOnSubscribe.execute(this, parameters);
     }
 
     /**
@@ -243,7 +256,7 @@ final public class QueryUpdate implements Query {
          */
         public Observable<Integer> count() {
             return new QueryUpdate(builder.sql(), builder.parameters(), builder.depends(),
-                    builder.context()).count();
+                    builder.context(), null).count();
         }
 
         /**
@@ -296,10 +309,11 @@ final public class QueryUpdate implements Query {
          * @param function
          * @return
          */
-        public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
-            return QuerySelect.Builder.get(function, builder);
+        public Observable<T> get(ResultSetMapper<? extends T> function) {
+            return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(), builder
+                    .depends(), builder.context(), function));
         }
-        
+
         /**
          * <p>
          * Transforms each row of the {@link ResultSet} into an instance of
@@ -330,9 +344,10 @@ final public class QueryUpdate implements Query {
          * @param cls
          * @return
          */
-        public <T> Observable<T> autoMap(Class<T> cls) {
-            return QuerySelect.Builder.autoMap(cls, builder);
+        public Observable<T> autoMap(Class<T> cls) {
+            Util.setSqlFromQueryAnnotation(cls, builder);
+            return get(Util.autoMap(cls));
         }
-        
+
     }
 }

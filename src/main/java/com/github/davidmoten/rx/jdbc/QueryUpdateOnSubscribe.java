@@ -16,7 +16,7 @@ import rx.Subscriber;
 /**
  * Executes the update query.
  */
-final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
+final class QueryUpdateOnSubscribe implements OnSubscribe<Object> {
 
     private static final Logger log = LoggerFactory.getLogger(QueryUpdateOnSubscribe.class);
 
@@ -40,7 +40,7 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
      *            one set of parameters to be run with the query
      * @return
      */
-    static Observable<Integer> execute(QueryUpdate query, List<Parameter> parameters) {
+    static Observable<Object> execute(QueryUpdate query, List<Parameter> parameters) {
         return Observable.create(new QueryUpdateOnSubscribe(query, parameters));
     }
 
@@ -75,7 +75,7 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
     }
 
     @Override
-    public void call(Subscriber<? super Integer> subscriber) {
+    public void call(Subscriber<? super Object> subscriber) {
         final State state = new State();
         try {
 
