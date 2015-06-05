@@ -6,9 +6,6 @@ import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
 import java.sql.ResultSet;
 import java.util.List;
 
-import com.github.davidmoten.rx.jdbc.QuerySelect.Builder;
-import com.github.davidmoten.rx.jdbc.tuple.Tuples;
-
 import rx.Observable;
 import rx.Observable.Operator;
 import rx.functions.Func1;
@@ -86,14 +83,19 @@ final public class QueryUpdate<T> implements Query {
      * @param query
      * @return
      */
+    @SuppressWarnings("unchecked")
     public Observable<Integer> count() {
         return (Observable<Integer>) QueryUpdate.get(this);
+    }
+    
+    public ResultSetMapper<? extends T> function() {
+        return function;
     }
 
     static <T> Observable<T> get(QueryUpdate<T> queryUpdate) {
         return bufferedParameters(queryUpdate)
         // execute query for each set of parameters
-                .concatMap(queryUpdate.<T> executeOnce());
+                .concatMap(queryUpdate.executeOnce());
     }
 
     /**
@@ -255,7 +257,7 @@ final public class QueryUpdate<T> implements Query {
          * @return
          */
         public Observable<Integer> count() {
-            return new QueryUpdate(builder.sql(), builder.parameters(), builder.depends(),
+            return new QueryUpdate<Integer>(builder.sql(), builder.parameters(), builder.depends(),
                     builder.context(), null).count();
         }
 

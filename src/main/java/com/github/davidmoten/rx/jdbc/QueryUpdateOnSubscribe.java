@@ -16,7 +16,7 @@ import rx.Subscriber;
 /**
  * Executes the update query.
  */
-final class QueryUpdateOnSubscribe implements OnSubscribe<Object> {
+final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
 
     private static final Logger log = LoggerFactory.getLogger(QueryUpdateOnSubscribe.class);
 
@@ -40,14 +40,14 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Object> {
      *            one set of parameters to be run with the query
      * @return
      */
-    static Observable<Object> execute(QueryUpdate query, List<Parameter> parameters) {
-        return Observable.create(new QueryUpdateOnSubscribe(query, parameters));
+    static <T> Observable<T> execute(QueryUpdate<T> query, List<Parameter> parameters) {
+        return Observable.create(new QueryUpdateOnSubscribe<T>(query, parameters));
     }
 
     /**
      * The query to be executed.
      */
-    private final QueryUpdate query;
+    private final QueryUpdate<T> query;
 
     /**
      * The parameters to run the query against (may be a subset of the query
@@ -69,13 +69,13 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Object> {
      * @param query
      * @param parameters
      */
-    private QueryUpdateOnSubscribe(QueryUpdate query, List<Parameter> parameters) {
+    private QueryUpdateOnSubscribe(QueryUpdate<T> query, List<Parameter> parameters) {
         this.query = query;
         this.parameters = parameters;
     }
 
     @Override
-    public void call(Subscriber<? super Object> subscriber) {
+    public void call(Subscriber<? super T> subscriber) {
         final State state = new State();
         try {
 
@@ -109,10 +109,11 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Object> {
         return query.sql().equals(BEGIN_TRANSACTION);
     }
 
-    private void performBeginTransaction(Subscriber<? super Integer> subscriber) {
+    @SuppressWarnings("unchecked")
+    private void performBeginTransaction(Subscriber<? super T> subscriber) {
         query.context().beginTransactionObserve();
         log.debug("beginTransaction emitting 1");
-        subscriber.onNext(Integer.valueOf(1));
+        subscriber.onNext((T) Integer.valueOf(1));
         log.debug("emitted 1");
     }
 
@@ -150,7 +151,8 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Object> {
      * @param subscriber
      * @param state
      */
-    private void performCommit(Subscriber<? super Integer> subscriber, State state) {
+    @SuppressWarnings("unchecked")
+    private void performCommit(Subscriber<? super T> subscriber, State state) {
         query.context().endTransactionObserve();
         checkSubscription(subscriber, state);
         if (!state.keepGoing)
@@ -167,7 +169,7 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Object> {
         if (!state.keepGoing)
             return;
 
-        subscriber.onNext(Integer.valueOf(1));
+        subscriber.onNext((T) Integer.valueOf(1));
         log.debug("committed");
     }
 
@@ -178,7 +180,8 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Object> {
      * @param subscriber
      * @param state
      */
-    private void performRollback(Subscriber<? super Integer> subscriber, State state) {
+    @SuppressWarnings("unchecked")
+    private void performRollback(Subscriber<? super T> subscriber, State state) {
         log.debug("rolling back");
         query.context().endTransactionObserve();
         Conditions.checkTrue(!Util.isAutoCommit(state.con));
@@ -186,7 +189,7 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Object> {
         // must close before onNext so that connection is released and is
         // available to a query that might process the onNext
         close(state);
-        subscriber.onNext(Integer.valueOf(0));
+        subscriber.onNext((T) Integer.valueOf(0));
         log.debug("rolled back");
     }
 
@@ -197,7 +200,8 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Object> {
      * 
      * @throws SQLException
      */
-    private void performUpdate(Subscriber<? super Integer> subscriber, State state)
+    @SuppressWarnings("unchecked")
+    private void performUpdate(Subscriber<? super T> subscriber, State state)
             throws SQLException {
         checkSubscription(subscriber, state);
         if (!state.keepGoing)
@@ -225,7 +229,7 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Object> {
         if (!state.keepGoing)
             return;
         log.debug("onNext");
-        subscriber.onNext(count);
+        subscriber.onNext((T) (Integer) count);
     }
 
     /**
@@ -234,7 +238,7 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Object> {
      * @param subscriber
      * @param state
      */
-    private void complete(Subscriber<? super Integer> subscriber) {
+    private void complete(Subscriber<? super T> subscriber) {
         if (!subscriber.isUnsubscribed()) {
             log.debug("onCompleted");
             subscriber.onCompleted();
@@ -248,7 +252,7 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Object> {
      * @param e
      * @param subscriber
      */
-    private void handleException(Exception e, Subscriber<? super Integer> subscriber) {
+    private void handleException(Exception e, Subscriber<? super T> subscriber) {
         log.debug("onError: ", e.getMessage());
         if (subscriber.isUnsubscribed())
             log.debug("unsubscribed");
@@ -272,7 +276,7 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Object> {
         }
     }
 
-    private void checkSubscription(Subscriber<? super Integer> subscriber, State state) {
+    private void checkSubscription(Subscriber<? super T> subscriber, State state) {
         if (subscriber.isUnsubscribed()) {
             state.keepGoing = false;
             log.debug("unsubscribing");
