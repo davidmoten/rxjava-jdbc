@@ -13,7 +13,11 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
+import rx.Subscription;
+import rx.functions.Action0;
 import rx.observers.Subscribers;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.Subscriptions;
 
 /**
  * Executes the update query.
@@ -79,6 +83,12 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
     @Override
     public void call(Subscriber<? super T> subscriber) {
         final State state = new State();
+        subscriber.add(Subscriptions.create(new Action0() {
+            @Override
+            public void call() {
+                close(state);
+            }
+        }));
         try {
 
             if (isBeginTransaction())
@@ -91,11 +101,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
                     performRollback(subscriber, state);
                 else
                     performUpdate(subscriber, state);
-                close(state);
             }
-
-            complete(subscriber);
-
         } catch (Exception e) {
             query.context().endTransactionObserve();
             query.context().endTransactionSubscribe();
@@ -117,6 +123,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         log.debug("beginTransaction emitting 1");
         subscriber.onNext((T) Integer.valueOf(1));
         log.debug("emitted 1");
+        complete(subscriber);
     }
 
     /**
@@ -173,6 +180,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
 
         subscriber.onNext((T) Integer.valueOf(1));
         log.debug("committed");
+        complete(subscriber);
     }
 
     /**
@@ -193,6 +201,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         close(state);
         subscriber.onNext((T) Integer.valueOf(0));
         log.debug("rolled back");
+        complete(subscriber);
     }
 
     /**
@@ -205,8 +214,9 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
     @SuppressWarnings("unchecked")
     private void performUpdate(final Subscriber<? super T> subscriber, State state) throws SQLException {
         checkSubscription(subscriber, state);
-        if (!state.keepGoing)
+        if (!state.keepGoing) {
             return;
+        }
         int keysOption;
         if (query.returnGeneratedKeys()) {
             keysOption = Statement.RETURN_GENERATED_KEYS;
@@ -224,6 +234,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         try {
             log.debug("executing sql={}, parameters {}", query.sql(), parameters);
             count = state.ps.executeUpdate();
+            log.debug("executed ps={}", state.ps);
             if (query.returnGeneratedKeys()) {
                 Observable<Parameter> params = Observable.just(new Parameter(state.ps
                         .getGeneratedKeys()));
@@ -248,21 +259,21 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
                     }
                     
                 };
-                o.subscribe(sub);
+                o.unsafeSubscribe(sub);
             }
-            log.debug("executed ps={}", state.ps);
         } catch (SQLException e) {
             throw new SQLException("failed to execute sql=" + query.sql(), e);
         }
-        // must close before onNext so that connection is released and is
-        // available to a query that might process the onNext
-        close(state);
-        checkSubscription(subscriber, state);
-        if (!state.keepGoing)
-            return;
-        log.debug("onNext");
         if (!query.returnGeneratedKeys()) {
+         // must close before onNext so that connection is released and is
+            // available to a query that might process the onNext
+            close(state);
+            checkSubscription(subscriber, state);
+            if (!state.keepGoing)
+                return;
+            log.debug("onNext");
             subscriber.onNext((T) (Integer) count);
+            complete(subscriber);
         }
     }
 
