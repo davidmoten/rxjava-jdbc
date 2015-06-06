@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
@@ -84,12 +85,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
                 performBeginTransaction(subscriber);
             else {
                 getConnection(state);
-                subscriber.add(Subscriptions.create(new Action0() {
-                    @Override
-                    public void call() {
-                        close(state);
-                    }
-                }));
+                subscriber.add(createUnsubscriptionAction(state));
                 if (isCommit())
                     performCommit(subscriber, state);
                 else if (isRollback())
@@ -106,6 +102,15 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
                 handleException(e, subscriber);
             }
         }
+    }
+
+    private Subscription createUnsubscriptionAction(final State state) {
+        return Subscriptions.create(new Action0() {
+            @Override
+            public void call() {
+                close(state);
+            }
+        });
     }
 
     private boolean isBeginTransaction() {
@@ -237,7 +242,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
 
                     @Override
                     public void onCompleted() {
-                        subscriber.onCompleted();
+                        complete(subscriber); 
                     }
 
                     @Override
