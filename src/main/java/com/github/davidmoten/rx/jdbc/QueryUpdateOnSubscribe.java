@@ -203,7 +203,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      * @throws SQLException
      */
     @SuppressWarnings("unchecked")
-    private void performUpdate(Subscriber<? super T> subscriber, State state) throws SQLException {
+    private void performUpdate(final Subscriber<? super T> subscriber, State state) throws SQLException {
         checkSubscription(subscriber, state);
         if (!state.keepGoing)
             return;
@@ -226,12 +226,28 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
             count = state.ps.executeUpdate();
             if (query.returnGeneratedKeys()) {
                 Observable<Parameter> params = Observable.just(new Parameter(state.ps
-                        .getResultSet()));
+                        .getGeneratedKeys()));
                 Observable<Object> depends = Observable.empty();
                 Observable<T> o = new QuerySelect(QuerySelect.RETURN_GENERATED_KEYS, params, depends,
                         query.context()).execute(query.returnGeneratedKeysFunction());
-                Subscriber<T> sub = Subscribers.from(subscriber);
-                subscriber.add(sub);
+                Subscriber<T> sub = new Subscriber<T>(subscriber) {
+
+                    @Override
+                    public void onCompleted() {
+                        subscriber.onCompleted();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        subscriber.onError(e);
+                    }
+
+                    @Override
+                    public void onNext(T t) {
+                        subscriber.onNext(t);
+                    }
+                    
+                };
                 o.subscribe(sub);
             }
             log.debug("executed ps={}", state.ps);

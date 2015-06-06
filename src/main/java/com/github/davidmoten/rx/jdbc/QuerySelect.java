@@ -390,17 +390,7 @@ final public class QuerySelect implements Query {
         }
 
         public Observable<Integer> count() {
-            return get(ResultSetMapperCount.INSTANCE).count();
-        }
-
-        // Lazy singleton
-        private static final class ResultSetMapperCount {
-            static final ResultSetMapper<Integer> INSTANCE = new ResultSetMapper<Integer>() {
-                @Override
-                public Integer call(ResultSet rs) {
-                    return 1;
-                }
-            };
+            return get(Util.toOne()).count();
         }
 
         /**

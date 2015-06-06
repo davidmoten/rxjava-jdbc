@@ -10,6 +10,15 @@ import rx.Observable;
 import rx.Observable.Operator;
 import rx.functions.Func1;
 
+import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
+import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
+import com.github.davidmoten.rx.jdbc.tuple.Tuple4;
+import com.github.davidmoten.rx.jdbc.tuple.Tuple5;
+import com.github.davidmoten.rx.jdbc.tuple.Tuple6;
+import com.github.davidmoten.rx.jdbc.tuple.Tuple7;
+import com.github.davidmoten.rx.jdbc.tuple.TupleN;
+import com.github.davidmoten.rx.jdbc.tuple.Tuples;
+
 /**
  * Always emits an Observable<Integer> of size 1 containing the number of
  * affected records.
@@ -250,8 +259,8 @@ final public class QueryUpdate<T> implements Query {
             return this;
         }
 
-        public ReturnGeneratedKeysBuilder<Object> returnGeneratedKeys() {
-            return new ReturnGeneratedKeysBuilder<Object>(builder);
+        public ReturnGeneratedKeysBuilder returnGeneratedKeys() {
+            return new ReturnGeneratedKeysBuilder(builder);
         }
 
         /**
@@ -301,7 +310,7 @@ final public class QueryUpdate<T> implements Query {
         }
     }
 
-    static class ReturnGeneratedKeysBuilder<T> {
+    public static class ReturnGeneratedKeysBuilder {
 
         private final QueryBuilder builder;
 
@@ -315,7 +324,7 @@ final public class QueryUpdate<T> implements Query {
          * @param function
          * @return
          */
-        public Observable<T> get(ResultSetMapper<? extends T> function) {
+        public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
             return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(), builder
                     .depends(), builder.context(), function));
         }
@@ -350,10 +359,141 @@ final public class QueryUpdate<T> implements Query {
          * @param cls
          * @return
          */
-        public Observable<T> autoMap(Class<T> cls) {
+        public <T> Observable<T> autoMap(Class<T> cls) {
             Util.setSqlFromQueryAnnotation(cls, builder);
             return get(Util.autoMap(cls));
         }
 
+        /**
+         * Automaps the first column of the ResultSet into the target class
+         * <code>cls</code>.
+         * 
+         * @param cls
+         * @return
+         */
+        public <T> Observable<T> getAs(Class<T> cls) {
+            return get(Tuples.single(cls));
+        }
+
+        /**
+         * Automaps all the columns of the {@link ResultSet} into the target
+         * class <code>cls</code>. See {@link #autoMap(Class) autoMap()}.
+         * 
+         * @param cls
+         * @return
+         */
+        public <T> Observable<TupleN<T>> getTupleN(Class<T> cls) {
+            return get(Tuples.tupleN(cls));
+        }
+
+        /**
+         * Automaps all the columns of the {@link ResultSet} into {@link Object}
+         * . See {@link #autoMap(Class) autoMap()}.
+         * 
+         * @param cls
+         * @return
+         */
+        public Observable<TupleN<Object>> getTupleN() {
+            return get(Tuples.tupleN(Object.class));
+        }
+
+        /**
+         * Automaps the columns of the {@link ResultSet} into the specified
+         * classes. See {@link #autoMap(Class) autoMap()}.
+         * 
+         * @param cls1
+         * @param cls2
+         * @return
+         */
+        public <T1, T2> Observable<Tuple2<T1, T2>> getAs(Class<T1> cls1, Class<T2> cls2) {
+            return get(Tuples.tuple(cls1, cls2));
+        }
+
+        /**
+         * Automaps the columns of the {@link ResultSet} into the specified
+         * classes. See {@link #autoMap(Class) autoMap()}.
+         * 
+         * @param cls1
+         * @param cls2
+         * @param cls3
+         * @return
+         */
+        public <T1, T2, T3> Observable<Tuple3<T1, T2, T3>> getAs(Class<T1> cls1, Class<T2> cls2,
+                Class<T3> cls3) {
+            return get(Tuples.tuple(cls1, cls2, cls3));
+        }
+
+        /**
+         * Automaps the columns of the {@link ResultSet} into the specified
+         * classes. See {@link #autoMap(Class) autoMap()}.
+         * 
+         * @param cls1
+         * @param cls2
+         * @param cls3
+         * @param cls4
+         * @return
+         */
+        public <T1, T2, T3, T4> Observable<Tuple4<T1, T2, T3, T4>> getAs(Class<T1> cls1,
+                Class<T2> cls2, Class<T3> cls3, Class<T4> cls4) {
+            return get(Tuples.tuple(cls1, cls2, cls3, cls4));
+        }
+
+        /**
+         * Automaps the columns of the {@link ResultSet} into the specified
+         * classes. See {@link #autoMap(Class) autoMap()}.
+         * 
+         * @param cls1
+         * @param cls2
+         * @param cls3
+         * @param cls4
+         * @param cls5
+         * @return
+         */
+        public <T1, T2, T3, T4, T5> Observable<Tuple5<T1, T2, T3, T4, T5>> getAs(Class<T1> cls1,
+                Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5) {
+            return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5));
+        }
+
+        /**
+         * Automaps the columns of the {@link ResultSet} into the specified
+         * classes. See {@link #autoMap(Class) autoMap()}.
+         * 
+         * @param cls1
+         * @param cls2
+         * @param cls3
+         * @param cls4
+         * @param cls5
+         * @param cls6
+         * @return
+         */
+        public <T1, T2, T3, T4, T5, T6> Observable<Tuple6<T1, T2, T3, T4, T5, T6>> getAs(
+                Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5,
+                Class<T6> cls6) {
+            return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6));
+        }
+
+        /**
+         * Automaps the columns of the {@link ResultSet} into the specified
+         * classes. See {@link #autoMap(Class) autoMap()}.
+         * 
+         * @param cls1
+         * @param cls2
+         * @param cls3
+         * @param cls4
+         * @param cls5
+         * @param cls6
+         * @param cls7
+         * @return
+         */
+        public <T1, T2, T3, T4, T5, T6, T7> Observable<Tuple7<T1, T2, T3, T4, T5, T6, T7>> getAs(
+                Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5,
+                Class<T6> cls6, Class<T7> cls7) {
+            return get(Tuples.tuple(cls1, cls2, cls3, cls4, cls5, cls6, cls7));
+        }
+
+        public Observable<Integer> count() {
+            return get(Util.toOne()).count();
+        }
+        
     }
 }

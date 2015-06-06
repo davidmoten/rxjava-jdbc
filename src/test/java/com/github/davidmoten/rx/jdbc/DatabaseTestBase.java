@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -1446,7 +1447,7 @@ public abstract class DatabaseTestBase {
         @Column("score")
         int score();
     }
-    
+
     @Test
     public void testAutoMapConvertsCamelCaseToUnderscoreColumnNames() {
         // test dynamic proxying
@@ -1459,7 +1460,7 @@ public abstract class DatabaseTestBase {
 
     static interface Address {
 
-        @Column 
+        @Column
         int addressId();
 
         @Column
@@ -1497,6 +1498,13 @@ public abstract class DatabaseTestBase {
                     }
                 }).first().toBlocking().single();
         assertEquals("FRED", name);
+    }
+
+    @Test
+    public void testReturnGeneratedKeys() {
+        List<Integer> list = db().update("insert into note(text) values(?)").parameter("something")
+                .returnGeneratedKeys().getAs(Integer.class).toList().toBlocking().single();
+        assertEquals(Arrays.asList(1), list);
     }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {
