@@ -13,10 +13,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
-import rx.Subscription;
 import rx.functions.Action0;
-import rx.observers.Subscribers;
-import rx.schedulers.Schedulers;
 import rx.subscriptions.Subscriptions;
 
 /**
@@ -63,7 +60,6 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
     private final List<Parameter> parameters;
 
     private static class State {
-        volatile boolean keepGoing = true;
         volatile Connection con;
         volatile PreparedStatement ps;
         final AtomicBoolean closed = new AtomicBoolean(false);
@@ -83,18 +79,17 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
     @Override
     public void call(Subscriber<? super T> subscriber) {
         final State state = new State();
-        subscriber.add(Subscriptions.create(new Action0() {
-            @Override
-            public void call() {
-                close(state);
-            }
-        }));
         try {
-
             if (isBeginTransaction())
                 performBeginTransaction(subscriber);
             else {
                 getConnection(state);
+                subscriber.add(Subscriptions.create(new Action0() {
+                    @Override
+                    public void call() {
+                        close(state);
+                    }
+                }));
                 if (isCommit())
                     performCommit(subscriber, state);
                 else if (isRollback())
@@ -163,8 +158,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
     @SuppressWarnings("unchecked")
     private void performCommit(Subscriber<? super T> subscriber, State state) {
         query.context().endTransactionObserve();
-        checkSubscription(subscriber, state);
-        if (!state.keepGoing)
+        if (subscriber.isUnsubscribed())
             return;
 
         log.debug("committing");
@@ -174,8 +168,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         // available to a query that might process the onNext
         close(state);
 
-        checkSubscription(subscriber, state);
-        if (!state.keepGoing)
+        if (subscriber.isUnsubscribed())
             return;
 
         subscriber.onNext((T) Integer.valueOf(1));
@@ -212,9 +205,9 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      * @throws SQLException
      */
     @SuppressWarnings("unchecked")
-    private void performUpdate(final Subscriber<? super T> subscriber, State state) throws SQLException {
-        checkSubscription(subscriber, state);
-        if (!state.keepGoing) {
+    private void performUpdate(final Subscriber<? super T> subscriber, State state)
+            throws SQLException {
+        if (subscriber.isUnsubscribed()) {
             return;
         }
         int keysOption;
@@ -226,8 +219,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         state.ps = state.con.prepareStatement(query.sql(), keysOption);
         Util.setParameters(state.ps, parameters);
 
-        checkSubscription(subscriber, state);
-        if (!state.keepGoing)
+        if (subscriber.isUnsubscribed())
             return;
 
         int count;
@@ -239,8 +231,8 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
                 Observable<Parameter> params = Observable.just(new Parameter(state.ps
                         .getGeneratedKeys()));
                 Observable<Object> depends = Observable.empty();
-                Observable<T> o = new QuerySelect(QuerySelect.RETURN_GENERATED_KEYS, params, depends,
-                        query.context()).execute(query.returnGeneratedKeysFunction());
+                Observable<T> o = new QuerySelect(QuerySelect.RETURN_GENERATED_KEYS, params,
+                        depends, query.context()).execute(query.returnGeneratedKeysFunction());
                 Subscriber<T> sub = new Subscriber<T>(subscriber) {
 
                     @Override
@@ -257,7 +249,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
                     public void onNext(T t) {
                         subscriber.onNext(t);
                     }
-                    
+
                 };
                 o.unsafeSubscribe(sub);
             }
@@ -265,11 +257,10 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
             throw new SQLException("failed to execute sql=" + query.sql(), e);
         }
         if (!query.returnGeneratedKeys()) {
-         // must close before onNext so that connection is released and is
+            // must close before onNext so that connection is released and is
             // available to a query that might process the onNext
             close(state);
-            checkSubscription(subscriber, state);
-            if (!state.keepGoing)
+            if (subscriber.isUnsubscribed())
                 return;
             log.debug("onNext");
             subscriber.onNext((T) (Integer) count);
@@ -318,13 +309,6 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
                 Util.closeQuietly(state.con);
             else
                 Util.closeQuietlyIfAutoCommit(state.con);
-        }
-    }
-
-    private void checkSubscription(Subscriber<? super T> subscriber, State state) {
-        if (subscriber.isUnsubscribed()) {
-            state.keepGoing = false;
-            log.debug("unsubscribing");
         }
     }
 
