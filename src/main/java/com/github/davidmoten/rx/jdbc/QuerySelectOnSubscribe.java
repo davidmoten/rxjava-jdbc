@@ -1,11 +1,7 @@
 package com.github.davidmoten.rx.jdbc;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,13 +37,6 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
     private final List<Parameter> parameters;
     private final boolean resultSetProvided;
 
-    private static class State {
-        volatile Connection con;
-        volatile PreparedStatement ps;
-        volatile ResultSet rs;
-        final AtomicBoolean closed = new AtomicBoolean(false);
-    }
-
     /**
      * Constructor.
      * 
@@ -64,12 +53,13 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
 
     @Override
     public void call(Subscriber<? super T> subscriber) {
-        final State state = new State();
+        State state = null;
         try {
-            if (resultSetProvided){
-                state.rs = (ResultSet) parameters.get(0).getValue();
+            if (resultSetProvided) {
+                state = (State) parameters.get(0).getValue();
                 setupUnsubscription(subscriber, state);
-            } else  {
+            } else {
+                state = new State();
                 connectAndPrepareStatement(subscriber, state);
                 setupUnsubscription(subscriber, state);
                 executeQuery(subscriber, state);
@@ -80,13 +70,14 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
             query.context().endTransactionObserve();
             query.context().endTransactionSubscribe();
             try {
-                closeQuietly(state);
+                if (state != null)
+                    closeQuietly(state);
             } finally {
                 handleException(e, subscriber);
             }
         }
     }
-    
+
     private static <T> void setupUnsubscription(Subscriber<T> subscriber, final State state) {
         subscriber.add(Subscriptions.create(new Action0() {
             @Override

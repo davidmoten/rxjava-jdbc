@@ -1,11 +1,8 @@
 package com.github.davidmoten.rx.jdbc;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,12 +56,6 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      * times with multiple sets of parameters).
      */
     private final List<Parameter> parameters;
-
-    private static class State {
-        volatile Connection con;
-        volatile PreparedStatement ps;
-        final AtomicBoolean closed = new AtomicBoolean(false);
-    }
 
     /**
      * Constructor.
@@ -233,8 +224,8 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
             count = state.ps.executeUpdate();
             log.debug("executed ps={}", state.ps);
             if (query.returnGeneratedKeys()) {
-                Observable<Parameter> params = Observable.just(new Parameter(state.ps
-                        .getGeneratedKeys()));
+                state.rs = state.ps.getGeneratedKeys();
+                Observable<Parameter> params = Observable.just(new Parameter(state));
                 Observable<Object> depends = Observable.empty();
                 Observable<T> o = new QuerySelect(QuerySelect.RETURN_GENERATED_KEYS, params,
                         depends, query.context()).execute(query.returnGeneratedKeysFunction());
@@ -242,7 +233,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
 
                     @Override
                     public void onCompleted() {
-                        complete(subscriber); 
+                        complete(subscriber);
                     }
 
                     @Override
