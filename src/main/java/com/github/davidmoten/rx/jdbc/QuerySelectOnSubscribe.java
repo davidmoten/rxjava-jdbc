@@ -42,9 +42,6 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
     private final boolean resultSetProvided;
 
     private static class State {
-        // fields need to be volatile because unsub could be from another
-        // thread
-        volatile boolean keepGoing = true;
         volatile Connection con;
         volatile PreparedStatement ps;
         volatile ResultSet rs;
@@ -77,7 +74,6 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
                 setupUnsubscription(subscriber, state);
                 executeQuery(subscriber, state);
             }
-
             subscriber.setProducer(new QuerySelectProducer<T>(function, subscriber, state.con,
                     state.ps, state.rs));
         } catch (Exception e) {
@@ -112,8 +108,7 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
     private void connectAndPrepareStatement(Subscriber<? super T> subscriber, State state)
             throws SQLException {
         log.debug("connectionProvider={}", query.context().connectionProvider());
-        checkSubscription(subscriber, state);
-        if (state.keepGoing) {
+        if (!subscriber.isUnsubscribed()) {
             log.debug("getting connection");
             state.con = query.context().connectionProvider().get();
             log.debug("preparing statement,sql={}", query.sql());
@@ -132,8 +127,7 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
      * @throws SQLException
      */
     private void executeQuery(Subscriber<? super T> subscriber, State state) throws SQLException {
-        checkSubscription(subscriber, state);
-        if (state.keepGoing) {
+        if (!subscriber.isUnsubscribed()) {
             try {
                 log.debug("executing ps");
                 state.rs = state.ps.executeQuery();
@@ -177,18 +171,6 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
             log.debug("closing con");
             Util.closeQuietlyIfAutoCommit(state.con);
             log.debug("closed");
-        }
-    }
-
-    /**
-     * If subscribe unsubscribed sets keepGoing to false.
-     * 
-     * @param subscriber
-     */
-    private static <T> void checkSubscription(Subscriber<? super T> subscriber, State state) {
-        if (subscriber.isUnsubscribed()) {
-            state.keepGoing = false;
-            log.debug("unsubscribing");
         }
     }
 
