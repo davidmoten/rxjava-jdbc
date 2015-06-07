@@ -388,7 +388,10 @@ If you insert into a table that say in h2 is of type `auto_increment` then you d
 
 Given table like this
 ```
-create table note(id bigint auto_increment primary key, text varchar(255))
+create table note(
+    id bigint auto_increment primary key,
+    text varchar(255)
+)
 ```
 This code inserts two rows into the *note* table and returns the two generated keys:
 
