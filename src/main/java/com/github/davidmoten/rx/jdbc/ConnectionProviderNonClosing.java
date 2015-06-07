@@ -13,7 +13,7 @@ final class ConnectionProviderNonClosing implements ConnectionProvider {
     /**
      * Constructor.
      * 
-     * @param con
+     * @param con wrapped connection that will not be closed by this class
      */
     public ConnectionProviderNonClosing(Connection con) {
         this.con = con;

@@ -7,10 +7,18 @@ import javax.sql.DataSource;
 
 import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
 
+/**
+ * Provides database connections from a {@link DataSource}.
+ */
 public class ConnectionProviderFromDataSource implements ConnectionProvider {
 
     private final DataSource dataSource;
 
+    /**
+     * Constructor.
+     * 
+     * @param dataSource database connection source
+     */
     public ConnectionProviderFromDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }

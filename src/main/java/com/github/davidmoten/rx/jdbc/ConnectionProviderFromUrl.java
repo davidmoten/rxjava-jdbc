@@ -34,9 +34,9 @@ public final class ConnectionProviderFromUrl implements ConnectionProvider {
     /**
      * Constructor.
      * 
-     * @param url
-     * @param username
-     * @param password
+     * @param url jdbc url
+     * @param username login username
+     * @param password login password
      */
     public ConnectionProviderFromUrl(String url, String username, String password) {
         this.url = url;

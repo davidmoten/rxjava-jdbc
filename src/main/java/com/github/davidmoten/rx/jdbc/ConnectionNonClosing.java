@@ -30,6 +30,12 @@ final class ConnectionNonClosing implements Connection {
     private final Connection con;
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
 
+    /**
+     * Constructor.
+     * 
+     * @param con
+     *            underlying connection that will not be closed by this class
+     */
     public ConnectionNonClosing(Connection con) {
         this.con = con;
     }

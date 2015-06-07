@@ -10,10 +10,18 @@ import javax.sql.DataSource;
 
 import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
 
+/**
+ * Provides database connections via a JNDI lookup.
+ */
 public final class ConnectionProviderFromContext implements ConnectionProvider {
 
     private final String jndiResource;
 
+    /**
+     * Constructor.
+     * 
+     * @param jndiResource the name to lookup
+     */
     public ConnectionProviderFromContext(String jndiResource) {
         this.jndiResource = jndiResource;
     }

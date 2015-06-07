@@ -41,11 +41,11 @@ public final class ConnectionProviderPooled implements ConnectionProvider {
     /**
      * Constructor.
      * 
-     * @param url
-     * @param username
-     * @param password
-     * @param minPoolSize
-     * @param maxPoolSize
+     * @param url jdbc url
+     * @param username database login username
+     * @param password database login password
+     * @param minPoolSize minimum size of the connection pool
+     * @param maxPoolSize maximum size of the connection pool
      */
     public ConnectionProviderPooled(String url, String username, String password, int minPoolSize,
             int maxPoolSize) {
@@ -55,11 +55,11 @@ public final class ConnectionProviderPooled implements ConnectionProvider {
     /**
      * Returns a new pooled data source based on jdbc url.
      * 
-     * @param url
-     * @param username
-     * @param password
-     * @param minPoolSize
-     * @param maxPoolSize
+     * @param url jdbc url
+     * @param username login username
+     * @param password login password
+     * @param minPoolSize minimum database connection pool size
+     * @param maxPoolSize maximum database connection pool size
      * @return
      */
     private static HikariDataSource createPool(String url, String username, String password,
