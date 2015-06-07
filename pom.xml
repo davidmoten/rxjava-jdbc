@@ -197,18 +197,6 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<systemProperties>
-						<property>
-							<name>derby.stream.error.file</name>
-							<value>target/derby.log</value>
-						</property>
-					</systemProperties>
-				</configuration>
-			</plugin>
-			<plugin>
 				<artifactId>maven-site-plugin</artifactId>
 				<version>${m3.site.version}</version>
 				<executions>
