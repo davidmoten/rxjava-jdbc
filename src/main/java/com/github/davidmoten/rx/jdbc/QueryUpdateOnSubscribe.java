@@ -1,10 +1,9 @@
 package com.github.davidmoten.rx.jdbc;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,11 +11,14 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
+import rx.Subscription;
+import rx.functions.Action0;
+import rx.subscriptions.Subscriptions;
 
 /**
  * Executes the update query.
  */
-final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
+final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
 
     private static final Logger log = LoggerFactory.getLogger(QueryUpdateOnSubscribe.class);
 
@@ -40,14 +42,14 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
      *            one set of parameters to be run with the query
      * @return
      */
-    static Observable<Integer> execute(QueryUpdate query, List<Parameter> parameters) {
-        return Observable.create(new QueryUpdateOnSubscribe(query, parameters));
+    static <T> Observable<T> execute(QueryUpdate<T> query, List<Parameter> parameters) {
+        return Observable.create(new QueryUpdateOnSubscribe<T>(query, parameters));
     }
 
     /**
      * The query to be executed.
      */
-    private final QueryUpdate query;
+    private final QueryUpdate<T> query;
 
     /**
      * The parameters to run the query against (may be a subset of the query
@@ -56,44 +58,33 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
      */
     private final List<Parameter> parameters;
 
-    private static class State {
-        volatile boolean keepGoing = true;
-        volatile Connection con;
-        volatile PreparedStatement ps;
-        final AtomicBoolean closed = new AtomicBoolean(false);
-    }
-
     /**
      * Constructor.
      * 
      * @param query
      * @param parameters
      */
-    private QueryUpdateOnSubscribe(QueryUpdate query, List<Parameter> parameters) {
+    private QueryUpdateOnSubscribe(QueryUpdate<T> query, List<Parameter> parameters) {
         this.query = query;
         this.parameters = parameters;
     }
 
     @Override
-    public void call(Subscriber<? super Integer> subscriber) {
+    public void call(Subscriber<? super T> subscriber) {
         final State state = new State();
         try {
-
             if (isBeginTransaction())
                 performBeginTransaction(subscriber);
             else {
                 getConnection(state);
+                subscriber.add(createUnsubscriptionAction(state));
                 if (isCommit())
                     performCommit(subscriber, state);
                 else if (isRollback())
                     performRollback(subscriber, state);
                 else
                     performUpdate(subscriber, state);
-                close(state);
             }
-
-            complete(subscriber);
-
         } catch (Exception e) {
             query.context().endTransactionObserve();
             query.context().endTransactionSubscribe();
@@ -105,15 +96,26 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
         }
     }
 
+    private Subscription createUnsubscriptionAction(final State state) {
+        return Subscriptions.create(new Action0() {
+            @Override
+            public void call() {
+                close(state);
+            }
+        });
+    }
+
     private boolean isBeginTransaction() {
         return query.sql().equals(BEGIN_TRANSACTION);
     }
 
-    private void performBeginTransaction(Subscriber<? super Integer> subscriber) {
+    @SuppressWarnings("unchecked")
+    private void performBeginTransaction(Subscriber<? super T> subscriber) {
         query.context().beginTransactionObserve();
         log.debug("beginTransaction emitting 1");
-        subscriber.onNext(Integer.valueOf(1));
+        subscriber.onNext((T) Integer.valueOf(1));
         log.debug("emitted 1");
+        complete(subscriber);
     }
 
     /**
@@ -150,10 +152,10 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
      * @param subscriber
      * @param state
      */
-    private void performCommit(Subscriber<? super Integer> subscriber, State state) {
+    @SuppressWarnings("unchecked")
+    private void performCommit(Subscriber<? super T> subscriber, State state) {
         query.context().endTransactionObserve();
-        checkSubscription(subscriber, state);
-        if (!state.keepGoing)
+        if (subscriber.isUnsubscribed())
             return;
 
         log.debug("committing");
@@ -163,12 +165,12 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
         // available to a query that might process the onNext
         close(state);
 
-        checkSubscription(subscriber, state);
-        if (!state.keepGoing)
+        if (subscriber.isUnsubscribed())
             return;
 
-        subscriber.onNext(Integer.valueOf(1));
+        subscriber.onNext((T) Integer.valueOf(1));
         log.debug("committed");
+        complete(subscriber);
     }
 
     /**
@@ -178,7 +180,8 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
      * @param subscriber
      * @param state
      */
-    private void performRollback(Subscriber<? super Integer> subscriber, State state) {
+    @SuppressWarnings("unchecked")
+    private void performRollback(Subscriber<? super T> subscriber, State state) {
         log.debug("rolling back");
         query.context().endTransactionObserve();
         Conditions.checkTrue(!Util.isAutoCommit(state.con));
@@ -186,8 +189,9 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
         // must close before onNext so that connection is released and is
         // available to a query that might process the onNext
         close(state);
-        subscriber.onNext(Integer.valueOf(0));
+        subscriber.onNext((T) Integer.valueOf(0));
         log.debug("rolled back");
+        complete(subscriber);
     }
 
     /**
@@ -197,17 +201,22 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
      * 
      * @throws SQLException
      */
-    private void performUpdate(Subscriber<? super Integer> subscriber, State state)
+    @SuppressWarnings("unchecked")
+    private void performUpdate(final Subscriber<? super T> subscriber, State state)
             throws SQLException {
-        checkSubscription(subscriber, state);
-        if (!state.keepGoing)
+        if (subscriber.isUnsubscribed()) {
             return;
-
-        state.ps = state.con.prepareStatement(query.sql());
+        }
+        int keysOption;
+        if (query.returnGeneratedKeys()) {
+            keysOption = Statement.RETURN_GENERATED_KEYS;
+        } else {
+            keysOption = Statement.NO_GENERATED_KEYS;
+        }
+        state.ps = state.con.prepareStatement(query.sql(), keysOption);
         Util.setParameters(state.ps, parameters);
 
-        checkSubscription(subscriber, state);
-        if (!state.keepGoing)
+        if (subscriber.isUnsubscribed())
             return;
 
         int count;
@@ -215,17 +224,51 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
             log.debug("executing sql={}, parameters {}", query.sql(), parameters);
             count = state.ps.executeUpdate();
             log.debug("executed ps={}", state.ps);
+            if (query.returnGeneratedKeys()) {
+                log.debug("getting generated keys");
+                ResultSet rs = state.ps.getGeneratedKeys();
+                log.debug("returned generated key result set {}" , rs);
+                state.rs = rs;
+                Observable<Parameter> params = Observable.just(new Parameter(state));
+                Observable<Object> depends = Observable.empty();
+                Observable<T> o = new QuerySelect(QuerySelect.RETURN_GENERATED_KEYS, params,
+                        depends, query.context()).execute(query.returnGeneratedKeysFunction());
+                Subscriber<T> sub = createSubscriber(subscriber);
+                o.unsafeSubscribe(sub);
+            }
         } catch (SQLException e) {
             throw new SQLException("failed to execute sql=" + query.sql(), e);
         }
-        // must close before onNext so that connection is released and is
-        // available to a query that might process the onNext
-        close(state);
-        checkSubscription(subscriber, state);
-        if (!state.keepGoing)
-            return;
-        log.debug("onNext");
-        subscriber.onNext(count);
+        if (!query.returnGeneratedKeys()) {
+            // must close before onNext so that connection is released and is
+            // available to a query that might process the onNext
+            close(state);
+            if (subscriber.isUnsubscribed())
+                return;
+            log.debug("onNext");
+            subscriber.onNext((T) (Integer) count);
+            complete(subscriber);
+        }
+    }
+
+    private Subscriber<T> createSubscriber(final Subscriber<? super T> subscriber) {
+        return new Subscriber<T>(subscriber) {
+
+            @Override
+            public void onCompleted() {
+                complete(subscriber);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                subscriber.onError(e);
+            }
+
+            @Override
+            public void onNext(T t) {
+                subscriber.onNext(t);
+            }
+        };
     }
 
     /**
@@ -234,7 +277,7 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
      * @param subscriber
      * @param state
      */
-    private void complete(Subscriber<? super Integer> subscriber) {
+    private void complete(Subscriber<? super T> subscriber) {
         if (!subscriber.isUnsubscribed()) {
             log.debug("onCompleted");
             subscriber.onCompleted();
@@ -248,7 +291,7 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
      * @param e
      * @param subscriber
      */
-    private void handleException(Exception e, Subscriber<? super Integer> subscriber) {
+    private void handleException(Exception e, Subscriber<? super T> subscriber) {
         log.debug("onError: ", e.getMessage());
         if (subscriber.isUnsubscribed())
             log.debug("unsubscribed");
@@ -269,13 +312,6 @@ final class QueryUpdateOnSubscribe implements OnSubscribe<Integer> {
                 Util.closeQuietly(state.con);
             else
                 Util.closeQuietlyIfAutoCommit(state.con);
-        }
-    }
-
-    private void checkSubscription(Subscriber<? super Integer> subscriber, State state) {
-        if (subscriber.isUnsubscribed()) {
-            state.keepGoing = false;
-            log.debug("unsubscribing");
         }
     }
 

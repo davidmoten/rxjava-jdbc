@@ -24,6 +24,9 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuples;
  */
 final public class QuerySelect implements Query {
 
+    // Note has one ? to match the expected one parameter
+    static final String RETURN_GENERATED_KEYS = "RETURN_GENERATED_KEYS?";
+
     private final String sql;
     private final Observable<Parameter> parameters;
     private final QueryContext context;
@@ -33,11 +36,14 @@ final public class QuerySelect implements Query {
      * Constructor.
      * 
      * @param sql
+     *            jdbc select statement or the word RETURN_GENERATED_KEYS
      * @param parameters
+     *            if sql == RETURN_GENERATED_KEYS then the first parameter will
+     *            be the ResultSet to be used as source
      * @param depends
      * @param context
      */
-    private QuerySelect(String sql, Observable<Parameter> parameters, Observable<?> depends,
+    QuerySelect(String sql, Observable<Parameter> parameters, Observable<?> depends,
             QueryContext context) {
         checkNotNull(sql);
         checkNotNull(parameters);
@@ -113,14 +119,14 @@ final public class QuerySelect implements Query {
      */
     private <T> Observable<T> executeOnce(final List<Parameter> params,
             ResultSetMapper<? extends T> function) {
-        return QuerySelectOnSubscribe.execute(this, params, function)
-                .subscribeOn(context.scheduler());
+        return QuerySelectOnSubscribe.execute(this, params, function).subscribeOn(
+                context.scheduler());
     }
 
     /**
      * Builds a {@link QuerySelect}.
      */
-    final public static class Builder {
+    public static final class Builder {
 
         /**
          * Builds the standard stuff.
@@ -208,6 +214,10 @@ final public class QuerySelect implements Query {
          * @return
          */
         public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
+            return get(function, builder);
+        }
+
+        static <T> Observable<T> get(ResultSetMapper<? extends T> function, QueryBuilder builder) {
             return new QuerySelect(builder.sql(), builder.parameters(), builder.depends(),
                     builder.context()).execute(function);
         }
@@ -243,20 +253,14 @@ final public class QuerySelect implements Query {
          * @return
          */
         public <T> Observable<T> autoMap(Class<T> cls) {
-            if (builder.sql() == null) {
-                com.github.davidmoten.rx.jdbc.annotations.Query query = cls
-                        .getAnnotation(com.github.davidmoten.rx.jdbc.annotations.Query.class);
-                if (query != null && query.value() != null) {
-                    String sql = query.value();
-                    builder.setSql(sql);
-                } else
-                    throw new RuntimeException(
-                            "Class "
-                                    + cls
-                                    + " must be annotated with @Query(sql) or sql must be specified to the builder.select() call");
-            }
-            return get(Util.autoMap(cls));
+            return autoMap(cls, builder);
         }
+
+        static <T> Observable<T> autoMap(Class<T> cls, QueryBuilder builder) {
+            Util.setSqlFromQueryAnnotation(cls, builder);
+            return get(Util.autoMap(cls), builder);
+        }
+
 
         /**
          * Automaps the first column of the ResultSet into the target class
@@ -386,17 +390,7 @@ final public class QuerySelect implements Query {
         }
 
         public Observable<Integer> count() {
-            return get(ResultSetMapperCount.INSTANCE).count();
-        }
-
-        // Lazy singleton
-        private static final class ResultSetMapperCount {
-            static final ResultSetMapper<Integer> INSTANCE = new ResultSetMapper<Integer>() {
-                @Override
-                public Integer call(ResultSet rs) {
-                    return 1;
-                }
-            };
+            return get(Util.toOne()).count();
         }
 
         /**

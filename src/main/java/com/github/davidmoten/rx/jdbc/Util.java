@@ -43,7 +43,6 @@ import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
  */
 public final class Util {
 
-    
     /**
      * Private constructor to prevent instantiation.
      */
@@ -314,7 +313,7 @@ public final class Util {
     }
 
     private static class ProxyService<T> implements java.lang.reflect.InvocationHandler {
-        
+
         private final Map<String, Object> values = new HashMap<String, Object>();
 
         ProxyService(ResultSet rs, Class<T> cls) {
@@ -347,7 +346,6 @@ public final class Util {
             }
         }
 
-
         @SuppressWarnings("unchecked")
         public static <T> T newInstance(ResultSet rs, Class<T> cls) {
 
@@ -362,20 +360,20 @@ public final class Util {
     }
 
     static String camelCaseToUnderscore(String camelCased) {
-        //guava has best solution for this with CaseFormat class
-        //but don't want to add dependency just for this method
+        // guava has best solution for this with CaseFormat class
+        // but don't want to add dependency just for this method
         final String regex = "([a-z])([A-Z]+)";
         final String replacement = "$1_$2";
         return camelCased.replaceAll(regex, replacement);
     }
-    
+
     static String first(String[] value) {
         if (value == null || value.length == 0)
             return null;
         else
             return value[0];
     }
-    
+
     /**
      * Converts the ResultSet column values into parameters to the given
      * constructor (with number of parameters equals the number of columns) of
@@ -400,6 +398,21 @@ public final class Util {
             throw new RuntimeException("problem with parameters=" + getTypeInfo(list)
                     + ", rs types=" + getRowInfo(rs)
                     + ". Be sure not to use primitives in a constructor when calling autoMap().", e);
+        }
+    }
+
+    static <T> void setSqlFromQueryAnnotation(Class<T> cls, QueryBuilder builder) {
+        if (builder.sql() == null) {
+            com.github.davidmoten.rx.jdbc.annotations.Query query = cls
+                    .getAnnotation(com.github.davidmoten.rx.jdbc.annotations.Query.class);
+            if (query != null && query.value() != null) {
+                String sql = query.value();
+                builder.setSql(sql);
+            } else
+                throw new RuntimeException(
+                        "Class "
+                                + cls
+                                + " must be annotated with @Query(sql) or sql must be specified to the builder.select() call");
         }
     }
 
@@ -842,4 +855,17 @@ public final class Util {
         }
     };
 
+    // Lazy singleton
+    private static final class ResultSetMapperToOne {
+        static final ResultSetMapper<Integer> INSTANCE = new ResultSetMapper<Integer>() {
+            @Override
+            public Integer call(ResultSet rs) {
+                return 1;
+            }
+        };
+    }
+    
+    static ResultSetMapper<Integer> toOne() {
+        return ResultSetMapperToOne.INSTANCE;
+    }
 }

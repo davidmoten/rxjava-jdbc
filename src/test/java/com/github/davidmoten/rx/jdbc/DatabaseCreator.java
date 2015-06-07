@@ -68,6 +68,7 @@ public class DatabaseCreator {
                     "create table address (address_id int primary key, full_address varchar(255) not null)")
                     .execute();
             c.prepareStatement("insert into address(address_id, full_address) values(1,'57 Something St, El Barrio, Big Place')").execute();
+            c.prepareStatement("create table note(id bigint auto_increment primary key, text varchar(255))").execute();
         } catch (SQLException e) {
             throw new SQLRuntimeException(e);
         }

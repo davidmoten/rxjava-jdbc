@@ -1,11 +1,7 @@
 package com.github.davidmoten.rx.jdbc;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,16 +35,7 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
     private final ResultSetMapper<? extends T> function;
     private final QuerySelect query;
     private final List<Parameter> parameters;
-
-    private static class State {
-        // fields need to be volatile because unsub could be from another
-        // thread
-        volatile boolean keepGoing = true;
-        volatile Connection con;
-        volatile PreparedStatement ps;
-        volatile ResultSet rs;
-        final AtomicBoolean closed = new AtomicBoolean(false);
-    }
+    private final boolean resultSetProvided;
 
     /**
      * Constructor.
@@ -61,36 +48,43 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
         this.query = query;
         this.parameters = parameters;
         this.function = function;
+        this.resultSetProvided = query.sql().equals(QuerySelect.RETURN_GENERATED_KEYS);
     }
 
     @Override
     public void call(Subscriber<? super T> subscriber) {
-        final State state = new State();
+        State state = null;
         try {
-            connectAndPrepareStatement(subscriber, state);
-            executeQuery(subscriber, state);
+            if (resultSetProvided) {
+                state = (State) parameters.get(0).getValue();
+                setupUnsubscription(subscriber, state);
+            } else {
+                state = new State();
+                connectAndPrepareStatement(subscriber, state);
+                setupUnsubscription(subscriber, state);
+                executeQuery(subscriber, state);
+            }
             subscriber.setProducer(new QuerySelectProducer<T>(function, subscriber, state.con,
                     state.ps, state.rs));
-            // this is required for the case when
-            // "select count(*) from tbl".take(1) is called which enables
-            // the backpressure path and 1 is requested and end of result
-            // set is is not detected so onComplete action of closing does
-            // not happen.
-            subscriber.add(Subscriptions.create(new Action0() {
-                @Override
-                public void call() {
-                    closeQuietly(state);
-                }
-            }));
         } catch (Exception e) {
             query.context().endTransactionObserve();
             query.context().endTransactionSubscribe();
             try {
-                closeQuietly(state);
+                if (state != null)
+                    closeQuietly(state);
             } finally {
                 handleException(e, subscriber);
             }
         }
+    }
+
+    private static <T> void setupUnsubscription(Subscriber<T> subscriber, final State state) {
+        subscriber.add(Subscriptions.create(new Action0() {
+            @Override
+            public void call() {
+                closeQuietly(state);
+            }
+        }));
     }
 
     /**
@@ -105,8 +99,7 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
     private void connectAndPrepareStatement(Subscriber<? super T> subscriber, State state)
             throws SQLException {
         log.debug("connectionProvider={}", query.context().connectionProvider());
-        checkSubscription(subscriber, state);
-        if (state.keepGoing) {
+        if (!subscriber.isUnsubscribed()) {
             log.debug("getting connection");
             state.con = query.context().connectionProvider().get();
             log.debug("preparing statement,sql={}", query.sql());
@@ -125,8 +118,7 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
      * @throws SQLException
      */
     private void executeQuery(Subscriber<? super T> subscriber, State state) throws SQLException {
-        checkSubscription(subscriber, state);
-        if (state.keepGoing) {
+        if (!subscriber.isUnsubscribed()) {
             try {
                 log.debug("executing ps");
                 state.rs = state.ps.executeQuery();
@@ -158,7 +150,7 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
      * 
      * @param state
      */
-    private void closeQuietly(State state) {
+    private static void closeQuietly(State state) {
         // ensure only closed once and avoid race conditions
         if (state.closed.compareAndSet(false, true)) {
             // set the state fields to null after closing for garbage
@@ -170,18 +162,6 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
             log.debug("closing con");
             Util.closeQuietlyIfAutoCommit(state.con);
             log.debug("closed");
-        }
-    }
-
-    /**
-     * If subscribe unsubscribed sets keepGoing to false.
-     * 
-     * @param subscriber
-     */
-    private void checkSubscription(Subscriber<? super T> subscriber, State state) {
-        if (subscriber.isUnsubscribed()) {
-            state.keepGoing = false;
-            log.debug("unsubscribing");
         }
     }
 
