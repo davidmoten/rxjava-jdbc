@@ -386,9 +386,12 @@ Returning generated keys
 -------------------------
 If you insert into a table that say in h2 is of type `auto_increment` then you don't need to specify a value but you may want to know what value was inserted in the generated key field.
 
-Given table like this
+Given a table like this
 ```
-create table note(id bigint auto_increment primary key, text varchar(255))
+create table note(
+    id bigint auto_increment primary key,
+    text varchar(255)
+)
 ```
 This code inserts two rows into the *note* table and returns the two generated keys:
 
@@ -399,6 +402,8 @@ Observable<Integer> keys =
       .returnGeneratedKeys()
       .getAs(Integer.class);
 ```
+
+The `returnGeneratedKeys` method also supports returning multiple keys per row so the builder offers methods just like `select` to do explicit mapping or auto mapping.
 
 Large objects support
 ------------------------------
