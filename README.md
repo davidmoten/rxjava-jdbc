@@ -400,6 +400,8 @@ Observable<Integer> keys =
       .getAs(Integer.class);
 ```
 
+The `returnGeneratedKeys` method also supports returning multiple keys per row so the builder offers methods just like `select` to do explicit mapping or auto mapping.
+
 Large objects support
 ------------------------------
 Blob and Clobs are straightforward to handle.
