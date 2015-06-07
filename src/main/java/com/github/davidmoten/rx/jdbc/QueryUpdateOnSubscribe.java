@@ -1,5 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -224,29 +225,15 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
             count = state.ps.executeUpdate();
             log.debug("executed ps={}", state.ps);
             if (query.returnGeneratedKeys()) {
-                state.rs = state.ps.getGeneratedKeys();
+                log.debug("getting generated keys");
+                ResultSet rs = state.ps.getGeneratedKeys();
+                log.debug("returned generated key result set", rs);
+                state.rs = rs;
                 Observable<Parameter> params = Observable.just(new Parameter(state));
                 Observable<Object> depends = Observable.empty();
                 Observable<T> o = new QuerySelect(QuerySelect.RETURN_GENERATED_KEYS, params,
                         depends, query.context()).execute(query.returnGeneratedKeysFunction());
-                Subscriber<T> sub = new Subscriber<T>(subscriber) {
-
-                    @Override
-                    public void onCompleted() {
-                        complete(subscriber);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        subscriber.onError(e);
-                    }
-
-                    @Override
-                    public void onNext(T t) {
-                        subscriber.onNext(t);
-                    }
-
-                };
+                Subscriber<T> sub = createSubscriber(subscriber);
                 o.unsafeSubscribe(sub);
             }
         } catch (SQLException e) {
@@ -262,6 +249,26 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
             subscriber.onNext((T) (Integer) count);
             complete(subscriber);
         }
+    }
+
+    private Subscriber<T> createSubscriber(final Subscriber<? super T> subscriber) {
+        return new Subscriber<T>(subscriber) {
+
+            @Override
+            public void onCompleted() {
+                complete(subscriber);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                subscriber.onError(e);
+            }
+
+            @Override
+            public void onNext(T t) {
+                subscriber.onNext(t);
+            }
+        };
     }
 
     /**
