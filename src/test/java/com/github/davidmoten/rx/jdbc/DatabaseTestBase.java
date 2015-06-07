@@ -1501,7 +1501,24 @@ public abstract class DatabaseTestBase {
     }
 
     @Test
-    public void testReturnGeneratedKeys() {
+    public void testReturnGeneratedKeysForOneInsertedValue() {
+        // h2 only returns the last generated key
+        List<Integer> list = db()
+        //
+                .update("insert into note(text) values(?)")
+                //
+                .parameters("something")
+                //
+                .returnGeneratedKeys()
+                //
+                .getAs(Integer.class)
+                //
+                .toList().toBlocking().single();
+        assertEquals(Arrays.asList(1), list);
+    }
+    
+    @Test
+    public void testReturnGeneratedKeysForMultipleInsertedValuesInOneStatement() {
         // h2 only returns the last generated key
         List<Integer> list = db()
         //
