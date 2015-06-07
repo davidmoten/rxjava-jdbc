@@ -1503,8 +1503,7 @@ public abstract class DatabaseTestBase {
     @Test
     public void testReturnGeneratedKeys() {
         // h2 only returns the last generated key
-        Database db = db();
-        List<Integer> list = db
+        List<Integer> list = db()
         //
                 .update("insert into note(text) values(?),(?)")
                 //
@@ -1515,8 +1514,24 @@ public abstract class DatabaseTestBase {
                 .getAs(Integer.class)
                 //
                 .toList().toBlocking().single();
-        db.close();
         assertEquals(Arrays.asList(2), list);
+    }
+
+    @Test
+    public void testReturnGeneratedKeysForMultipleCallsOfInsert() {
+        // h2 only returns the last generated key
+        List<Integer> list = db()
+        //
+                .update("insert into note(text) values(?)")
+                //
+                .parameters("something", "again")
+                //
+                .returnGeneratedKeys()
+                //
+                .getAs(Integer.class)
+                //
+                .toList().toBlocking().single();
+        assertEquals(Arrays.asList(1, 2), list);
     }
 
     private static class CountDownConnectionProvider implements ConnectionProvider {

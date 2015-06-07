@@ -227,7 +227,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
             if (query.returnGeneratedKeys()) {
                 log.debug("getting generated keys");
                 ResultSet rs = state.ps.getGeneratedKeys();
-                log.debug("returned generated key result set", rs);
+                log.debug("returned generated key result set {}" , rs);
                 state.rs = rs;
                 Observable<Parameter> params = Observable.just(new Parameter(state));
                 Observable<Object> depends = Observable.empty();
