@@ -96,11 +96,11 @@ final public class QueryUpdate<T> implements Query {
     public Observable<Integer> count() {
         return (Observable<Integer>) QueryUpdate.get(this);
     }
-    
+
     public ResultSetMapper<? extends T> returnGeneratedKeysFunction() {
         return returnGeneratedKeysFunction;
     }
-    
+
     boolean returnGeneratedKeys() {
         return returnGeneratedKeysFunction != null;
     }
@@ -259,6 +259,16 @@ final public class QueryUpdate<T> implements Query {
             return this;
         }
 
+        /**
+         * Returns a builder used to specify how to process the generated keys
+         * {@link ResultSet}. Not all jdbc drivers support this functionality
+         * and some have limitations in their support (h2 for instance only
+         * returns the last generated key when multiple inserts happen in the
+         * one statement).
+         * 
+         * @return a builder used to specify how to process the generated keys
+         *         ResultSet
+         */
         public ReturnGeneratedKeysBuilder returnGeneratedKeys() {
             return new ReturnGeneratedKeysBuilder(builder);
         }
@@ -298,12 +308,17 @@ final public class QueryUpdate<T> implements Query {
          * Returns an {@link Operator} to allow the query to be run once per
          * parameter list in the source.
          * 
-         * @return
+         * @return operator 
          */
         public Operator<Observable<Integer>, Observable<Object>> parameterListOperator() {
             return new QueryUpdateOperatorFromObservable<Object>(this);
         }
 
+        /**
+         * Clears the parameter inputs for the query.
+         * 
+         * @return the current builder
+         */
         public Builder clearParameters() {
             builder.clearParameters();
             return this;
@@ -494,6 +509,6 @@ final public class QueryUpdate<T> implements Query {
         public Observable<Integer> count() {
             return get(Util.toOne()).count();
         }
-        
+
     }
 }
