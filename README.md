@@ -307,10 +307,10 @@ You can also specify the sql to be run in the annotation:
 @Query("select name, score from person order by name")
 public interface Person {
 
-    @Column("name")
+    @Column
     String name();
 
-    @Column("score")
+    @Column
     int score();
 }
 ``` 
