@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
@@ -1516,7 +1517,7 @@ public abstract class DatabaseTestBase {
                 .toList().toBlocking().single();
         assertEquals(Arrays.asList(1), list);
     }
-    
+
     @Test
     public void testReturnGeneratedKeysForMultipleInsertedValuesInOneStatement() {
         // h2 only returns the last generated key
@@ -1550,6 +1551,84 @@ public abstract class DatabaseTestBase {
                 .toList().toBlocking().single();
         assertEquals(Arrays.asList(1, 2), list);
     }
+
+    @Test
+    public void testNamedParameters() {
+        String name = db()
+        //
+                .select("select name from person where score >= :min and score <=:max")
+                //
+                .parameter("min", 24)
+                //
+                .parameter("max", 26)
+                //
+                .getAs(String.class).toBlocking().single();
+        assertEquals("MARMADUKE", name);
+    }
+
+    @Test
+    public void testNamedParametersWithMapParameter() {
+        Map<String, Integer> map = new HashMap<String, Integer>();
+        map.put("min", 24);
+        map.put("max", 26);
+        String name = db()
+        //
+                .select("select name from person where score >= :min and score <=:max")
+                //
+                .parameters(map)
+                //
+                .getAs(String.class).toBlocking().single();
+        assertEquals("MARMADUKE", name);
+    }
+
+    @Test
+    public void testNamedParametersWithMapParameterInObservable() {
+        Map<String, Integer> map = new HashMap<String, Integer>();
+        map.put("min", 24);
+        map.put("max", 26);
+        String name = db()
+        //
+                .select("select name from person where score >= :min and score <=:max")
+                //
+                .parameters(Observable.just(map))
+                //
+                .getAs(String.class).toBlocking().single();
+        assertEquals("MARMADUKE", name);
+    }
+    
+    @Test
+    public void testNamedParametersWithUpdateStatement() {
+        int count = db()
+        //
+                .update("update person set score = :newScore where score >= :min and score <=:max")
+                //
+                .parameter("newScore", 25)
+                //
+                .parameter("min", 24)
+                //
+                .parameter("max", 26)
+                //
+                .count().toBlocking().single();
+        assertEquals(1, count);
+    }
+
+    @Test(expected=RuntimeException.class)
+    public void testNamedParametersWithMapParameterNoNamesInSql() {
+        Map<String, Integer> map = new HashMap<String, Integer>();
+        map.put("min", 24);
+        map.put("max", 26);
+        db()
+        //
+        .select("select name from person where score >= ? and score <= ?")
+        //
+                .parameters(Observable.just(map))
+                //
+                .getAs(String.class).toBlocking().single();
+    }
+
+    /********************************************************
+     ** Utility classes
+     ********************************************************/
 
     private static class CountDownConnectionProvider implements ConnectionProvider {
         private final ConnectionProvider cp;

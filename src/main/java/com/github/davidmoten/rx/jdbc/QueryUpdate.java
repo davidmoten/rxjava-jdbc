@@ -10,6 +10,7 @@ import rx.Observable;
 import rx.Observable.Operator;
 import rx.functions.Func1;
 
+import com.github.davidmoten.rx.jdbc.NamedParameters.JdbcQuery;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple4;
@@ -29,7 +30,7 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuples;
  */
 final public class QueryUpdate<T> implements Query {
 
-    private final String sql;
+    private final JdbcQuery jdbcQuery;
     private final Observable<Parameter> parameters;
     private final QueryContext context;
     private final Observable<?> depends;
@@ -52,7 +53,7 @@ final public class QueryUpdate<T> implements Query {
         checkNotNull(parameters);
         checkNotNull(depends);
         checkNotNull(context);
-        this.sql = sql;
+        this.jdbcQuery = NamedParameters.parse(sql);
         this.parameters = parameters;
         this.depends = depends;
         this.context = context;
@@ -61,7 +62,7 @@ final public class QueryUpdate<T> implements Query {
 
     @Override
     public String sql() {
-        return sql;
+        return jdbcQuery.sql();
     }
 
     @Override
@@ -76,12 +77,17 @@ final public class QueryUpdate<T> implements Query {
 
     @Override
     public String toString() {
-        return "QueryUpdate [sql=" + sql + "]";
+        return "QueryUpdate [sql=" + sql() + "]";
     }
 
     @Override
     public Observable<?> depends() {
         return depends;
+    }
+    
+    @Override
+    public List<String> names() {
+        return jdbcQuery.names();
     }
 
     /**
@@ -122,12 +128,12 @@ final public class QueryUpdate<T> implements Query {
         return new Func1<List<Parameter>, Observable<T>>() {
             @Override
             public Observable<T> call(final List<Parameter> params) {
-                if (sql.equals(QueryUpdateOnSubscribe.BEGIN_TRANSACTION)) {
+                if (jdbcQuery.sql().equals(QueryUpdateOnSubscribe.BEGIN_TRANSACTION)) {
                     context.beginTransactionSubscribe();
                 }
                 Observable<T> result = executeOnce(params).subscribeOn(context.scheduler());
-                if (sql.equals(QueryUpdateOnSubscribe.COMMIT)
-                        || sql.equals(QueryUpdateOnSubscribe.ROLLBACK))
+                if (jdbcQuery.sql().equals(QueryUpdateOnSubscribe.COMMIT)
+                        || jdbcQuery.sql().equals(QueryUpdateOnSubscribe.ROLLBACK))
                     context.endTransactionSubscribe();
                 return (Observable<T>) result;
             }
@@ -202,6 +208,12 @@ final public class QueryUpdate<T> implements Query {
          */
         public Builder parameter(Object value) {
             builder.parameter(value);
+            return this;
+        }
+        
+        //TODO add javadoc
+        public Builder parameter(String name, Object value) {
+            builder.parameter(name, value);
             return this;
         }
 
@@ -308,7 +320,7 @@ final public class QueryUpdate<T> implements Query {
          * Returns an {@link Operator} to allow the query to be run once per
          * parameter list in the source.
          * 
-         * @return operator 
+         * @return operator
          */
         public Operator<Observable<Integer>, Observable<Object>> parameterListOperator() {
             return new QueryUpdateOperatorFromObservable<Object>(this);
@@ -511,4 +523,5 @@ final public class QueryUpdate<T> implements Query {
         }
 
     }
+
 }

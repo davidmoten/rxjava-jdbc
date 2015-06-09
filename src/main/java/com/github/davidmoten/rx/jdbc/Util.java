@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import rx.functions.Func1;
 
+import com.github.davidmoten.rx.jdbc.NamedParameters.JdbcQuery;
 import com.github.davidmoten.rx.jdbc.QuerySelect.Builder;
 import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
 
@@ -58,12 +59,15 @@ public final class Util {
     /**
      * Count the number of JDBC parameters in a sql statement.
      * 
-     * @param sql
+     * @param query.sql()
      * @return
      */
-    static int parametersCount(String sql) {
-        // TODO account for ? characters in string constants
-        return countOccurrences(sql, '?');
+    static int parametersCount(Query query) {
+        if (query.names().isEmpty())
+            // TODO account for ? characters in string constants
+            return countOccurrences(query.sql(), '?');
+        else
+            return query.names().size();
     }
 
     /**
@@ -718,9 +722,11 @@ public final class Util {
      * @param params
      * @throws SQLException
      */
-    static void setParameters(PreparedStatement ps, List<Parameter> params) throws SQLException {
+    static void setParameters(PreparedStatement ps, List<Parameter> params, boolean namesAllowed) throws SQLException {
         for (int i = 1; i <= params.size(); i++) {
-            Object o = params.get(i - 1).getValue();
+            if (params.get(i-1).hasName() && !namesAllowed)
+                throw new SQLException("named parameter found but sql does not contain names");
+            Object o = params.get(i - 1).value();
             try {
                 if (o == null)
                     ps.setObject(i, null);
@@ -864,8 +870,36 @@ public final class Util {
             }
         };
     }
-    
+
     static ResultSetMapper<Integer> toOne() {
         return ResultSetMapperToOne.INSTANCE;
+    }
+
+    public static void setNamedParameters(PreparedStatement ps, List<Parameter> parameters,
+            List<String> names) throws SQLException {
+        Map<String, Parameter> map = new HashMap<String, Parameter>();
+        for (Parameter p : parameters) {
+            if (p.hasName()) {
+                map.put(p.name(), p);
+            } else {
+                throw new SQLException(
+                        "named parameters were expected but this parameter did not have a name: "
+                                + p);
+            }
+        }
+        List<Parameter> list = new ArrayList<Parameter>();
+        for (String name : names) {
+            Parameter p = map.get(name);
+            list.add(p);
+        }
+        Util.setParameters(ps, list, true);        
+    }
+    
+    static void setParameters(PreparedStatement ps, List<Parameter> parameters, List<String> names) throws SQLException {
+        if (names.isEmpty()) {
+            Util.setParameters(ps, parameters, false);
+        } else {
+            Util.setNamedParameters(ps, parameters, names);
+        }
     }
 }

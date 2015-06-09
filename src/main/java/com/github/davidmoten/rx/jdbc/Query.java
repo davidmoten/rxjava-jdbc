@@ -1,5 +1,7 @@
 package com.github.davidmoten.rx.jdbc;
 
+import java.util.List;
+
 import rx.Observable;
 import rx.Scheduler;
 
@@ -15,6 +17,15 @@ public interface Query {
      * @return jdbc sql
      */
     String sql();
+
+    /**
+     * Returns the list of names corresponding positionally to the ? characters in
+     * the sql. If names were not used then returns an empty list.
+     * 
+     * @return ist of names corresponding positionally to the ? characters in
+     *         the sql
+     */
+    List<String> names();
 
     /**
      * Returns the parameters for the query in order of appearance as ? markers
