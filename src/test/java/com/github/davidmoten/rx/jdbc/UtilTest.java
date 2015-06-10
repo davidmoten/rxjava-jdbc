@@ -1,10 +1,14 @@
 package com.github.davidmoten.rx.jdbc;
 
-import org.easymock.EasyMock;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import static com.github.davidmoten.rx.jdbc.Util.autoMap;
+import static com.github.davidmoten.rx.jdbc.Util.closeQuietly;
+import static com.github.davidmoten.rx.jdbc.Util.closeQuietlyIfAutoCommit;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.expectLastCall;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -12,12 +16,20 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.*;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Arrays;
 
-import static com.github.davidmoten.rx.jdbc.Util.*;
-import static org.easymock.EasyMock.*;
-import static org.junit.Assert.assertEquals;
+import org.easymock.EasyMock;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 public class UtilTest {
 
