@@ -6,6 +6,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
+
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;

@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.easymock.EasyMock;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -404,7 +405,8 @@ public abstract class DatabaseTestBase {
         assertEquals(asList(21, 34), list);
     }
 
-    @Test
+    @Test(expected=RuntimeException.class)
+    @Ignore
     public void testNoParams() {
         List<Tuple2<String, Integer>> tuples = db()
                 .select("select name, score from person where name=? order by name")
@@ -1629,6 +1631,13 @@ public abstract class DatabaseTestBase {
     }
 
     @Test(expected = RuntimeException.class)
+    public void testNamedParametersOneMissingParameterShouldThrowException() {
+        db().select("select name from person where name = :name and score = :score")
+                .parameter("name", "FRED").count().toBlocking().single();
+    }
+    
+
+    @Test(expected = RuntimeException.class)
     public void testNamedParametersWithMapParameterNoNamesInSql() {
         Map<String, Integer> map = new HashMap<String, Integer>();
         map.put("min", 24);
@@ -1640,6 +1649,12 @@ public abstract class DatabaseTestBase {
                 .parameters(Observable.just(map))
                 //
                 .getAs(String.class).toBlocking().single();
+    }
+    
+    @Test
+    public void testNoParameters() {
+        int count = db().select("select name from person").count().toBlocking().single();
+        assertEquals(3, count);
     }
 
     /********************************************************

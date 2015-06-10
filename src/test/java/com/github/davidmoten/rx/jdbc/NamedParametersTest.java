@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.davidmoten.rx.jdbc.NamedParameters.JdbcQuery;
@@ -38,4 +39,10 @@ public class NamedParametersTest {
         assertTrue(r.names().isEmpty());
     }
 
+    @Test(expected = RuntimeException.class)
+    @Ignore
+    public void testNamedParametersAllMissingParametersShouldThrowException() {
+        System.out.println( DatabaseCreator.db().select("select name from person where name = :name")
+                .count().toBlocking().single());
+    }
 }

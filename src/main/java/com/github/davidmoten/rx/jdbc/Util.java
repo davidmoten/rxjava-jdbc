@@ -58,7 +58,8 @@ public final class Util {
     /**
      * Count the number of JDBC parameters in a sql statement.
      * 
-     * @param query.sql()
+     * @param query
+     *            .sql()
      * @return
      */
     static int parametersCount(Query query) {
@@ -68,7 +69,7 @@ public final class Util {
             return query.names().size();
     }
 
-    //Visible for testing
+    // Visible for testing
     static int countQuestionMarkParameters(String sql) {
         // was originally using regular expressions, but they didn't work well
         // for ignoring parameter-like strings inside quotes.
@@ -735,9 +736,10 @@ public final class Util {
      * @param params
      * @throws SQLException
      */
-    static void setParameters(PreparedStatement ps, List<Parameter> params, boolean namesAllowed) throws SQLException {
+    static void setParameters(PreparedStatement ps, List<Parameter> params, boolean namesAllowed)
+            throws SQLException {
         for (int i = 1; i <= params.size(); i++) {
-            if (params.get(i-1).hasName() && !namesAllowed)
+            if (params.get(i - 1).hasName() && !namesAllowed)
                 throw new SQLException("named parameter found but sql does not contain names");
             Object o = params.get(i - 1).value();
             try {
@@ -902,13 +904,16 @@ public final class Util {
         }
         List<Parameter> list = new ArrayList<Parameter>();
         for (String name : names) {
+            if (!map.containsKey(name))
+                throw new SQLException("named parameter is missing for '" + name + "'");
             Parameter p = map.get(name);
             list.add(p);
         }
-        Util.setParameters(ps, list, true);        
+        Util.setParameters(ps, list, true);
     }
-    
-    static void setParameters(PreparedStatement ps, List<Parameter> parameters, List<String> names) throws SQLException {
+
+    static void setParameters(PreparedStatement ps, List<Parameter> parameters, List<String> names)
+            throws SQLException {
         if (names.isEmpty()) {
             Util.setParameters(ps, parameters, false);
         } else {

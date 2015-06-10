@@ -3,6 +3,7 @@ package com.github.davidmoten.rx.jdbc;
 import static com.github.davidmoten.rx.RxUtil.concatButIgnoreFirstSequence;
 import static com.github.davidmoten.rx.jdbc.Util.TO_EMPTY_PARAMETER_LIST;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,20 +18,21 @@ import rx.functions.Func1;
  */
 final class Queries {
 
-    private static final Func1<Parameter, Observable<Parameter>> FLATTEN_NAMED_MAPS = new Func1<Parameter, Observable<Parameter>>(){
+    private static final Func1<Parameter, Observable<Parameter>> FLATTEN_NAMED_MAPS = new Func1<Parameter, Observable<Parameter>>() {
 
         @SuppressWarnings("unchecked")
         @Override
         public Observable<Parameter> call(Parameter p) {
             if (p.value() instanceof Map) {
                 List<Parameter> list = new ArrayList<Parameter>();
-                for (Entry<String, ?> entry :((Map<String, ?>)p.value()).entrySet()) {
+                for (Entry<String, ?> entry : ((Map<String, ?>) p.value()).entrySet()) {
                     list.add(new Parameter(entry.getKey(), entry.getValue()));
                 }
                 return Observable.from(list);
-            } else 
+            } else
                 return Observable.from(Arrays.asList(p));
-        }};
+        }
+    };
 
     /**
      * Private constructor to prevent instantiation.
@@ -84,8 +86,15 @@ final class Queries {
     static Observable<List<Parameter>> bufferedParameters(Query query) {
         int numParamsPerQuery = numParamsPerQuery(query);
         if (numParamsPerQuery > 0)
-            return parametersAfterDependencies(query).concatMap(FLATTEN_NAMED_MAPS).buffer(numParamsPerQuery);
+            return parametersAfterDependencies(query)
+                    .concatMap(FLATTEN_NAMED_MAPS).buffer(numParamsPerQuery);
+//                    .switchIfEmpty(Observable.<List<Parameter>> error(missingParametersException(query)));
         else
             return singleIntegerAfterDependencies(query).map(TO_EMPTY_PARAMETER_LIST);
+    }
+
+    private static Throwable missingParametersException(Query query) {
+        return new SQLException("the sql statement uses parameters but no parameters were given: "
+                + query.sql());
     }
 }
