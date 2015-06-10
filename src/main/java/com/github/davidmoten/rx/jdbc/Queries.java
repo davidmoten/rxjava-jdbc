@@ -3,14 +3,34 @@ package com.github.davidmoten.rx.jdbc;
 import static com.github.davidmoten.rx.RxUtil.concatButIgnoreFirstSequence;
 import static com.github.davidmoten.rx.jdbc.Util.TO_EMPTY_PARAMETER_LIST;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import rx.Observable;
+import rx.functions.Func1;
 
 /**
  * Utility methods for queries.
  */
 final class Queries {
+
+    private static final Func1<Parameter, Observable<Parameter>> FLATTEN_NAMED_MAPS = new Func1<Parameter, Observable<Parameter>>(){
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public Observable<Parameter> call(Parameter p) {
+            if (p.value() instanceof Map) {
+                List<Parameter> list = new ArrayList<Parameter>();
+                for (Entry<String, ?> entry :((Map<String, ?>)p.value()).entrySet()) {
+                    list.add(new Parameter(entry.getKey(), entry.getValue()));
+                }
+                return Observable.from(list);
+            } else 
+                return Observable.from(Arrays.asList(p));
+        }};
 
     /**
      * Private constructor to prevent instantiation.
@@ -27,7 +47,7 @@ final class Queries {
      * @return number of parameters in query sql
      */
     static int numParamsPerQuery(Query query) {
-        return Util.parametersCount(query.sql());
+        return Util.parametersCount(query);
     }
 
     /**
@@ -64,7 +84,7 @@ final class Queries {
     static Observable<List<Parameter>> bufferedParameters(Query query) {
         int numParamsPerQuery = numParamsPerQuery(query);
         if (numParamsPerQuery > 0)
-            return parametersAfterDependencies(query).buffer(numParamsPerQuery);
+            return parametersAfterDependencies(query).concatMap(FLATTEN_NAMED_MAPS).buffer(numParamsPerQuery);
         else
             return singleIntegerAfterDependencies(query).map(TO_EMPTY_PARAMETER_LIST);
     }

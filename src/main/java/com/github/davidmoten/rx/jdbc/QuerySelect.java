@@ -10,6 +10,7 @@ import rx.Observable;
 import rx.Observable.Operator;
 import rx.functions.Func1;
 
+import com.github.davidmoten.rx.jdbc.NamedParameters.JdbcQuery;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple4;
@@ -27,10 +28,10 @@ final public class QuerySelect implements Query {
     // Note has one ? to match the expected one parameter
     static final String RETURN_GENERATED_KEYS = "RETURN_GENERATED_KEYS?";
 
-    private final String sql;
     private final Observable<Parameter> parameters;
     private final QueryContext context;
     private Observable<?> depends = Observable.empty();
+    private final JdbcQuery jdbcQuery;
 
     /**
      * Constructor.
@@ -49,7 +50,7 @@ final public class QuerySelect implements Query {
         checkNotNull(parameters);
         checkNotNull(depends);
         checkNotNull(context);
-        this.sql = sql;
+        this.jdbcQuery = NamedParameters.parse(sql);
         this.parameters = parameters;
         this.depends = depends;
         this.context = context;
@@ -57,7 +58,7 @@ final public class QuerySelect implements Query {
 
     @Override
     public String sql() {
-        return sql;
+        return jdbcQuery.sql();
     }
 
     @Override
@@ -70,9 +71,15 @@ final public class QuerySelect implements Query {
         return parameters;
     }
 
+
+    @Override
+    public List<String> names() {
+        return jdbcQuery.names();
+    }
+    
     @Override
     public String toString() {
-        return "QuerySelect [sql=" + sql + "]";
+        return "QuerySelect [sql=" + sql() + "]";
     }
 
     @Override
@@ -182,6 +189,12 @@ final public class QuerySelect implements Query {
             return this;
         }
 
+        // TODO add javadoc
+        public Builder parameter(String name, Object value) {
+            builder.parameter(name, value);
+            return this;
+        }
+
         /**
          * Appends a dependency to the dependencies that have to complete their
          * emitting before the query is executed.
@@ -260,7 +273,6 @@ final public class QuerySelect implements Query {
             Util.setSqlFromQueryAnnotation(cls, builder);
             return get(Util.autoMap(cls), builder);
         }
-
 
         /**
          * Automaps the first column of the ResultSet into the target class

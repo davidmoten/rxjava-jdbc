@@ -7,19 +7,24 @@ import rx.functions.Func1;
  */
 final class Parameter {
 
+    private final String name;
     /**
      * Actual query parameter value to be encapsulated.
      */
-    private final Object parameter;
+    private final Object value;
 
     /**
      * Constructor.
      * 
      * @param parameter
      */
-    Parameter(Object parameter) {
-        super();
-        this.parameter = parameter;
+    Parameter(Object value) {
+        this(null, value);
+    }
+
+    Parameter(String name, Object value) {
+        this.name = name;
+        this.value = value;
     }
 
     /**
@@ -27,15 +32,23 @@ final class Parameter {
      * 
      * @return
      */
-    Object getValue() {
-        return parameter;
+    Object value() {
+        return value;
+    }
+
+    boolean hasName() {
+        return name != null;
+    }
+
+    String name() {
+        return name;
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Parameter [parameter=");
-        builder.append(parameter);
+        builder.append("Parameter [value=");
+        builder.append(value);
         builder.append("]");
         return builder.toString();
     }

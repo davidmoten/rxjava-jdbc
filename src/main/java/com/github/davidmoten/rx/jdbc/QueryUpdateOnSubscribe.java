@@ -214,7 +214,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
             keysOption = Statement.NO_GENERATED_KEYS;
         }
         state.ps = state.con.prepareStatement(query.sql(), keysOption);
-        Util.setParameters(state.ps, parameters);
+        Util.setParameters(state.ps, parameters, query.names());
 
         if (subscriber.isUnsubscribed())
             return;

@@ -35,7 +35,7 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
     private final ResultSetMapper<? extends T> function;
     private final QuerySelect query;
     private final List<Parameter> parameters;
-    private final boolean resultSetProvided;
+    private final boolean stateProvided;
 
     /**
      * Constructor.
@@ -48,15 +48,15 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
         this.query = query;
         this.parameters = parameters;
         this.function = function;
-        this.resultSetProvided = query.sql().equals(QuerySelect.RETURN_GENERATED_KEYS);
+        this.stateProvided = query.sql().equals(QuerySelect.RETURN_GENERATED_KEYS);
     }
 
     @Override
     public void call(Subscriber<? super T> subscriber) {
         State state = null;
         try {
-            if (resultSetProvided) {
-                state = (State) parameters.get(0).getValue();
+            if (stateProvided) {
+                state = (State) parameters.get(0).value();
                 setupUnsubscription(subscriber, state);
             } else {
                 state = new State();
@@ -105,9 +105,11 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
             log.debug("preparing statement,sql={}", query.sql());
             state.ps = state.con.prepareStatement(query.sql());
             log.debug("setting parameters");
-            Util.setParameters(state.ps, parameters);
+            Util.setParameters(state.ps, parameters, query.names());
         }
     }
+
+    
 
     /**
      * Executes the prepared statement.
