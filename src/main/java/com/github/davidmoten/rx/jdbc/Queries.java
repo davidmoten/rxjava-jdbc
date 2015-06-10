@@ -86,15 +86,13 @@ final class Queries {
     static Observable<List<Parameter>> bufferedParameters(Query query) {
         int numParamsPerQuery = numParamsPerQuery(query);
         if (numParamsPerQuery > 0)
+            //we don't check that parameters is empty after this because by general design 
+            //we want nothing to happen if a query is passed no parmaters when it expects them
             return parametersAfterDependencies(query)
-                    .concatMap(FLATTEN_NAMED_MAPS).buffer(numParamsPerQuery);
-//                    .switchIfEmpty(Observable.<List<Parameter>> error(missingParametersException(query)));
+                    .concatMap(FLATTEN_NAMED_MAPS)
+                    .buffer(numParamsPerQuery);
         else
             return singleIntegerAfterDependencies(query).map(TO_EMPTY_PARAMETER_LIST);
     }
 
-    private static Throwable missingParametersException(Query query) {
-        return new SQLException("the sql statement uses parameters but no parameters were given: "
-                + query.sql());
-    }
 }

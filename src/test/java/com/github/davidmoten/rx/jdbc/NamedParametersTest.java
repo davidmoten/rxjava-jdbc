@@ -20,30 +20,25 @@ public class NamedParametersTest {
                 r.sql());
         assertEquals(Arrays.asList("name", "name", "description"), r.names());
     }
-    
+
     @Test
     public void testSelectWithOneNamedParameterAndColonNameInQuotes() {
         JdbcQuery r = NamedParameters
                 .parse("select a, b from tbl where a.name=:name and b.name=':name'");
-        assertEquals("select a, b from tbl where a.name=? and b.name=':name'",
-                r.sql());
+        assertEquals("select a, b from tbl where a.name=? and b.name=':name'", r.sql());
         assertEquals(Arrays.asList("name"), r.names());
     }
-    
+
     @Test
     public void testSelectWithNoNamedParameters() {
-        JdbcQuery r = NamedParameters
-                .parse("select a, b from tbl");
-        assertEquals("select a, b from tbl",
-                r.sql());
+        JdbcQuery r = NamedParameters.parse("select a, b from tbl");
+        assertEquals("select a, b from tbl", r.sql());
         assertTrue(r.names().isEmpty());
     }
 
-    @Test(expected = RuntimeException.class)
-    @Ignore
-    //TODO remove ignore
-    public void testNamedParametersAllMissingParametersShouldThrowException() {
-        System.out.println( DatabaseCreator.db().select("select name from person where name = :name")
-                .count().toBlocking().single());
+    @Test
+    public void testNamedParametersAllMissingParametersShouldDoNothing() {
+        DatabaseCreator.db().select("select name from person where name = :name").count()
+                .subscribe();
     }
 }

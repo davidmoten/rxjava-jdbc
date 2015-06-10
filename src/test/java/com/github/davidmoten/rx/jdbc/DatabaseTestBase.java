@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.easymock.EasyMock;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -405,9 +404,7 @@ public abstract class DatabaseTestBase {
         assertEquals(asList(21, 34), list);
     }
 
-    @Test(expected=RuntimeException.class)
-    @Ignore
-    //TODO remove ignore
+    @Test
     public void testNoParams() {
         List<Tuple2<String, Integer>> tuples = db()
                 .select("select name, score from person where name=? order by name")
