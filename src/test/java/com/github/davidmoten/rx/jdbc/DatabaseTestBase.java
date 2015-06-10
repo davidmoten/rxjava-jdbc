@@ -1488,12 +1488,12 @@ public abstract class DatabaseTestBase {
         @Column("score")
         int score();
     }
-    
+
     @Test(expected = RuntimeException.class)
     public void testAutoMapThrowsExceptionIfMappedInterfaceColumnMethodHasParameters() {
         // test dynamic proxying
-     db().select("select address_id, full_address from address")
-                .autoMap(Address2.class).toList().toBlocking().single();
+        db().select("select address_id, full_address from address").autoMap(Address2.class)
+                .toList().toBlocking().single();
     }
 
     static interface Address2 {
@@ -1611,7 +1611,7 @@ public abstract class DatabaseTestBase {
                 .getAs(String.class).toBlocking().single();
         assertEquals("MARMADUKE", name);
     }
-    
+
     @Test
     public void testNamedParametersWithUpdateStatement() {
         int count = db()
@@ -1628,7 +1628,7 @@ public abstract class DatabaseTestBase {
         assertEquals(1, count);
     }
 
-    @Test(expected=RuntimeException.class)
+    @Test(expected = RuntimeException.class)
     public void testNamedParametersWithMapParameterNoNamesInSql() {
         Map<String, Integer> map = new HashMap<String, Integer>();
         map.put("min", 24);
@@ -1641,7 +1641,6 @@ public abstract class DatabaseTestBase {
                 //
                 .getAs(String.class).toBlocking().single();
     }
-    
 
     /********************************************************
      ** Utility classes

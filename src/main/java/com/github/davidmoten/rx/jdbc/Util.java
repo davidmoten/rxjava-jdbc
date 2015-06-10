@@ -63,7 +63,6 @@ public final class Util {
      */
     static int parametersCount(Query query) {
         if (query.names().isEmpty())
-            // TODO account for ? characters in string constants
             return countQuestionMarkParameters(query.sql());
         else
             return query.names().size();

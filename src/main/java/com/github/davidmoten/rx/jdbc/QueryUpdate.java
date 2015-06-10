@@ -84,7 +84,7 @@ final public class QueryUpdate<T> implements Query {
     public Observable<?> depends() {
         return depends;
     }
-    
+
     @Override
     public List<String> names() {
         return jdbcQuery.names();
@@ -210,8 +210,17 @@ final public class QueryUpdate<T> implements Query {
             builder.parameter(value);
             return this;
         }
-        
-        //TODO add javadoc
+
+        /**
+         * Sets a named parameter. If name is null throws a
+         * {@link NullPointerException}. If value is instance of Observable then
+         * throws an {@link IllegalArgumentException}.
+         * 
+         * @param name
+         *            the parameter name. Cannot be null.
+         * @param value
+         *            the parameter value
+         */
         public Builder parameter(String name, Object value) {
             builder.parameter(name, value);
             return this;

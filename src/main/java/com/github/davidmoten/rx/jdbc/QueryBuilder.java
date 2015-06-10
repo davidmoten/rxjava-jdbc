@@ -83,16 +83,25 @@ final class QueryBuilder {
                     "use parameters() method not the parameter() method for an Observable");
         parameters(Observable.just(value));
     }
-    
-    //TODO add javadoc
+
+    /**
+     * Sets a named parameter. If name is null throws a
+     * {@link NullPointerException}. If value is instance of Observable then
+     * throws an {@link IllegalArgumentException}.
+     * 
+     * @param name
+     *            the parameter name. Cannot be null.
+     * @param value
+     *            the parameter value
+     */
     void parameter(String name, Object value) {
         Preconditions.checkNotNull(name, "parameter name cannot be null");
         if (value instanceof Observable)
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "use parameters() method not the parameter() method for an Observable");
-        this.parameters =  parameters.concatWith(Observable.just(new Parameter(name, value)));
+        this.parameters = parameters.concatWith(Observable.just(new Parameter(name, value)));
     }
-    
+
     /**
      * Appends a dependency to the dependencies that have to complete their
      * emitting before the query is executed.
