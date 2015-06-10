@@ -3,7 +3,6 @@ package com.github.davidmoten.rx.jdbc;
 import static com.github.davidmoten.rx.RxUtil.concatButIgnoreFirstSequence;
 import static com.github.davidmoten.rx.jdbc.Util.TO_EMPTY_PARAMETER_LIST;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
