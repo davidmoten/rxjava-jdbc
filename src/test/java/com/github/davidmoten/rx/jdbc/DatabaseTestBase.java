@@ -1625,6 +1625,7 @@ public abstract class DatabaseTestBase {
                 //
                 .getAs(String.class).toBlocking().single();
     }
+    
 
     /********************************************************
      ** Utility classes
