@@ -214,6 +214,37 @@ List<Integer> list =
 assertEquals(Arrays.asList(21,34),list);
 ```
 
+Named parameters
+----------------------------
+Examples:
+
+```java
+Observable<String> names = db
+    .select("select name from person where score >= :min and score <=:max")
+    .parameter("min", 24)
+    .parameter("max", 26)
+    .getAs(String.class);
+```
+
+Using a map of parameters:
+```java
+Map<String, Integer> map = new HashMap<String, Integer>();
+map.put("min", 24);
+map.put("max", 26);
+Observable<String> names = db
+    .select("select name from person where score >= :min and score <=:max")
+    .parameters(map)
+    .getAs(String.class);
+```
+
+Using an Observable of maps:
+```java
+Observable<String> names = db
+    .select("select name from person where score >= :min and score <=:max")
+    .parameters(Observable.just(map1, map2))
+    .getAs(String.class);
+```
+
 Processing a ResultSet
 -----------------------------
 Many operators in rxjava process items pushed to them asynchronously. Given this it is important that ```ResultSet``` query results are processed 
