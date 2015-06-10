@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import rx.functions.Func1;
 
-import com.github.davidmoten.rx.jdbc.NamedParameters.JdbcQuery;
 import com.github.davidmoten.rx.jdbc.QuerySelect.Builder;
 import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
 
@@ -65,23 +64,38 @@ public final class Util {
     static int parametersCount(Query query) {
         if (query.names().isEmpty())
             // TODO account for ? characters in string constants
-            return countOccurrences(query.sql(), '?');
+            return countQuestionMarkParameters(query.sql());
         else
             return query.names().size();
     }
 
-    /**
-     * Returns the number of occurrences of a character in a string.
-     * 
-     * @param haystack
-     * @param needle
-     * @return
-     */
-    private static int countOccurrences(String haystack, char needle) {
+    //Visible for testing
+    static int countQuestionMarkParameters(String sql) {
+        // was originally using regular expressions, but they didn't work well
+        // for ignoring parameter-like strings inside quotes.
         int count = 0;
-        for (int i = 0; i < haystack.length(); i++) {
-            if (haystack.charAt(i) == needle)
-                count++;
+        int length = sql.length();
+        boolean inSingleQuote = false;
+        boolean inDoubleQuote = false;
+        for (int i = 0; i < length; i++) {
+            char c = sql.charAt(i);
+            if (inSingleQuote) {
+                if (c == '\'') {
+                    inSingleQuote = false;
+                }
+            } else if (inDoubleQuote) {
+                if (c == '"') {
+                    inDoubleQuote = false;
+                }
+            } else {
+                if (c == '\'') {
+                    inSingleQuote = true;
+                } else if (c == '"') {
+                    inDoubleQuote = true;
+                } else if (c == '?') {
+                    count++;
+                }
+            }
         }
         return count;
     }

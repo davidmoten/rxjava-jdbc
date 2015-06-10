@@ -387,36 +387,63 @@ public class UtilTest {
         assertEquals(Util.mapObject(resultSet, String.class, 1), null);
 
     }
-    
+
     @Test
     public void testCamelCaseToUnderscore() {
         assertEquals("a", Util.camelCaseToUnderscore("a"));
     }
-    
+
     @Test
     public void testCamelCaseToUnderscore2() {
         assertEquals("ab", Util.camelCaseToUnderscore("ab"));
     }
-    
-    
+
     @Test
     public void testCamelCaseToUnderscore3() {
         assertEquals("a_B", Util.camelCaseToUnderscore("aB"));
     }
-    
+
     @Test
     public void testCamelCaseToUnderscore4() {
         assertEquals("a_BC", Util.camelCaseToUnderscore("aBC"));
     }
-    
+
     @Test
     public void testCamelCaseToUnderscore5() {
         assertEquals("a_Before_Count", Util.camelCaseToUnderscore("aBeforeCount"));
     }
-    
+
     @Test
     public void testCamelCaseToUnderscore6() {
         assertEquals("", Util.camelCaseToUnderscore(""));
     }
 
+    @Test
+    public void testCountOfQuestionMarks() {
+        assertEquals(2,
+                Util.countQuestionMarkParameters("select name from blah where a <? and b = ?"));
+    }
+
+    @Test
+    public void testCountOfQuestionMarksIgnoresTextInQuotes() {
+        assertEquals(1,
+                Util.countQuestionMarkParameters("select name from blah where a < '?' and b = ?"));
+    }
+
+    @Test
+    public void testCountOfNoQuestionMarks() {
+        assertEquals(0, Util.countQuestionMarkParameters("boo"));
+    }
+
+    @Test
+    public void testCountOfNoQuestionMarksReturnsZeroWhenEmptyString() {
+        assertEquals(0, Util.countQuestionMarkParameters(""));
+    }
+
+    @Test
+    public void testCountOfNoQuestionMarksSkipsNestedUnclosedQuotes() {
+        assertEquals(
+                1,
+                Util.countQuestionMarkParameters("select name from person where name > '\"?' and name > ?"));
+    }
 }
