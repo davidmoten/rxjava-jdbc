@@ -1488,6 +1488,22 @@ public abstract class DatabaseTestBase {
         @Column("score")
         int score();
     }
+    
+    @Test(expected = RuntimeException.class)
+    public void testAutoMapThrowsExceptionIfMappedInterfaceColumnMethodHasParameters() {
+        // test dynamic proxying
+     db().select("select address_id, full_address from address")
+                .autoMap(Address2.class).toList().toBlocking().single();
+    }
+
+    static interface Address2 {
+
+        @Column
+        int addressId(String suburb);
+
+        @Column
+        String fullAddress();
+    }
 
     @Test
     public void testCustomMapper() {

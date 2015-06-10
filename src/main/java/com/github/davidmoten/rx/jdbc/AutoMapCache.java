@@ -25,8 +25,8 @@ class AutoMapCache {
             String name = method.getName();
             Column column = method.getAnnotation(Column.class);
             if (column != null) {
-                // TODO check method has no params and has a mappable return
-                // type
+                checkHasNoParameters(method);
+                // TODO check method has a mappable return type
                 String col = column.value();
                 if (col.equals(Column.NOT_SPECIFIED))
                     col = Util.camelCaseToUnderscore(name);
@@ -34,13 +34,19 @@ class AutoMapCache {
             } else {
                 Index index = method.getAnnotation(Index.class);
                 if (index != null) {
-                    // TODO check method has no params and has a mappable return
-                    // type
+                    // TODO check method has a mappable return type
+                    checkHasNoParameters(method);
                     methodCols.put(name, new IndexedCol(index.value(), method.getReturnType()));
                 }
             }
         }
         return methodCols;
+    }
+
+    private static void checkHasNoParameters(Method method) {
+        if (method.getParameterTypes().length > 0) {
+            throw new RuntimeException("mapped interface method cannot have parameters");
+        }
     }
 
 }
