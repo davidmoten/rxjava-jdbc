@@ -41,6 +41,7 @@ public class NamedParametersTest {
 
     @Test(expected = RuntimeException.class)
     @Ignore
+    //TODO remove ignore
     public void testNamedParametersAllMissingParametersShouldThrowException() {
         System.out.println( DatabaseCreator.db().select("select name from person where name = :name")
                 .count().toBlocking().single());

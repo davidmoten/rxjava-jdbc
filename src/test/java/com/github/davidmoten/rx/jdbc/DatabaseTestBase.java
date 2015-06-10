@@ -407,6 +407,7 @@ public abstract class DatabaseTestBase {
 
     @Test(expected=RuntimeException.class)
     @Ignore
+    //TODO remove ignore
     public void testNoParams() {
         List<Tuple2<String, Integer>> tuples = db()
                 .select("select name, score from person where name=? order by name")
