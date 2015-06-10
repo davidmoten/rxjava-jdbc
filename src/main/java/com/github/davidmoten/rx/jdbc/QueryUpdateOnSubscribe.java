@@ -35,14 +35,13 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
     static final String COMMIT = "commit";
 
     /**
-     * Returns an Observable of the results of pushing one set of parameters
-     * through a select query.
+     * Returns an Observable of the results of pushing one batch set of parameters through a update query.
      * 
      * @param params
      *            one set of parameters to be run with the query
      * @return
      */
-    static <T> Observable<T> execute(QueryUpdate<T> query, List<Parameter> parameters) {
+    static <T> Observable<T> execute(QueryUpdate<T> query, List<List<Parameter>> parameters) {
         return Observable.create(new QueryUpdateOnSubscribe<T>(query, parameters));
     }
 
@@ -56,7 +55,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      * parameters specified in the query because the query may be run multiple
      * times with multiple sets of parameters).
      */
-    private final List<Parameter> parameters;
+    private final List<List<Parameter>> parameters;
 
     /**
      * Constructor.
@@ -64,7 +63,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      * @param query
      * @param parameters
      */
-    private QueryUpdateOnSubscribe(QueryUpdate<T> query, List<Parameter> parameters) {
+    private QueryUpdateOnSubscribe(QueryUpdate<T> query, List<List<Parameter>> parameters) {
         this.query = query;
         this.parameters = parameters;
     }
@@ -214,15 +213,19 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
             keysOption = Statement.NO_GENERATED_KEYS;
         }
         state.ps = state.con.prepareStatement(query.sql(), keysOption);
-        Util.setParameters(state.ps, parameters, query.names());
+        
+        for (List<Parameter> parameterSet : parameters) {
+            Util.setParameters(state.ps, parameterSet, query.names());
+            state.ps.addBatch();
+        }
 
         if (subscriber.isUnsubscribed())
             return;
 
-        int count;
+        int[] counts;
         try {
-            log.debug("executing sql={}, parameters {}", query.sql(), parameters);
-            count = state.ps.executeUpdate();
+            log.debug("executing sql={}, batch size: {}, parameters {}", query.sql(), parameters.size(), parameters);
+            counts = state.ps.executeBatch();
             log.debug("executed ps={}", state.ps);
             if (query.returnGeneratedKeys()) {
                 log.debug("getting generated keys");
@@ -243,10 +246,14 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
             // must close before onNext so that connection is released and is
             // available to a query that might process the onNext
             close(state);
-            if (subscriber.isUnsubscribed())
-                return;
-            log.debug("onNext");
-            subscriber.onNext((T) (Integer) count);
+            for (int count : counts) {
+                if (subscriber.isUnsubscribed()) {
+                    return;
+                } else {
+                    log.debug("onNext");
+                    subscriber.onNext((T) (Integer) count);
+                }
+            }
             complete(subscriber);
         }
     }

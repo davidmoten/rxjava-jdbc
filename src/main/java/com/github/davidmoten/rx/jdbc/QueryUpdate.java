@@ -1,7 +1,8 @@
 package com.github.davidmoten.rx.jdbc;
 
 import static com.github.davidmoten.rx.jdbc.Conditions.checkNotNull;
-import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
+import static com.github.davidmoten.rx.jdbc.Queries.batchedBufferedParameters;
+import static com.github.davidmoten.util.Preconditions.checkArgument;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -36,6 +37,7 @@ final public class QueryUpdate<T> implements Query {
     private final Observable<?> depends;
     // nullable!
     private final ResultSetMapper<? extends T> returnGeneratedKeysFunction;
+    private int batchSize;
 
     /**
      * Private constructor.
@@ -48,16 +50,18 @@ final public class QueryUpdate<T> implements Query {
      *            nullable!
      */
     private QueryUpdate(String sql, Observable<Parameter> parameters, Observable<?> depends,
-            QueryContext context, ResultSetMapper<? extends T> returnGeneratedKeysFunction) {
+            QueryContext context, ResultSetMapper<? extends T> returnGeneratedKeysFunction, int batchSize) {
         checkNotNull(sql);
         checkNotNull(parameters);
         checkNotNull(depends);
         checkNotNull(context);
+        checkArgument(batchSize > 0, "A batch size greater or equal to 1 is required.");
         this.jdbcQuery = NamedParameters.parse(sql);
         this.parameters = parameters;
         this.depends = depends;
         this.context = context;
         this.returnGeneratedKeysFunction = returnGeneratedKeysFunction;
+        this.batchSize = batchSize;
     }
 
     @Override
@@ -111,10 +115,15 @@ final public class QueryUpdate<T> implements Query {
         return returnGeneratedKeysFunction != null;
     }
 
+    public int batchSize() {
+        return batchSize;
+    }
+
     static <T> Observable<T> get(QueryUpdate<T> queryUpdate) {
-        return bufferedParameters(queryUpdate)
-        // execute query for each set of parameters
-                .concatMap(queryUpdate.executeOnce());
+        return batchedBufferedParameters(queryUpdate)
+        // execute query for each batch of parameter sets
+                .concatMap(queryUpdate.executeOnce())
+                .onBackpressureBuffer(queryUpdate.batchSize());
     }
 
     /**
@@ -124,10 +133,10 @@ final public class QueryUpdate<T> implements Query {
      * @param query
      * @return
      */
-    private Func1<List<Parameter>, Observable<T>> executeOnce() {
-        return new Func1<List<Parameter>, Observable<T>>() {
+    private Func1<List<List<Parameter>>, Observable<T>> executeOnce() {
+        return new Func1<List<List<Parameter>>, Observable<T>>() {
             @Override
-            public Observable<T> call(final List<Parameter> params) {
+            public Observable<T> call(final List<List<Parameter>> params) {
                 if (jdbcQuery.sql().equals(QueryUpdateOnSubscribe.BEGIN_TRANSACTION)) {
                     context.beginTransactionSubscribe();
                 }
@@ -142,13 +151,14 @@ final public class QueryUpdate<T> implements Query {
 
     /**
      * Returns the results of an update query. Should return an
-     * {@link Observable} of size one containing the rows affected count.
+     * {@link Observable} with maximum size of {@code batchSize} containing the
+     * rows affected count for each update query in the batch.
      * 
      * @param query
      * @param parameters
      * @return
      */
-    private Observable<T> executeOnce(final List<Parameter> parameters) {
+    private Observable<T> executeOnce(final List<List<Parameter>> parameters) {
         return (Observable<T>) QueryUpdateOnSubscribe.execute(this, parameters);
     }
 
@@ -162,6 +172,8 @@ final public class QueryUpdate<T> implements Query {
          */
         private final QueryBuilder builder;
 
+        private int batchSize;
+
         /**
          * Constructor.
          * 
@@ -170,6 +182,7 @@ final public class QueryUpdate<T> implements Query {
          */
         public Builder(String sql, Database db) {
             this.builder = new QueryBuilder(sql, db);
+            this.batchSize = 1;
         }
 
         /**
@@ -291,7 +304,7 @@ final public class QueryUpdate<T> implements Query {
          *         ResultSet
          */
         public ReturnGeneratedKeysBuilder returnGeneratedKeys() {
-            return new ReturnGeneratedKeysBuilder(builder);
+            return new ReturnGeneratedKeysBuilder(builder, batchSize);
         }
 
         /**
@@ -302,7 +315,7 @@ final public class QueryUpdate<T> implements Query {
          */
         public Observable<Integer> count() {
             return new QueryUpdate<Integer>(builder.sql(), builder.parameters(), builder.depends(),
-                    builder.context(), null).count();
+                    builder.context(), null, batchSize).count();
         }
 
         /**
@@ -344,14 +357,31 @@ final public class QueryUpdate<T> implements Query {
             builder.clearParameters();
             return this;
         }
+
+        /**
+         * If there are more parameters than required for one execution
+         * of the query and hence more than one execution of the query will occur
+         * this sets the maximum number of how many query executions are wrapped
+         * in one batch.
+         * 
+         * @param batchSize the maximum number of query executions wrapped in one
+         *        batch
+         * @return the current builder
+         */
+        public Builder batchSize(int batchSize) {
+            this.batchSize = batchSize;
+            return this;
+        }
     }
 
     public static class ReturnGeneratedKeysBuilder {
 
         private final QueryBuilder builder;
+        private int batchSize;
 
-        public ReturnGeneratedKeysBuilder(QueryBuilder builder) {
+        public ReturnGeneratedKeysBuilder(QueryBuilder builder, int batchSize) {
             this.builder = builder;
+            this.batchSize = batchSize;
         }
 
         /**
@@ -362,7 +392,7 @@ final public class QueryUpdate<T> implements Query {
          */
         public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
             return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(), builder
-                    .depends(), builder.context(), function));
+                    .depends(), builder.context(), function, batchSize));
         }
 
         /**

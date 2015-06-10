@@ -94,4 +94,17 @@ final class Queries {
             return singleIntegerAfterDependencies(query).map(TO_EMPTY_PARAMETER_LIST);
     }
 
+
+    /**
+     * If the number of parameters in a query is >0 then group the parameters in lists of that number in size but only
+     * after the dependencies have been completed. Group these parameter lists again in batch lists of size
+     * {@code batchSize} to be executed in one batch execution. If the number of parameteres is zero then return an
+     * observable containing one item being an list containing one empty list.
+     * 
+     * @param query
+     * @return
+     */
+    static <T> Observable<List<List<Parameter>>> batchedBufferedParameters(QueryUpdate<T> query) {
+        return bufferedParameters(query).buffer(query.batchSize());
+    }
 }
