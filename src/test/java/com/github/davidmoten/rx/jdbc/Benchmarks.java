@@ -36,18 +36,6 @@ public class Benchmarks {
                 .toBlocking().single();
     }
 
-    private static Connection createConnection() {
-        Connection con = new ConnectionNonClosing(DatabaseCreator.nextConnection());
-        Database db = Database.from(con);
-        //insert another 1000 people
-        db.update("insert into person(name, score) values(?,?)").parameters(Observable.range(1,1000).concatMap(new Func1<Integer, Observable<Object>>() {
-            @Override
-            public Observable<Object> call(Integer n) {
-                return Observable.<Object>just("person" + n , n);
-            }}));
-        return con;
-    }
-
     @Benchmark
     public void selectUsingRawJdbc() {
         try (PreparedStatement ps = con.prepareStatement("select name from person");) {
@@ -61,5 +49,18 @@ public class Benchmarks {
             throw new RuntimeException(e);
         }
     }
+    
+    private static Connection createConnection() {
+        Connection con = new ConnectionNonClosing(DatabaseCreator.nextConnection());
+        Database db = Database.from(con);
+        //insert another 1000 people
+        db.update("insert into person(name, score) values(?,?)").parameters(Observable.range(1,1000).concatMap(new Func1<Integer, Observable<Object>>() {
+            @Override
+            public Observable<Object> call(Integer n) {
+                return Observable.<Object>just("person" + n , n);
+            }}));
+        return con;
+    }
+
 
 }
