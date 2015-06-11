@@ -1,6 +1,7 @@
 package com.github.davidmoten.rx.jdbc;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -46,6 +47,16 @@ public class DatabaseCreator {
             throw new SQLRuntimeException(e);
         }
         return db;
+    }
+    
+     static Connection nextConnection()  {
+        try {
+        Connection con = DriverManager.getConnection(DatabaseCreator.nextUrl());
+        DatabaseCreator.createDatabase(con);
+        return con;
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(e);
+        }
     }
 
     public static void createDatabase(Connection c) {

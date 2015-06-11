@@ -1152,7 +1152,7 @@ public abstract class DatabaseTestBase {
 
     @Test
     public void testTryCatch() {
-        try (Connection con = nextConnection();
+        try (Connection con = DatabaseCreator.nextConnection();
                 PreparedStatement ps = con
                         .prepareStatement("select name from person where name > ? order by name");) {
             ps.setObject(1, "ALEX");
@@ -1166,12 +1166,6 @@ public abstract class DatabaseTestBase {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private static Connection nextConnection() throws SQLException {
-        Connection con = DriverManager.getConnection(DatabaseCreator.nextUrl());
-        DatabaseCreator.createDatabase(con);
-        return con;
     }
 
     @Test
