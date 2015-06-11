@@ -338,12 +338,14 @@
 										<argument>org.openjdk.jmh.Main</argument>
 										<!-- -h for help -->
 										<argument>-f</argument>
+										<argument>-r</argument>
+										<argument>5s</argument>
 										<argument>-i</argument>
 										<argument>10</argument>
 										<argument>-wi</argument>
 										<argument>3</argument>
 										<argument>-jvmArgs</argument>
-										<argument>-Xmx512m</argument>
+										<argument>-Xmx512m -XX:+UnlockCommercialFeatures -XX:+FlightRecorder</argument>
 									</arguments>
 								</configuration>
 							</execution>
