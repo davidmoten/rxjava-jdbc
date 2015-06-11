@@ -65,40 +65,21 @@ output:
 ```
 [FRED, JOSEPH, MARMADUKE]
 ```
-Without using rxjava-jdbc the code is ugly mainly because of the pain of closing jdbc resources:
+Without using rxjava-jdbc:
 ```java
-Connection con = null;
-PreparedStatement ps = null;
-ResultSet rs = null;
-try {
-    con = DriverManager.getConnection(url);
-	ps = con.prepareStatement("select name from person where name > ? order by name");
-	ps.setObject(1, "ALEX");
-	rs = ps.executeQuery();
-	List<String> list = new ArrayList<String>();
-	while (rs.next()) {
-		list.add(rs.getString(1));
-	}
-	System.out.println(list);
+String sql = "select name from person where name > ? order by name";
+try (Connection con = nextConnection();
+     PreparedStatement ps = con.prepareStatement(sql);) {
+    ps.setObject(1, "ALEX");
+    List<String> list = new ArrayList<String>();
+    try (ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+            list.add(rs.getString(1));
+        }
+    }
+    System.out.println(list);
 } catch (SQLException e) {
-	throw new RuntimeException(e);
-} finally {
-	if (rs != null)
-		try {
-			rs.close();
-		} catch (SQLException e) {
-		}
-	if (ps != null)
-		try {
-			ps.close();
-		} catch (SQLException e) {
-		}
-	if (con!=null) {
-		try {
-			con.close();
-		} catch (SQLException e) {
-		}
-	}
+    throw new RuntimeException(e);
 }
 ```
 

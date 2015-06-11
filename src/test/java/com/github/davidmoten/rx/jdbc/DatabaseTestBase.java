@@ -17,9 +17,12 @@ import static rx.Observable.just;
 import java.io.IOException;
 import java.io.Reader;
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
@@ -1148,6 +1151,30 @@ public abstract class DatabaseTestBase {
     }
 
     @Test
+    public void testTryCatch() {
+        try (Connection con = nextConnection();
+                PreparedStatement ps = con
+                        .prepareStatement("select name from person where name > ? order by name");) {
+            ps.setObject(1, "ALEX");
+            List<String> list = new ArrayList<String>();
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getString(1));
+                }
+            }
+            System.out.println(list);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Connection nextConnection() throws SQLException {
+        Connection con = DriverManager.getConnection(DatabaseCreator.nextUrl());
+        DatabaseCreator.createDatabase(con);
+        return con;
+    }
+
+    @Test
     public void testChainSelectUsingOperators() {
         Database db = db();
         List<Integer> scores = db.select("select name from person")
@@ -1633,7 +1660,6 @@ public abstract class DatabaseTestBase {
         db().select("select name from person where name = :name and score = :score")
                 .parameter("name", "FRED").count().toBlocking().single();
     }
-    
 
     @Test(expected = RuntimeException.class)
     public void testNamedParametersWithMapParameterNoNamesInSql() {
@@ -1648,7 +1674,7 @@ public abstract class DatabaseTestBase {
                 //
                 .getAs(String.class).toBlocking().single();
     }
-    
+
     @Test
     public void testNoParameters() {
         int count = db().select("select name from person").count().toBlocking().single();
