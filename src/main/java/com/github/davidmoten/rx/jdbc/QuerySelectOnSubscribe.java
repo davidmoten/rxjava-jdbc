@@ -1,5 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -103,7 +104,7 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
             log.debug("getting connection");
             state.con = query.context().connectionProvider().get();
             log.debug("preparing statement,sql={}", query.sql());
-            state.ps = state.con.prepareStatement(query.sql());
+            state.ps = state.con.prepareStatement(query.sql(),ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             log.debug("setting parameters");
             Util.setParameters(state.ps, parameters, query.names());
         }
