@@ -318,7 +318,7 @@ public final class Util {
         public String toString() {
             return "NamedCol [name=" + name + ", returnType=" + returnType + "]";
         }
-        
+
     }
 
     static class IndexedCol implements Col {
@@ -366,8 +366,9 @@ public final class Util {
                 if (column instanceof NamedCol) {
                     String name = ((NamedCol) column).name;
                     index = colIndexes.get(name.toUpperCase());
-                    if (index==null) {
-                        throw new RuntimeException("query column names do not include " + name);
+                    if (index == null) {
+                        throw new SQLRuntimeException("query column names do not include '" + name
+                                + "'");
                     }
                 } else {
                     IndexedCol col = ((IndexedCol) column);
