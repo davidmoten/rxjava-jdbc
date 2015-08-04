@@ -313,6 +313,12 @@ public final class Util {
         public Class<?> returnType() {
             return returnType;
         }
+
+        @Override
+        public String toString() {
+            return "NamedCol [name=" + name + ", returnType=" + returnType + "]";
+        }
+        
     }
 
     static class IndexedCol implements Col {
@@ -328,6 +334,12 @@ public final class Util {
         public Class<?> returnType() {
             return returnType;
         }
+
+        @Override
+        public String toString() {
+            return "IndexedCol [index=" + index + ", returnType=" + returnType + "]";
+        }
+
     }
 
     private static class ProxyService<T> implements java.lang.reflect.InvocationHandler {
@@ -350,10 +362,13 @@ public final class Util {
             for (Method m : cls.getMethods()) {
                 String methodName = m.getName();
                 Col column = methodCols.get(methodName);
-                int index;
+                Integer index;
                 if (column instanceof NamedCol) {
                     String name = ((NamedCol) column).name;
                     index = colIndexes.get(name.toUpperCase());
+                    if (index==null) {
+                        throw new RuntimeException("query column names do not include " + name);
+                    }
                 } else {
                     IndexedCol col = ((IndexedCol) column);
                     index = col.index;
