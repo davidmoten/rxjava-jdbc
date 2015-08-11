@@ -17,7 +17,6 @@ import static rx.Observable.just;
 import java.io.IOException;
 import java.io.Reader;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -1673,6 +1672,22 @@ public abstract class DatabaseTestBase {
     public void testNoParameters() {
         int count = db().select("select name from person").count().toBlocking().single();
         assertEquals(3, count);
+    }
+
+    @Test
+    public void testAutoMapInterfaceWithPrimitives() {
+        List<NameScorePrimitive> list = db()
+                .select("select name, score from person where name='FRED'")
+                .autoMap(NameScorePrimitive.class).toList().toBlocking().single();
+        assertEquals(21, list.get(0).score());
+    }
+
+    static interface NameScorePrimitive {
+        @Column
+        String name();
+
+        @Column
+        int score();
     }
 
     /********************************************************
