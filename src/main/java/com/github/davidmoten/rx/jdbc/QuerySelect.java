@@ -243,6 +243,14 @@ final public class QuerySelect implements Query {
             return this;
         }
 
+        /**
+         * The ResultSet is transformed by the given transform before the
+         * results are traversed.
+         * 
+         * @param transform
+         *            transforms the ResultSet
+         * @return this
+         */
         public Builder resultSetTransform(Func1<ResultSet, ? extends ResultSet> transform) {
             this.resultSetTransform = transform;
             return this;
@@ -252,7 +260,7 @@ final public class QuerySelect implements Query {
          * Transforms the results using the given function.
          * 
          * @param function
-         * @return
+         * @return the results of the query as an Observable
          */
         public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
             return get(function, builder, resultSetTransform);
