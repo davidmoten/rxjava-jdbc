@@ -21,14 +21,14 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class MappableResultSet implements ResultSet {
+public final class RegexMappableResultSet implements ResultSet {
 
 	private final ResultSet rs;
 	private final int columnCount;
 	private final String[] columnLabels;
 	private final HashMap<String,Integer> cachedIndices = new HashMap<>(); //-1 means unfound
 	
-	private MappableResultSet(ResultSet rs) { 
+	private RegexMappableResultSet(ResultSet rs) { 
 		try { 
 		this.rs = rs;
 		
