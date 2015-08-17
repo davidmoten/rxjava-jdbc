@@ -83,7 +83,7 @@
 		<dependency>
 			<groupId>io.reactivex</groupId>
 			<artifactId>rxjava</artifactId>
-			<version>1.0.12</version>
+			<version>1.0.14</version>
 		</dependency>
 		<dependency>
 			<groupId>io.reactivex</groupId>
@@ -101,7 +101,6 @@
 			<artifactId>rxjava-extras</artifactId>
 			<version>0.5.13</version>
 		</dependency>
-
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>

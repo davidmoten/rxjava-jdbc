@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Types;
 
 import javax.naming.Context;
@@ -14,6 +15,12 @@ import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.davidmoten.rx.Functions;
+import com.github.davidmoten.rx.RxUtil;
+import com.github.davidmoten.rx.RxUtil.CountingAction;
+import com.github.davidmoten.rx.jdbc.exceptions.TransactionAlreadyOpenException;
+import com.github.davidmoten.util.Optional;
 
 import rx.Observable;
 import rx.Observable.Operator;
@@ -23,11 +30,6 @@ import rx.functions.Func1;
 import rx.functions.Func2;
 import rx.observables.StringObservable;
 import rx.schedulers.Schedulers;
-
-import com.github.davidmoten.rx.Functions;
-import com.github.davidmoten.rx.RxUtil;
-import com.github.davidmoten.rx.RxUtil.CountingAction;
-import com.github.davidmoten.rx.jdbc.exceptions.TransactionAlreadyOpenException;
 
 /**
  * Main entry point for manipulations of a database using rx-java-jdbc style
@@ -81,6 +83,12 @@ final public class Database {
     private final Func0<Scheduler> nonTransactionalSchedulerFactory;
 
     /**
+     * ResultSets are transformed with this transform once on creation in select
+     * queries
+     */
+    private final Func1<ResultSet, ? extends ResultSet> resultSetTransform;
+
+    /**
      * Constructor.
      * 
      * @param cp
@@ -88,7 +96,25 @@ final public class Database {
      * @param nonTransactionalSchedulerFactory
      *            schedules non transactional queries
      */
-    public Database(final ConnectionProvider cp, Func0<Scheduler> nonTransactionalSchedulerFactory) {
+    public Database(final ConnectionProvider cp,
+            Func0<Scheduler> nonTransactionalSchedulerFactory) {
+        this(cp, nonTransactionalSchedulerFactory, IDENTITY_TRANSFORM);
+    }
+
+    private static Func1<ResultSet, ? extends ResultSet> IDENTITY_TRANSFORM = Functions.identity();
+
+    /**
+     * Constructor.
+     * 
+     * @param cp
+     *            provides connections
+     * @param nonTransactionalSchedulerFactory
+     *            schedules non transactional queries
+     * @param resultSetTransform
+     *            transforms ResultSets at start of select query
+     */
+    public Database(final ConnectionProvider cp, Func0<Scheduler> nonTransactionalSchedulerFactory,
+            Func1<ResultSet, ? extends ResultSet> resultSetTransform) {
         Conditions.checkNotNull(cp);
         this.cp = cp;
         currentConnectionProvider.set(cp);
@@ -97,6 +123,17 @@ final public class Database {
         else
             this.nonTransactionalSchedulerFactory = CURRENT_THREAD_SCHEDULER_FACTORY;
         this.context = new QueryContext(this);
+        this.resultSetTransform = resultSetTransform;
+    }
+
+    /**
+     * Returns the currently defined {@link ResultSet} transform.
+     * 
+     * @return the current ResultSet transform applied at the start of select
+     *         queries
+     */
+    public Func1<ResultSet, ? extends ResultSet> getResultSetTransform() {
+        return resultSetTransform;
     }
 
     /**
@@ -254,6 +291,7 @@ final public class Database {
         private String url;
         private String username;
         private String password;
+        private Func1<ResultSet, ? extends ResultSet> resultSetTransform = IDENTITY_TRANSFORM;
 
         private static class Pool {
             int minSize;
@@ -345,7 +383,7 @@ final public class Database {
          * Requests that the non transactional queries are run using
          * {@link Schedulers#trampoline()}.
          * 
-         * @return
+         * @return this
          */
         public Builder nonTransactionalSchedulerOnCurrentThread() {
             nonTransactionalSchedulerFactory = CURRENT_THREAD_SCHEDULER_FACTORY;
@@ -353,9 +391,25 @@ final public class Database {
         }
 
         /**
+         * When a ResultSet is obtained by {@link Database#select()} Observable
+         * then before being used it is transformed by the {@code transform}
+         * function.
+         * 
+         * @param transform
+         *            function that transforms the ResultSet into another
+         *            ResultSet
+         * @return this
+         */
+        @SuppressWarnings("unchecked")
+        public Builder resultSetTransform(Func1<ResultSet, ? extends ResultSet> transform) {
+            this.resultSetTransform = transform;
+            return this;
+        }
+
+        /**
          * Returns a {@link Database}.
          * 
-         * @return
+         * @return the constructed Database
          */
         public Database build() {
             if (url != null && pool != null)
@@ -363,7 +417,7 @@ final public class Database {
                         pool.maxSize);
             else if (url != null)
                 cp = new ConnectionProviderFromUrl(url, username, password);
-            return new Database(cp, nonTransactionalSchedulerFactory);
+            return new Database(cp, nonTransactionalSchedulerFactory, resultSetTransform);
         }
     }
 
@@ -736,22 +790,22 @@ final public class Database {
             final boolean isCommit, final Database db, Observable<T> source) {
         CountingAction<T> counter = RxUtil.counter();
         Observable<Boolean> commit = counter
-        // get count
+                // get count
                 .count()
                 // greater than zero or empty
                 .filter(greaterThanZero())
                 // commit if at least one value
                 .lift(db.commitOrRollbackOperator(isCommit));
         return Observable
-        // concatenate
+                // concatenate
                 .concat(source
-                // count emissions
+                        // count emissions
                         .doOnNext(counter)
                         // ignore emissions
                         .ignoreElements()
                         // cast the empty sequence to type Boolean
                         .cast(Boolean.class),
-                // concat with commit
+                        // concat with commit
                         commit);
     }
 
@@ -776,7 +830,8 @@ final public class Database {
         });
     }
 
-    private static <T> Observable<T> beginTransactionOnNext(final Database db, Observable<T> source) {
+    private static <T> Observable<T> beginTransactionOnNext(final Database db,
+            Observable<T> source) {
         return source.concatMap(new Func1<T, Observable<T>>() {
             @Override
             public Observable<T> call(T t) {
@@ -842,8 +897,8 @@ final public class Database {
      * @return
      */
     public Observable<Integer> run(InputStream is, Charset charset, String delimiter) {
-        return StringObservable.split(StringObservable.from(new InputStreamReader(is, charset)),
-                ";").lift(run());
+        return StringObservable
+                .split(StringObservable.from(new InputStreamReader(is, charset)), ";").lift(run());
     }
 
     /**

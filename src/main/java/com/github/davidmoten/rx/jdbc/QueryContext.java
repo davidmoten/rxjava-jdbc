@@ -1,6 +1,9 @@
 package com.github.davidmoten.rx.jdbc;
 
+import java.sql.ResultSet;
+
 import rx.Scheduler;
+import rx.functions.Func1;
 
 /**
  * The threading and database connection context for mutliple jdbc queries.
@@ -54,5 +57,8 @@ final class QueryContext {
     void endTransactionObserve() {
         db.endTransactionObserve();
     }
-
+    
+    Func1<ResultSet, ? extends ResultSet> resultSetTransform() {
+        return db.getResultSetTransform();
+    }
 }
