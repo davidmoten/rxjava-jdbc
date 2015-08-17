@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,6 +49,7 @@ import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func1;
 import rx.observables.MathObservable;
+import rx.observers.TestSubscriber;
 
 import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.jdbc.Database.Builder;
@@ -1696,9 +1698,11 @@ public abstract class DatabaseTestBase {
                 return rs;
             }
         };
+        TestSubscriber<Integer> ts = TestSubscriber.create();
         Database db = Database.builder().connectionProvider(db().connectionProvider())
                 .resultSetTransform(transform).build();
-        db.select("select name from person").count().ignoreElements().subscribe();
+        db.select("select name from person").count().subscribe(ts);
+        ts.awaitTerminalEvent();
         assertEquals(1, (int) count.get());
     }
 
@@ -1709,14 +1713,41 @@ public abstract class DatabaseTestBase {
 
             @Override
             public ResultSet call(ResultSet rs) {
-                System.out.println("incremented");
                 count.incrementAndGet();
                 return rs;
             }
         };
-        db().select("select name from person").resultSetTransform(transform).count()
-                .ignoreElements().subscribe();
+        TestSubscriber<Integer> ts = TestSubscriber.create();
+        db().select("select name from person").resultSetTransform(transform).count().subscribe(ts);
+        ts.awaitTerminalEvent(10, TimeUnit.SECONDS);
         assertEquals(1, (int) count.get());
+    }
+
+    @Test
+    public void testResultSetTransformSetOnQueryCompoundsWithDatabaseTransform() {
+        final List<Integer> list = new CopyOnWriteArrayList<>();
+        Func1<ResultSet, ? extends ResultSet> transform1 = new Func1<ResultSet, ResultSet>() {
+
+            @Override
+            public ResultSet call(ResultSet rs) {
+                list.add(1);
+                return rs;
+            }
+        };
+        Func1<ResultSet, ? extends ResultSet> transform2 = new Func1<ResultSet, ResultSet>() {
+
+            @Override
+            public ResultSet call(ResultSet rs) {
+                list.add(2);
+                return rs;
+            }
+        };
+        Database db = Database.builder().connectionProvider(db().connectionProvider())
+                .resultSetTransform(transform1).build();
+        TestSubscriber<Integer> ts = TestSubscriber.create();
+        db.select("select name from person").resultSetTransform(transform2).count().subscribe(ts);
+        ts.awaitTerminalEvent(10, TimeUnit.SECONDS);
+        assertEquals(Arrays.asList(1,2), list);
     }
 
     /********************************************************
