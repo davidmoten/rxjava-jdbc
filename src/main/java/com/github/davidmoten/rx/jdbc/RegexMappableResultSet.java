@@ -19,7 +19,7 @@ public final class RegexMappableResultSet implements ResultSet {
 
     private RegexMappableResultSet(ResultSet rs) {
         try {
-            RegexMappableResultSet.this.rs = rs;
+            this.rs = rs;
 
             columnCount = rs.getMetaData().getColumnCount();
             columnLabels = new String[columnCount];
@@ -136,35 +136,35 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public String getString(String columnLabel) throws SQLException {
-        return rs.getString(columnLabel);
+        return rs.getString(findColumn(columnLabel));
     }
 
     public boolean getBoolean(String columnLabel) throws SQLException {
-        return rs.getBoolean(columnLabel);
+        return rs.getBoolean(findColumn(columnLabel));
     }
 
     public byte getByte(String columnLabel) throws SQLException {
-        return rs.getByte(columnLabel);
+        return rs.getByte(findColumn(columnLabel));
     }
 
     public short getShort(String columnLabel) throws SQLException {
-        return rs.getShort(columnLabel);
+        return rs.getShort(findColumn(columnLabel));
     }
 
     public int getInt(String columnLabel) throws SQLException {
-        return rs.getInt(columnLabel);
+        return rs.getInt(findColumn(columnLabel));
     }
 
     public long getLong(String columnLabel) throws SQLException {
-        return rs.getLong(columnLabel);
+        return rs.getLong(findColumn(columnLabel));
     }
 
     public float getFloat(String columnLabel) throws SQLException {
-        return rs.getFloat(columnLabel);
+        return rs.getFloat(findColumn(columnLabel));
     }
 
     public double getDouble(String columnLabel) throws SQLException {
-        return rs.getDouble(columnLabel);
+        return rs.getDouble(findColumn(columnLabel));
     }
 
     public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
@@ -172,31 +172,31 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public byte[] getBytes(String columnLabel) throws SQLException {
-        return rs.getBytes(columnLabel);
+        return rs.getBytes(findColumn(columnLabel));
     }
 
     public Date getDate(String columnLabel) throws SQLException {
-        return rs.getDate(columnLabel);
+        return rs.getDate(findColumn(columnLabel));
     }
 
     public Time getTime(String columnLabel) throws SQLException {
-        return rs.getTime(columnLabel);
+        return rs.getTime(findColumn(columnLabel));
     }
 
     public Timestamp getTimestamp(String columnLabel) throws SQLException {
-        return rs.getTimestamp(columnLabel);
+        return rs.getTimestamp(findColumn(columnLabel));
     }
 
     public InputStream getAsciiStream(String columnLabel) throws SQLException {
-        return rs.getAsciiStream(columnLabel);
+        return rs.getAsciiStream(findColumn(columnLabel));
     }
 
     public InputStream getUnicodeStream(String columnLabel) throws SQLException {
-        return rs.getUnicodeStream(columnLabel);
+        return rs.getUnicodeStream(findColumn(columnLabel));
     }
 
     public InputStream getBinaryStream(String columnLabel) throws SQLException {
-        return rs.getBinaryStream(columnLabel);
+        return rs.getBinaryStream(findColumn(columnLabel));
     }
 
     public SQLWarning getWarnings() throws SQLException {
@@ -220,7 +220,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public Object getObject(String columnLabel) throws SQLException {
-        return rs.getObject(columnLabel);
+        return rs.getObject(findColumn(columnLabel));
     }
 
     public Reader getCharacterStream(int columnIndex) throws SQLException {
@@ -228,7 +228,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public Reader getCharacterStream(String columnLabel) throws SQLException {
-        return rs.getCharacterStream(columnLabel);
+        return rs.getCharacterStream(findColumn(columnLabel));
     }
 
     public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
@@ -236,7 +236,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
-        return rs.getBigDecimal(columnLabel);
+        return rs.getBigDecimal(findColumn(columnLabel));
     }
 
     public boolean isBeforeFirst() throws SQLException {
@@ -400,79 +400,79 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateNull(String columnLabel) throws SQLException {
-        rs.updateNull(columnLabel);
+        rs.updateNull(findColumn(columnLabel));
     }
 
     public void updateBoolean(String columnLabel, boolean x) throws SQLException {
-        rs.updateBoolean(columnLabel, x);
+        rs.updateBoolean(findColumn(columnLabel), x);
     }
 
     public void updateByte(String columnLabel, byte x) throws SQLException {
-        rs.updateByte(columnLabel, x);
+        rs.updateByte(findColumn(columnLabel), x);
     }
 
     public void updateShort(String columnLabel, short x) throws SQLException {
-        rs.updateShort(columnLabel, x);
+        rs.updateShort(findColumn(columnLabel), x);
     }
 
     public void updateInt(String columnLabel, int x) throws SQLException {
-        rs.updateInt(columnLabel, x);
+        rs.updateInt(findColumn(columnLabel), x);
     }
 
     public void updateLong(String columnLabel, long x) throws SQLException {
-        rs.updateLong(columnLabel, x);
+        rs.updateLong(findColumn(columnLabel), x);
     }
 
     public void updateFloat(String columnLabel, float x) throws SQLException {
-        rs.updateFloat(columnLabel, x);
+        rs.updateFloat(findColumn(columnLabel), x);
     }
 
     public void updateDouble(String columnLabel, double x) throws SQLException {
-        rs.updateDouble(columnLabel, x);
+        rs.updateDouble(findColumn(columnLabel), x);
     }
 
     public void updateBigDecimal(String columnLabel, BigDecimal x) throws SQLException {
-        rs.updateBigDecimal(columnLabel, x);
+        rs.updateBigDecimal(findColumn(columnLabel), x);
     }
 
     public void updateString(String columnLabel, String x) throws SQLException {
-        rs.updateString(columnLabel, x);
+        rs.updateString(findColumn(columnLabel), x);
     }
 
     public void updateBytes(String columnLabel, byte[] x) throws SQLException {
-        rs.updateBytes(columnLabel, x);
+        rs.updateBytes(findColumn(columnLabel), x);
     }
 
     public void updateDate(String columnLabel, Date x) throws SQLException {
-        rs.updateDate(columnLabel, x);
+        rs.updateDate(findColumn(columnLabel), x);
     }
 
     public void updateTime(String columnLabel, Time x) throws SQLException {
-        rs.updateTime(columnLabel, x);
+        rs.updateTime(findColumn(columnLabel), x);
     }
 
     public void updateTimestamp(String columnLabel, Timestamp x) throws SQLException {
-        rs.updateTimestamp(columnLabel, x);
+        rs.updateTimestamp(findColumn(columnLabel), x);
     }
 
     public void updateAsciiStream(String columnLabel, InputStream x, int length) throws SQLException {
-        rs.updateAsciiStream(columnLabel, x, length);
+        rs.updateAsciiStream(findColumn(columnLabel), x, length);
     }
 
     public void updateBinaryStream(String columnLabel, InputStream x, int length) throws SQLException {
-        rs.updateBinaryStream(columnLabel, x, length);
+        rs.updateBinaryStream(findColumn(columnLabel), x, length);
     }
 
     public void updateCharacterStream(String columnLabel, Reader reader, int length) throws SQLException {
-        rs.updateCharacterStream(columnLabel, reader, length);
+        rs.updateCharacterStream(findColumn(columnLabel), reader, length);
     }
 
     public void updateObject(String columnLabel, Object x, int scaleOrLength) throws SQLException {
-        rs.updateObject(columnLabel, x, scaleOrLength);
+        rs.updateObject(findColumn(columnLabel), x, scaleOrLength);
     }
 
     public void updateObject(String columnLabel, Object x) throws SQLException {
-        rs.updateObject(columnLabel, x);
+        rs.updateObject(findColumn(columnLabel), x);
     }
 
     public void insertRow() throws SQLException {
@@ -528,23 +528,23 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public Object getObject(String columnLabel, Map<String, Class<?>> map) throws SQLException {
-        return rs.getObject(columnLabel, map);
+        return rs.getObject(findColumn(columnLabel), map);
     }
 
     public Ref getRef(String columnLabel) throws SQLException {
-        return rs.getRef(columnLabel);
+        return rs.getRef(findColumn(columnLabel));
     }
 
     public Blob getBlob(String columnLabel) throws SQLException {
-        return rs.getBlob(columnLabel);
+        return rs.getBlob(findColumn(columnLabel));
     }
 
     public Clob getClob(String columnLabel) throws SQLException {
-        return rs.getClob(columnLabel);
+        return rs.getClob(findColumn(columnLabel));
     }
 
     public Array getArray(String columnLabel) throws SQLException {
-        return rs.getArray(columnLabel);
+        return rs.getArray(findColumn(columnLabel));
     }
 
     public Date getDate(int columnIndex, Calendar cal) throws SQLException {
@@ -552,7 +552,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public Date getDate(String columnLabel, Calendar cal) throws SQLException {
-        return rs.getDate(columnLabel, cal);
+        return rs.getDate(findColumn(columnLabel), cal);
     }
 
     public Time getTime(int columnIndex, Calendar cal) throws SQLException {
@@ -560,7 +560,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public Time getTime(String columnLabel, Calendar cal) throws SQLException {
-        return rs.getTime(columnLabel, cal);
+        return rs.getTime(findColumn(columnLabel), cal);
     }
 
     public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
@@ -568,7 +568,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
-        return rs.getTimestamp(columnLabel, cal);
+        return rs.getTimestamp(findColumn(columnLabel), cal);
     }
 
     public URL getURL(int columnIndex) throws SQLException {
@@ -576,7 +576,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public URL getURL(String columnLabel) throws SQLException {
-        return rs.getURL(columnLabel);
+        return rs.getURL(findColumn(columnLabel));
     }
 
     public void updateRef(int columnIndex, Ref x) throws SQLException {
@@ -584,7 +584,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateRef(String columnLabel, Ref x) throws SQLException {
-        rs.updateRef(columnLabel, x);
+        rs.updateRef(findColumn(columnLabel), x);
     }
 
     public void updateBlob(int columnIndex, Blob x) throws SQLException {
@@ -592,7 +592,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateBlob(String columnLabel, Blob x) throws SQLException {
-        rs.updateBlob(columnLabel, x);
+        rs.updateBlob(findColumn(columnLabel), x);
     }
 
     public void updateClob(int columnIndex, Clob x) throws SQLException {
@@ -600,7 +600,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateClob(String columnLabel, Clob x) throws SQLException {
-        rs.updateClob(columnLabel, x);
+        rs.updateClob(findColumn(columnLabel), x);
     }
 
     public void updateArray(int columnIndex, Array x) throws SQLException {
@@ -608,7 +608,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateArray(String columnLabel, Array x) throws SQLException {
-        rs.updateArray(columnLabel, x);
+        rs.updateArray(findColumn(columnLabel), x);
     }
 
     public RowId getRowId(int columnIndex) throws SQLException {
@@ -616,7 +616,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public RowId getRowId(String columnLabel) throws SQLException {
-        return rs.getRowId(columnLabel);
+        return rs.getRowId(findColumn(columnLabel));
     }
 
     public void updateRowId(int columnIndex, RowId x) throws SQLException {
@@ -624,7 +624,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateRowId(String columnLabel, RowId x) throws SQLException {
-        rs.updateRowId(columnLabel, x);
+        rs.updateRowId(findColumn(columnLabel), x);
     }
 
     public int getHoldability() throws SQLException {
@@ -640,7 +640,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateNString(String columnLabel, String nString) throws SQLException {
-        rs.updateNString(columnLabel, nString);
+        rs.updateNString(findColumn(columnLabel), nString);
     }
 
     public void updateNClob(int columnIndex, NClob nClob) throws SQLException {
@@ -648,7 +648,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateNClob(String columnLabel, NClob nClob) throws SQLException {
-        rs.updateNClob(columnLabel, nClob);
+        rs.updateNClob(findColumn(columnLabel), nClob);
     }
 
     public NClob getNClob(int columnIndex) throws SQLException {
@@ -656,7 +656,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public NClob getNClob(String columnLabel) throws SQLException {
-        return rs.getNClob(columnLabel);
+        return rs.getNClob(findColumn(columnLabel));
     }
 
     public SQLXML getSQLXML(int columnIndex) throws SQLException {
@@ -664,7 +664,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public SQLXML getSQLXML(String columnLabel) throws SQLException {
-        return rs.getSQLXML(columnLabel);
+        return rs.getSQLXML(findColumn(columnLabel));
     }
 
     public void updateSQLXML(int columnIndex, SQLXML xmlObject) throws SQLException {
@@ -672,7 +672,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateSQLXML(String columnLabel, SQLXML xmlObject) throws SQLException {
-        rs.updateSQLXML(columnLabel, xmlObject);
+        rs.updateSQLXML(findColumn(columnLabel), xmlObject);
     }
 
     public String getNString(int columnIndex) throws SQLException {
@@ -680,7 +680,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public String getNString(String columnLabel) throws SQLException {
-        return rs.getNString(columnLabel);
+        return rs.getNString(findColumn(columnLabel));
     }
 
     public Reader getNCharacterStream(int columnIndex) throws SQLException {
@@ -688,7 +688,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public Reader getNCharacterStream(String columnLabel) throws SQLException {
-        return rs.getNCharacterStream(columnLabel);
+        return rs.getNCharacterStream(findColumn(columnLabel));
     }
 
     public void updateNCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
@@ -696,7 +696,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateNCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
-        rs.updateNCharacterStream(columnLabel, reader, length);
+        rs.updateNCharacterStream(findColumn(columnLabel), reader, length);
     }
 
     public void updateAsciiStream(int columnIndex, InputStream x, long length) throws SQLException {
@@ -712,15 +712,15 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateAsciiStream(String columnLabel, InputStream x, long length) throws SQLException {
-        rs.updateAsciiStream(columnLabel, x, length);
+        rs.updateAsciiStream(findColumn(columnLabel), x, length);
     }
 
     public void updateBinaryStream(String columnLabel, InputStream x, long length) throws SQLException {
-        rs.updateBinaryStream(columnLabel, x, length);
+        rs.updateBinaryStream(findColumn(columnLabel), x, length);
     }
 
     public void updateCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
-        rs.updateCharacterStream(columnLabel, reader, length);
+        rs.updateCharacterStream(findColumn(columnLabel), reader, length);
     }
 
     public void updateBlob(int columnIndex, InputStream inputStream, long length) throws SQLException {
@@ -728,7 +728,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateBlob(String columnLabel, InputStream inputStream, long length) throws SQLException {
-        rs.updateBlob(columnLabel, inputStream, length);
+        rs.updateBlob(findColumn(columnLabel), inputStream, length);
     }
 
     public void updateClob(int columnIndex, Reader reader, long length) throws SQLException {
@@ -736,7 +736,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateClob(String columnLabel, Reader reader, long length) throws SQLException {
-        rs.updateClob(columnLabel, reader, length);
+        rs.updateClob(findColumn(columnLabel), reader, length);
     }
 
     public void updateNClob(int columnIndex, Reader reader, long length) throws SQLException {
@@ -744,7 +744,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateNClob(String columnLabel, Reader reader, long length) throws SQLException {
-        rs.updateNClob(columnLabel, reader, length);
+        rs.updateNClob(findColumn(columnLabel), reader, length);
     }
 
     public void updateNCharacterStream(int columnIndex, Reader x) throws SQLException {
@@ -752,7 +752,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateNCharacterStream(String columnLabel, Reader reader) throws SQLException {
-        rs.updateNCharacterStream(columnLabel, reader);
+        rs.updateNCharacterStream(findColumn(columnLabel), reader);
     }
 
     public void updateAsciiStream(int columnIndex, InputStream x) throws SQLException {
@@ -768,15 +768,15 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateAsciiStream(String columnLabel, InputStream x) throws SQLException {
-        rs.updateAsciiStream(columnLabel, x);
+        rs.updateAsciiStream(findColumn(columnLabel), x);
     }
 
     public void updateBinaryStream(String columnLabel, InputStream x) throws SQLException {
-        rs.updateBinaryStream(columnLabel, x);
+        rs.updateBinaryStream(findColumn(columnLabel), x);
     }
 
     public void updateCharacterStream(String columnLabel, Reader reader) throws SQLException {
-        rs.updateCharacterStream(columnLabel, reader);
+        rs.updateCharacterStream(findColumn(columnLabel), reader);
     }
 
     public void updateBlob(int columnIndex, InputStream inputStream) throws SQLException {
@@ -784,7 +784,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateBlob(String columnLabel, InputStream inputStream) throws SQLException {
-        rs.updateBlob(columnLabel, inputStream);
+        rs.updateBlob(findColumn(columnLabel), inputStream);
     }
 
     public void updateClob(int columnIndex, Reader reader) throws SQLException {
@@ -792,7 +792,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateClob(String columnLabel, Reader reader) throws SQLException {
-        rs.updateClob(columnLabel, reader);
+        rs.updateClob(findColumn(columnLabel), reader);
     }
 
     public void updateNClob(int columnIndex, Reader reader) throws SQLException {
@@ -800,7 +800,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateNClob(String columnLabel, Reader reader) throws SQLException {
-        rs.updateNClob(columnLabel, reader);
+        rs.updateNClob(findColumn(columnLabel), reader);
     }
 
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
@@ -808,7 +808,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
-        return rs.getObject(columnLabel, type);
+        return rs.getObject(findColumn(columnLabel), type);
     }
 
     public void updateObject(int columnIndex, Object x, SQLType targetSqlType, int scaleOrLength) throws SQLException {
@@ -816,7 +816,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateObject(String columnLabel, Object x, SQLType targetSqlType, int scaleOrLength) throws SQLException {
-        rs.updateObject(columnLabel, x, targetSqlType, scaleOrLength);
+        rs.updateObject(findColumn(columnLabel), x, targetSqlType, scaleOrLength);
     }
 
     public void updateObject(int columnIndex, Object x, SQLType targetSqlType) throws SQLException {
@@ -824,7 +824,7 @@ public final class RegexMappableResultSet implements ResultSet {
     }
 
     public void updateObject(String columnLabel, Object x, SQLType targetSqlType) throws SQLException {
-        rs.updateObject(columnLabel, x, targetSqlType);
+        rs.updateObject(findColumn(columnLabel), x, targetSqlType);
     }
 }
 
