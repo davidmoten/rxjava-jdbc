@@ -2,8 +2,6 @@ package com.github.davidmoten.rx.jdbc;
 
 import java.sql.ResultSet;
 
-import com.github.davidmoten.util.Optional;
-
 import rx.Scheduler;
 import rx.functions.Func1;
 

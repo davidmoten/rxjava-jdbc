@@ -1686,7 +1686,7 @@ public abstract class DatabaseTestBase {
     }
 
     @Test
-    public void testResultSetTransform() {
+    public void testResultSetTransformSetOnDatabase() {
         final AtomicInteger count = new AtomicInteger();
         Func1<ResultSet, ? extends ResultSet> transform = new Func1<ResultSet, ResultSet>() {
 
@@ -1699,6 +1699,23 @@ public abstract class DatabaseTestBase {
         Database db = Database.builder().connectionProvider(db().connectionProvider())
                 .resultSetTransform(transform).build();
         db.select("select name from person").count().ignoreElements().subscribe();
+        assertEquals(1, (int) count.get());
+    }
+
+    @Test
+    public void testResultSetTransformSetOnQuery() {
+        final AtomicInteger count = new AtomicInteger();
+        Func1<ResultSet, ? extends ResultSet> transform = new Func1<ResultSet, ResultSet>() {
+
+            @Override
+            public ResultSet call(ResultSet rs) {
+                System.out.println("incremented");
+                count.incrementAndGet();
+                return rs;
+            }
+        };
+        db().select("select name from person").resultSetTransform(transform).count()
+                .ignoreElements().subscribe();
         assertEquals(1, (int) count.get());
     }
 

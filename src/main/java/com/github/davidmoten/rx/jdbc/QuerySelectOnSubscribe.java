@@ -123,7 +123,8 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
         if (!subscriber.isUnsubscribed()) {
             try {
                 log.debug("executing ps");
-                state.rs = query.context().resultSetTransform().call(state.ps.executeQuery());
+                state.rs = query.resultSetTransform()
+                        .call(query.context().resultSetTransform().call(state.ps.executeQuery()));
                 log.debug("executed ps={}", state.ps);
             } catch (SQLException e) {
                 throw new SQLException("failed to run sql=" + query.sql(), e);
