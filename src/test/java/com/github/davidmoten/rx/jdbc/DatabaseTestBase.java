@@ -34,6 +34,7 @@ import java.util.TimeZone;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.easymock.EasyMock;
 import org.junit.Test;
@@ -49,6 +50,7 @@ import rx.functions.Func1;
 import rx.observables.MathObservable;
 
 import com.github.davidmoten.rx.RxUtil;
+import com.github.davidmoten.rx.jdbc.Database.Builder;
 import com.github.davidmoten.rx.jdbc.annotations.Column;
 import com.github.davidmoten.rx.jdbc.annotations.Index;
 import com.github.davidmoten.rx.jdbc.annotations.Query;
@@ -96,8 +98,8 @@ public abstract class DatabaseTestBase {
 
     @Test
     public void testSimpleExample() {
-        Observable<String> names = db().select("select name from person order by name").getAs(
-                String.class);
+        Observable<String> names = db().select("select name from person order by name")
+                .getAs(String.class);
         // convert the names to a list for unit test
         List<String> list = names.toList().toBlocking().single();
         log.debug("list=" + list);
@@ -107,7 +109,7 @@ public abstract class DatabaseTestBase {
     @Test
     public void testCountQuery() {
         int count = db()
-        // select names
+                // select names
                 .select("select name from person where name >?")
                 // set name parameter
                 .parameter("ALEX")
@@ -130,7 +132,7 @@ public abstract class DatabaseTestBase {
             }
         };
         Observable<Integer> existingRows = db
-        // select names
+                // select names
                 .select("select name from person where name=?")
                 // set name parameter
                 .parameter("FRED")
@@ -141,7 +143,7 @@ public abstract class DatabaseTestBase {
                 // return empty if count = 0
                 .filter(isZero);
         Observable<Integer> update = db
-        // insert record if does not exist
+                // insert record if does not exist
                 .update("insert into person(name,score) values(?,0)")
                 // get parameters from last query
                 .parameters(existingRows.map(constant("FRED")))
@@ -157,7 +159,7 @@ public abstract class DatabaseTestBase {
         Database db = db();
         Observable<Boolean> begin = db.beginTransaction();
         Observable<Integer> updateCount = db
-        // set everyones score to 99
+                // set everyones score to 99
                 .update("update person set score=?")
                 // is within transaction
                 .dependsOn(begin)
@@ -167,7 +169,7 @@ public abstract class DatabaseTestBase {
                 .count();
         Observable<Boolean> commit = db.commit(updateCount);
         long count = db.select("select count(*) from person where score=?")
-        // set score
+                // set score
                 .parameter(99)
                 // depends on
                 .dependsOn(commit)
@@ -184,7 +186,7 @@ public abstract class DatabaseTestBase {
     public void testSelectErrorResetsTransactionContextInDatabaseClass() {
         Database db = db();
         Observable<Integer> select = db
-        // select names
+                // select names
                 .select("select namez from person where name=?")
                 // set name parameter
                 .parameter("FRED")
@@ -208,7 +210,7 @@ public abstract class DatabaseTestBase {
     public void testUpdateErrorResetsTransactionContextInDatabaseClass() {
         Database db = db();
         Observable<Integer> update = db
-        // select names
+                // select names
                 .update("zzz")
                 // set name parameter
                 .parameter("FRED")
@@ -252,7 +254,7 @@ public abstract class DatabaseTestBase {
     public void testPushEmptyList() {
         Database db = db();
         Observable<Integer> rowsAffected = Observable
-        // generate two integers
+                // generate two integers
                 .range(1, 2)
                 // replace the integers with empty lists
                 .map(toEmpty())
@@ -302,7 +304,7 @@ public abstract class DatabaseTestBase {
         Database db = db();
         Observable<Boolean> begin = db.beginTransaction();
         Observable<Integer> updateCount = db
-        // update everyone's score to 99
+                // update everyone's score to 99
                 .update("update person set score=?")
                 // in transaction
                 .dependsOn(begin)
@@ -311,7 +313,7 @@ public abstract class DatabaseTestBase {
                 // execute
                 .count();
         long count = db.select("select count(*) from person where score=?")
-        // where score = 99
+                // where score = 99
                 .parameter(99)
                 // depends on
                 .dependsOn(updateCount)
@@ -350,14 +352,15 @@ public abstract class DatabaseTestBase {
 
     @Test
     public void testJdbcObservableCountLettersInAllNames() {
-        int count = MathObservable.sumInteger(db()
-        // select
-                .select("select name from person where name >?")
-                // set name
-                .parameter("ALEX")
-                // count letters
-                .get(COUNT_LETTERS_IN_NAME))
-        // first result
+        int count = MathObservable
+                .sumInteger(db()
+                        // select
+                        .select("select name from person where name >?")
+                        // set name
+                        .parameter("ALEX")
+                        // count letters
+                        .get(COUNT_LETTERS_IN_NAME))
+                // first result
                 .first()
                 // block and get result
                 .toBlocking().single();
@@ -391,7 +394,7 @@ public abstract class DatabaseTestBase {
     @Test
     public void testMultipleSetsOfParameters() {
         List<Integer> list = db().select("select score from person where name=?")
-        // first param
+                // first param
                 .parameter("FRED")
                 // second param
                 .parameter("JOSEPH")
@@ -417,8 +420,8 @@ public abstract class DatabaseTestBase {
     @Test
     public void testCreateFromScript() {
         Database db = Database.from(DatabaseCreator.nextUrl());
-        Observable<Integer> create = db.run(
-                DatabaseTestBase.class.getResourceAsStream("/db-creation-script.sql"), ";");
+        Observable<Integer> create = db
+                .run(DatabaseTestBase.class.getResourceAsStream("/db-creation-script.sql"), ";");
         Observable<Integer> count = db.select("select name from person").dependsOn(create)
                 .getAs(String.class).count();
         assertIs(3, count);
@@ -474,9 +477,8 @@ public abstract class DatabaseTestBase {
         Observable<Integer> score = db
                 .select("select score from person where name <> ? order by name")
                 .parameter("XAVIER").getAs(Integer.class).last();
-        Observable<String> name = db
-                .select("select name from person where score < ? order by name").parameters(score)
-                .getAs(String.class).first();
+        Observable<String> name = db.select("select name from person where score < ? order by name")
+                .parameters(score).getAs(String.class).first();
         assertIs("FRED", name);
     }
 
@@ -489,11 +491,10 @@ public abstract class DatabaseTestBase {
         Database db = db();
         Observable<String> name = db
                 .select("select score from person where name <> ? order by name")
-                .parameter("XAVIER")
-                .getAs(Integer.class)
-                .last()
+                .parameter("XAVIER").getAs(Integer.class).last()
                 .lift(db.select("select name from person where score < ? order by name")
-                        .parameterOperator().getAs(String.class)).first();
+                        .parameterOperator().getAs(String.class))
+                .first();
         assertIs("FRED", name);
     }
 
@@ -501,11 +502,10 @@ public abstract class DatabaseTestBase {
     public void testCompositionTwoLevels() {
 
         Database db = db();
-        Observable<String> names = db.select("select name from person order by name").getAs(
-                String.class);
-        Observable<String> names2 = db
-                .select("select name from person where name<>? order by name").parameters(names)
-                .parameters(names).getAs(String.class);
+        Observable<String> names = db.select("select name from person order by name")
+                .getAs(String.class);
+        Observable<String> names2 = db.select("select name from person where name<>? order by name")
+                .parameters(names).parameters(names).getAs(String.class);
         List<String> list = db.select("select name from person where name>?").parameters(names2)
                 .getAs(String.class).toList().toBlocking().single();
         System.out.println(list);
@@ -709,7 +709,8 @@ public abstract class DatabaseTestBase {
         Tuple6<String, Integer, String, Integer, String, Integer> tuple = db()
                 .select("select name,1,lower(name),2,name,3 from person order by name")
                 .getAs(String.class, Integer.class, String.class, Integer.class, String.class,
-                        Integer.class).first().toBlocking().single();
+                        Integer.class)
+                .first().toBlocking().single();
         assertEquals("FRED", tuple.value1());
         assertEquals(1, (int) tuple.value2());
         assertEquals("fred", tuple.value3());
@@ -723,7 +724,8 @@ public abstract class DatabaseTestBase {
         Tuple7<String, Integer, String, Integer, String, Integer, Integer> tuple = db()
                 .select("select name,1,lower(name),2,name,3,4 from person order by name")
                 .getAs(String.class, Integer.class, String.class, Integer.class, String.class,
-                        Integer.class, Integer.class).first().toBlocking().single();
+                        Integer.class, Integer.class)
+                .first().toBlocking().single();
         assertEquals("FRED", tuple.value1());
         assertEquals(1, (int) tuple.value2());
         assertEquals("fred", tuple.value3());
@@ -756,9 +758,8 @@ public abstract class DatabaseTestBase {
     }
 
     private void insertBlob(Database db) {
-        insertBlob(db,
-                "A description about Fred that is rather long and needs a Clob to store it"
-                        .getBytes());
+        insertBlob(db, "A description about Fred that is rather long and needs a Clob to store it"
+                .getBytes());
     }
 
     @Test
@@ -806,10 +807,8 @@ public abstract class DatabaseTestBase {
         Connection con = cp.get();
         DatabaseCreator.createDatabase(con);
         con.close();
-        assertIs(
-                100,
-                db.select("select name from person where name=?")
-                        .parameters(Observable.range(0, 100).map(constant("FRED"))).count());
+        assertIs(100, db.select("select name from person where name=?")
+                .parameters(Observable.range(0, 100).map(constant("FRED"))).count());
     }
 
     // TODO add unit test to check that resources closed (connection etc) before
@@ -841,22 +840,22 @@ public abstract class DatabaseTestBase {
 
     @Test
     public void testLiftWithParameters() {
-        int score = just("FRED")
-                .lift(db().select("select score from person where name=?").parameterOperator()
-                        .getAs(Integer.class)).toBlocking().single();
+        int score = just("FRED").lift(db().select("select score from person where name=?")
+                .parameterOperator().getAs(Integer.class)).toBlocking().single();
         assertEquals(21, score);
     }
 
     @Test
     public void testLiftWithManyParameters() {
         int score = Observable
-        // range
+                // range
                 .range(1, 3)
                 // log
                 .doOnEach(log())
                 // to parameter
-                .map(constant("FRED")).lift(db()
-                // select
+                .map(constant("FRED"))
+                .lift(db()
+                        // select
                         .select("select score from person where name=?")
                         // push parameters
                         .parameterOperator()
@@ -896,13 +895,11 @@ public abstract class DatabaseTestBase {
     public void testParametersAreUnsubscribedIfUnsubscribedPostParameterOperatorLift()
             throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        Observable
-                .interval(100, TimeUnit.MILLISECONDS)
-                .doOnEach(log())
-                .map(constant("FRED"))
+        Observable.interval(100, TimeUnit.MILLISECONDS).doOnEach(log()).map(constant("FRED"))
                 .doOnUnsubscribe(countDown(latch))
                 .lift(db().select("select score from person where name=?").parameterOperator()
-                        .getAs(Integer.class)).take(1).subscribe(log());
+                        .getAs(Integer.class))
+                .take(1).subscribe(log());
         assertTrue(latch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
     }
 
@@ -911,8 +908,8 @@ public abstract class DatabaseTestBase {
         CountDownLatch latch = new CountDownLatch(1);
         Observable<String> params = Observable.interval(100, TimeUnit.MILLISECONDS).doOnEach(log())
                 .map(constant("FRED")).doOnUnsubscribe(countDown(latch));
-        db().select("select score from person where name=?").parameters(params)
-                .getAs(Integer.class).take(1).subscribe(log());
+        db().select("select score from person where name=?").parameters(params).getAs(Integer.class)
+                .take(1).subscribe(log());
         assertTrue(latch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
     }
 
@@ -925,10 +922,8 @@ public abstract class DatabaseTestBase {
     @Test
     public void testLiftSelectWithDependencies() {
         Database db = db();
-        Observable<Integer> count = db
-                .update("update person set score=? where name=?")
-                .parameters(4, "FRED")
-                .count()
+        Observable<Integer> count = db.update("update person set score=? where name=?")
+                .parameters(4, "FRED").count()
                 .lift(db.select("select score from person where name=?").parameters("FRED")
                         .dependsOnOperator().getAs(Integer.class));
         assertIs(4, count);
@@ -937,8 +932,8 @@ public abstract class DatabaseTestBase {
     @Test
     public void testLiftUpdateWithParameters() {
         Database db = db();
-        Observable<Integer> count = just(4, "FRED").lift(
-                db.update("update person set score=? where name=?").parameterOperator());
+        Observable<Integer> count = just(4, "FRED")
+                .lift(db.update("update person set score=? where name=?").parameterOperator());
         assertIs(1, count);
     }
 
@@ -946,7 +941,7 @@ public abstract class DatabaseTestBase {
     public void testLiftUpdateWithDependencies() {
         Database db = db();
         Observable<Integer> score = Observable
-        // parameters for coming update
+                // parameters for coming update
                 .just(4, "FRED")
                 // update Fred's score to 4
                 .lift(db.update("update person set score=? where name=?").parameterOperator())
@@ -1089,8 +1084,8 @@ public abstract class DatabaseTestBase {
         checkConnectionsReleased(cp, db.rollback(result));
     }
 
-    private void checkConnectionsReleased(final CountDownConnectionProvider cp, Observable<?> result)
-            throws InterruptedException {
+    private void checkConnectionsReleased(final CountDownConnectionProvider cp,
+            Observable<?> result) throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
         result.subscribe(new Action1<Object>() {
 
@@ -1112,7 +1107,7 @@ public abstract class DatabaseTestBase {
         Database db = db();
         Observable<Boolean> begin = db.beginTransaction();
         Observable<Integer> updates = Observable
-        // set name parameter
+                // set name parameter
                 .just("FRED")
                 // push into update
                 .lift(db.update("update person set score=1 where name=?").dependsOn(begin)
@@ -1129,7 +1124,7 @@ public abstract class DatabaseTestBase {
         Database db = db();
         Observable<Boolean> begin = db.beginTransaction();
         String name = Observable
-        // set name parameter
+                // set name parameter
                 .just("FRED")
                 // push into update
                 .lift(db.update("update person set score=1 where name=?").dependsOn(begin)
@@ -1138,7 +1133,7 @@ public abstract class DatabaseTestBase {
                 .lift(db.commitOperator())
                 // select query
                 .lift(db.select("select name from person where score=1")
-                // depends on commit
+                        // depends on commit
                         .dependsOnOperator()
                         // return names
                         .getAs(String.class))
@@ -1152,8 +1147,8 @@ public abstract class DatabaseTestBase {
     @Test
     public void testTryCatch() {
         try (Connection con = DatabaseCreator.nextConnection();
-                PreparedStatement ps = con
-                        .prepareStatement("select name from person where name > ? order by name");) {
+                PreparedStatement ps = con.prepareStatement(
+                        "select name from person where name > ? order by name");) {
             ps.setObject(1, "ALEX");
             List<String> list = new ArrayList<String>();
             try (ResultSet rs = ps.executeQuery()) {
@@ -1171,13 +1166,13 @@ public abstract class DatabaseTestBase {
     public void testChainSelectUsingOperators() {
         Database db = db();
         List<Integer> scores = db.select("select name from person")
-        // get name
+                // get name
                 .getAs(String.class)
                 // push name as parameter to next select
                 .lift(db
-                // select scores
-                .select("select score from person where name=?")
-                // parameters are pushed
+                        // select scores
+                        .select("select score from person where name=?")
+                        // parameters are pushed
                         .parameterOperator()
                         // get score as integer
                         .getAs(Integer.class))
@@ -1199,7 +1194,7 @@ public abstract class DatabaseTestBase {
     public void testCommitOnLastOperator() {
         Database db = db();
         long count = db
-        // start transaction
+                // start transaction
                 .beginTransaction()
                 // push parameters
                 .concatMap(constant(just(99, 88)))
@@ -1207,13 +1202,13 @@ public abstract class DatabaseTestBase {
                 .doOnEach(log())
                 // update twice
                 .lift(db.update("update person set score=?")
-                // push parameters
+                        // push parameters
                         .parameterOperator())
                 // commit on last
                 .lift(db.commitOnCompleteOperator())
                 // get count of 88s
                 .lift(db.select("select count(*) from person where score=88")
-                // depends on previous
+                        // depends on previous
                         .dependsOnOperator()
                         // count as Long
                         .getAs(Long.class))
@@ -1226,7 +1221,7 @@ public abstract class DatabaseTestBase {
     public void testRollbackOnLastOperator() {
         Database db = db();
         long count = db
-        // start transaction
+                // start transaction
                 .beginTransaction()
                 // push parameters
                 .concatMap(constant(just(99, 88)))
@@ -1234,13 +1229,13 @@ public abstract class DatabaseTestBase {
                 .doOnEach(log())
                 // update twice
                 .lift(db.update("update person set score=?")
-                // push parameters
+                        // push parameters
                         .parameterOperator())
                 // commit on last
                 .lift(db.rollbackOnCompleteOperator())
                 // get count of 88s
                 .lift(db.select("select count(*) from person where score=88")
-                // depends on previous
+                        // depends on previous
                         .dependsOnOperator()
                         // count as Long
                         .getAs(Long.class))
@@ -1253,7 +1248,7 @@ public abstract class DatabaseTestBase {
     public void testBeginTransactionOnNextForThreePasses() {
         Database db = db();
         Observable<Integer> min = Observable
-        // do 3 times
+                // do 3 times
                 .just(11, 12, 13)
                 // begin transaction for each item
                 .lift(db.beginTransactionOnNextOperator())
@@ -1282,7 +1277,7 @@ public abstract class DatabaseTestBase {
         int count =
         // parameters grouped in lists
         objects(objects(1), objects(2))
-        // log
+                // log
                 .doOnEach(log())
                 // begin trans
                 .lift(db.<Observable<Object>> beginTransactionOnNextOperator())
@@ -1290,7 +1285,7 @@ public abstract class DatabaseTestBase {
                 .doOnEach(log())
                 // update
                 .lift(db.update("update person set score = ?")
-                // push lists of parameters
+                        // push lists of parameters
                         .parameterListOperator())
                 // log
                 .doOnEach(log())
@@ -1310,7 +1305,7 @@ public abstract class DatabaseTestBase {
         int count =
         // parameters grouped in lists
         objects(objects(1, "FRED", 3, "JOHN"), objects(2, "JOSEPH"))
-        // log
+                // log
                 .doOnEach(log())
                 // begin trans
                 .lift(db.<Observable<Object>> beginTransactionOnNextOperator())
@@ -1318,7 +1313,7 @@ public abstract class DatabaseTestBase {
                 .doOnEach(log())
                 // update
                 .lift(db.update("update person set score = ? where name=?")
-                // push lists of parameters
+                        // push lists of parameters
                         .parameterListOperator())
                 // log
                 .doOnEach(log())
@@ -1364,7 +1359,7 @@ public abstract class DatabaseTestBase {
         Connection con = cp.get();
         Database db = Database.from(con);
         Observable<Integer> count = db
-        // get names
+                // get names
                 .select("select name from person")
                 // as string
                 .getAs(String.class)
@@ -1372,9 +1367,9 @@ public abstract class DatabaseTestBase {
                 .count()
                 // do something else
                 .lift(db
-                // get max score
-                .select("select max(score) from person")
-                // run the previous statement first
+                        // get max score
+                        .select("select max(score) from person")
+                        // run the previous statement first
                         .dependsOnOperator()
                         // as integer
                         .getAs(Integer.class));
@@ -1388,9 +1383,9 @@ public abstract class DatabaseTestBase {
         Database db = DatabaseCreator.db();
         final Set<String> set = Collections.newSetFromMap(new HashMap<String, Boolean>());
         Observable<Integer> count = Observable.just(1, 2, 3, 4, 5)
-        // select
+                // select
                 .lift(db.select("select name from person where score >?")
-                // push parameters to this query
+                        // push parameters to this query
                         .parameterOperator()
                         // get name as string
                         .getAs(String.class))
@@ -1413,11 +1408,11 @@ public abstract class DatabaseTestBase {
         Database db = db();
         Observable<Boolean> begin = db.beginTransaction();
         Observable<Integer> count = Observable
-        // generate 1,2,3
+                // generate 1,2,3
                 .just(1, 2, 3)
                 // update score with that value
                 .lift(db.update("update person set score = ?")
-                // participates in a transaction
+                        // participates in a transaction
                         .dependsOn(begin)
                         // parameters are pushed to this update statement
                         .parameterOperator())
@@ -1425,7 +1420,7 @@ public abstract class DatabaseTestBase {
                 .lift(db.commitOnCompleteOperator())
                 // count names with score 3
                 .lift(db.select("select count(name) from person where score=3")
-                // must commit first
+                        // must commit first
                         .dependsOnOperator().getAs(Integer.class));
         assertIs(3, count);
     }
@@ -1512,8 +1507,8 @@ public abstract class DatabaseTestBase {
     @Test(expected = RuntimeException.class)
     public void testAutoMapThrowsExceptionIfMappedInterfaceColumnMethodHasParameters() {
         // test dynamic proxying
-        db().select("select address_id, full_address from address").autoMap(Address2.class)
-                .toList().toBlocking().single();
+        db().select("select address_id, full_address from address").autoMap(Address2.class).toList()
+                .toBlocking().single();
     }
 
     static interface Address2 {
@@ -1541,7 +1536,7 @@ public abstract class DatabaseTestBase {
     public void testReturnGeneratedKeysForOneInsertedValue() {
         // h2 only returns the last generated key
         List<Integer> list = db()
-        //
+                //
                 .update("insert into note(text) values(?)")
                 //
                 .parameters("something")
@@ -1558,7 +1553,7 @@ public abstract class DatabaseTestBase {
     public void testReturnGeneratedKeysForMultipleInsertedValuesInOneStatement() {
         // h2 only returns the last generated key
         List<Integer> list = db()
-        //
+                //
                 .update("insert into note(text) values(?),(?)")
                 //
                 .parameters("something", "again")
@@ -1575,7 +1570,7 @@ public abstract class DatabaseTestBase {
     public void testReturnGeneratedKeysForMultipleCallsOfInsert() {
         // h2 only returns the last generated key
         List<Integer> list = db()
-        //
+                //
                 .update("insert into note(text) values(?)")
                 //
                 .parameters("something", "again")
@@ -1591,7 +1586,7 @@ public abstract class DatabaseTestBase {
     @Test
     public void testNamedParameters() {
         String name = db()
-        //
+                //
                 .select("select name from person where score >= :min and score <=:max")
                 //
                 .parameter("min", 24)
@@ -1608,7 +1603,7 @@ public abstract class DatabaseTestBase {
         map.put("min", 24);
         map.put("max", 26);
         String name = db()
-        //
+                //
                 .select("select name from person where score >= :min and score <=:max")
                 //
                 .parameters(map)
@@ -1623,7 +1618,7 @@ public abstract class DatabaseTestBase {
         map.put("min", 24);
         map.put("max", 26);
         String name = db()
-        //
+                //
                 .select("select name from person where score >= :min and score <=:max")
                 //
                 .parameters(Observable.just(map))
@@ -1635,7 +1630,7 @@ public abstract class DatabaseTestBase {
     @Test
     public void testNamedParametersWithUpdateStatement() {
         int count = db()
-        //
+                //
                 .update("update person set score = :newScore where score >= :min and score <=:max")
                 //
                 .parameter("newScore", 25)
@@ -1660,9 +1655,9 @@ public abstract class DatabaseTestBase {
         map.put("min", 24);
         map.put("max", 26);
         db()
-        //
-        .select("select name from person where score >= ? and score <= ?")
-        //
+                //
+                .select("select name from person where score >= ? and score <= ?")
+                //
                 .parameters(Observable.just(map))
                 //
                 .getAs(String.class).toBlocking().single();
@@ -1688,6 +1683,23 @@ public abstract class DatabaseTestBase {
 
         @Column
         int score();
+    }
+
+    @Test
+    public void testResultSetTransform() {
+        final AtomicInteger count = new AtomicInteger();
+        Func1<ResultSet, ? extends ResultSet> transform = new Func1<ResultSet, ResultSet>() {
+
+            @Override
+            public ResultSet call(ResultSet rs) {
+                count.incrementAndGet();
+                return rs;
+            }
+        };
+        Database db = Database.builder().connectionProvider(db().connectionProvider())
+                .resultSetTransform(transform).build();
+        db.select("select name from person").count().ignoreElements().subscribe();
+        assertEquals(1, (int) count.get());
     }
 
     /********************************************************
