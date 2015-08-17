@@ -8,7 +8,7 @@
 		<version>0.1</version>
 	</parent>
 	<artifactId>rxjava-jdbc</artifactId>
-	<version>0.6.3</version>
+	<version>0.6.4-SNAPSHOT</version>
 
 	<name>${project.artifactId}</name>
 	<description>rx-java Observables for jdbc</description>
@@ -75,7 +75,7 @@
 		<connection>scm:git:git@github.com:davidmoten/rxjava-jdbc.git</connection>
 		<developerConnection>scm:git:git@github.com:davidmoten/rxjava-jdbc.git</developerConnection>
 		<url>scm:git:git@github.com:davidmoten/rxjava-jdbc.git</url>
-		<tag>0.6.3</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<dependencies>
