@@ -1,8 +1,5 @@
 package com.github.davidmoten.rx.jdbc;
 
-
-import org.sqlite.SQLiteConnection;
-
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -30,7 +27,7 @@ public final class RegexMappableResultSet implements ResultSet {
             }
     }
 
-    public static RegexMappableResultSet of(ResultSet rs) throws SQLException {
+    public static RegexMappableResultSet from(ResultSet rs) throws SQLException {
         return new RegexMappableResultSet(rs);
     }
 
