@@ -45,7 +45,7 @@ public final class RegexMappableResultSet implements ResultSet {
             if (foundIndex.equals(-1)) {
                 throw new SQLException("Column for pattern ".concat(columnRegex).concat(" not found"));
             }
-            return foundIndex + 1;
+            return foundIndex.intValue() + 1;
     }
     private Integer findColumnIndex(String columnRegex) {
             for (int i=0;i<columnCount;i++) {
