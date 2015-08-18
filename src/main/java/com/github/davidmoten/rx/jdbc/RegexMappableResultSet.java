@@ -1,5 +1,7 @@
 package com.github.davidmoten.rx.jdbc;
 
+import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -17,15 +19,16 @@ public final class RegexMappableResultSet implements ResultSet {
     private final HashMap<String,Integer> cachedIndices = new HashMap<>(); //-1 means unfound
 
     private RegexMappableResultSet(ResultSet rs) {
-        try { 
+        try {
             this.rs = rs;
 
             columnCount = rs.getMetaData().getColumnCount();
             columnLabels = new String[columnCount];
 
-            for (int i=1;i<=columnCount;i++) {
-                columnLabels[i-1] = rs.getMetaData().getColumnName(i);
+            for (int i = 1; i <= columnCount; i++) {
+                columnLabels[i - 1] = rs.getMetaData().getColumnName(i);
             }
+        }
         catch (SQLException e) { 
             throw new SQLRuntimeException(e);
         }
