@@ -6,10 +6,7 @@ import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
 import java.sql.ResultSet;
 import java.util.List;
 
-import rx.Observable;
-import rx.Observable.Operator;
-import rx.functions.Func1;
-
+import com.github.davidmoten.rx.Functions;
 import com.github.davidmoten.rx.jdbc.NamedParameters.JdbcQuery;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
@@ -19,6 +16,10 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuple6;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple7;
 import com.github.davidmoten.rx.jdbc.tuple.TupleN;
 import com.github.davidmoten.rx.jdbc.tuple.Tuples;
+
+import rx.Observable;
+import rx.Observable.Operator;
+import rx.functions.Func1;
 
 /**
  * A query and its executable context.
@@ -32,6 +33,7 @@ final public class QuerySelect implements Query {
     private final QueryContext context;
     private Observable<?> depends = Observable.empty();
     private final JdbcQuery jdbcQuery;
+    private final Func1<ResultSet, ? extends ResultSet> resultSetTransform;
 
     /**
      * Constructor.
@@ -43,17 +45,21 @@ final public class QuerySelect implements Query {
      *            be the ResultSet to be used as source
      * @param depends
      * @param context
+     * @param resultSetTransform
+     * @param resultSetTransform
      */
     QuerySelect(String sql, Observable<Parameter> parameters, Observable<?> depends,
-            QueryContext context) {
+            QueryContext context, Func1<ResultSet, ? extends ResultSet> resultSetTransform) {
         checkNotNull(sql);
         checkNotNull(parameters);
         checkNotNull(depends);
         checkNotNull(context);
+        checkNotNull(resultSetTransform);
         this.jdbcQuery = NamedParameters.parse(sql);
         this.parameters = parameters;
         this.depends = depends;
         this.context = context;
+        this.resultSetTransform = resultSetTransform;
     }
 
     @Override
@@ -71,12 +77,11 @@ final public class QuerySelect implements Query {
         return parameters;
     }
 
-
     @Override
     public List<String> names() {
         return jdbcQuery.names();
     }
-    
+
     @Override
     public String toString() {
         return "QuerySelect [sql=" + sql() + "]";
@@ -87,6 +92,10 @@ final public class QuerySelect implements Query {
         return depends;
     }
 
+    Func1<ResultSet, ? extends ResultSet> resultSetTransform() {
+        return resultSetTransform;
+    }
+
     /**
      * Returns the results of running a select query with all sets of
      * parameters.
@@ -95,7 +104,7 @@ final public class QuerySelect implements Query {
      */
     public <T> Observable<T> execute(ResultSetMapper<? extends T> function) {
         return bufferedParameters(this)
-        // execute once per set of parameters
+                // execute once per set of parameters
                 .concatMap(executeOnce(function));
     }
 
@@ -126,8 +135,8 @@ final public class QuerySelect implements Query {
      */
     private <T> Observable<T> executeOnce(final List<Parameter> params,
             ResultSetMapper<? extends T> function) {
-        return QuerySelectOnSubscribe.execute(this, params, function).subscribeOn(
-                context.scheduler());
+        return QuerySelectOnSubscribe.execute(this, params, function)
+                .subscribeOn(context.scheduler());
     }
 
     /**
@@ -139,6 +148,11 @@ final public class QuerySelect implements Query {
          * Builds the standard stuff.
          */
         private final QueryBuilder builder;
+
+        /**
+         * The {@link ResultSet} is transformed before use.
+         */
+        private Func1<ResultSet, ? extends ResultSet> resultSetTransform = Functions.identity();
 
         /**
          * Constructor.
@@ -230,18 +244,32 @@ final public class QuerySelect implements Query {
         }
 
         /**
+         * The ResultSet is transformed by the given transform before the
+         * results are traversed.
+         * 
+         * @param transform
+         *            transforms the ResultSet
+         * @return this
+         */
+        public Builder resultSetTransform(Func1<ResultSet, ? extends ResultSet> transform) {
+            this.resultSetTransform = transform;
+            return this;
+        }
+
+        /**
          * Transforms the results using the given function.
          * 
          * @param function
-         * @return
+         * @return the results of the query as an Observable
          */
         public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
-            return get(function, builder);
+            return get(function, builder, resultSetTransform);
         }
 
-        static <T> Observable<T> get(ResultSetMapper<? extends T> function, QueryBuilder builder) {
+        static <T> Observable<T> get(ResultSetMapper<? extends T> function, QueryBuilder builder,
+                Func1<ResultSet, ? extends ResultSet> resultSetTransform) {
             return new QuerySelect(builder.sql(), builder.parameters(), builder.depends(),
-                    builder.context()).execute(function);
+                    builder.context(), resultSetTransform).execute(function);
         }
 
         /**
@@ -257,7 +285,7 @@ final public class QuerySelect implements Query {
          * <ul>
          * <li>java.sql.Blob &#10143; byte[]</li>
          * <li>java.sql.Blob &#10143; java.io.InputStream</li>
-         * <li>java.sql.Clob &#10143; String</li>
+         * <li>java.sql.Clob &#10143; String</li>s
          * <li>java.sql.Clob &#10143; java.io.Reader</li>
          * <li>java.sql.Date &#10143; java.util.Date</li>
          * <li>java.sql.Date &#10143; Long</li>
@@ -275,12 +303,13 @@ final public class QuerySelect implements Query {
          * @return
          */
         public <T> Observable<T> autoMap(Class<T> cls) {
-            return autoMap(cls, builder);
+            return autoMap(cls, builder, resultSetTransform);
         }
 
-        static <T> Observable<T> autoMap(Class<T> cls, QueryBuilder builder) {
+        static <T> Observable<T> autoMap(Class<T> cls, QueryBuilder builder,
+                Func1<ResultSet, ? extends ResultSet> resultSetTransform) {
             Util.setSqlFromQueryAnnotation(cls, builder);
-            return get(Util.autoMap(cls), builder);
+            return get(Util.autoMap(cls), builder, resultSetTransform);
         }
 
         /**

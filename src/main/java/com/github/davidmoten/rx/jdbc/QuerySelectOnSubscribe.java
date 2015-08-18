@@ -104,13 +104,12 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
             log.debug("getting connection");
             state.con = query.context().connectionProvider().get();
             log.debug("preparing statement,sql={}", query.sql());
-            state.ps = state.con.prepareStatement(query.sql(),ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            state.ps = state.con.prepareStatement(query.sql(), ResultSet.TYPE_FORWARD_ONLY,
+                    ResultSet.CONCUR_READ_ONLY);
             log.debug("setting parameters");
             Util.setParameters(state.ps, parameters, query.names());
         }
     }
-
-    
 
     /**
      * Executes the prepared statement.
@@ -124,7 +123,8 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
         if (!subscriber.isUnsubscribed()) {
             try {
                 log.debug("executing ps");
-                state.rs = state.ps.executeQuery();
+                state.rs = query.resultSetTransform()
+                        .call(query.context().resultSetTransform().call(state.ps.executeQuery()));
                 log.debug("executed ps={}", state.ps);
             } catch (SQLException e) {
                 throw new SQLException("failed to run sql=" + query.sql(), e);

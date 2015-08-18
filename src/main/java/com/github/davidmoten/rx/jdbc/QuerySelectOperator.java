@@ -1,12 +1,12 @@
 package com.github.davidmoten.rx.jdbc;
 
+import com.github.davidmoten.rx.Transformers;
+import com.github.davidmoten.rx.jdbc.QuerySelect.Builder;
+
 import rx.Observable;
 import rx.Observable.Operator;
 import rx.Subscriber;
 import rx.functions.Func1;
-
-import com.github.davidmoten.rx.Transformers;
-import com.github.davidmoten.rx.jdbc.QuerySelect.Builder;
 
 /**
  * Operator corresponding to the QuerySelectOperation.
@@ -23,6 +23,7 @@ final class QuerySelectOperator<T, R> implements Operator<T, R> {
      * @param builder
      * @param function
      * @param operatorType
+     * @param resultSetTransform 
      */
     QuerySelectOperator(final QuerySelect.Builder builder,
             final ResultSetMapper<? extends T> function, final OperatorType operatorType) {
