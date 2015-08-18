@@ -16,7 +16,8 @@ public final class RegexMappableResultSet implements ResultSet {
     private final String[] columnLabels;
     private final HashMap<String,Integer> cachedIndices = new HashMap<>(); //-1 means unfound
 
-    private RegexMappableResultSet(ResultSet rs) throws SQLException {
+    private RegexMappableResultSet(ResultSet rs) {
+        try { 
             this.rs = rs;
 
             columnCount = rs.getMetaData().getColumnCount();
@@ -25,9 +26,12 @@ public final class RegexMappableResultSet implements ResultSet {
             for (int i=1;i<=columnCount;i++) {
                 columnLabels[i-1] = rs.getMetaData().getColumnName(i);
             }
+        catch (SQLException e) { 
+            throw new SQLRuntimeException(e);
+        }
     }
 
-    public static RegexMappableResultSet from(ResultSet rs) throws SQLException {
+    public static RegexMappableResultSet from(ResultSet rs) {
         return new RegexMappableResultSet(rs);
     }
 
