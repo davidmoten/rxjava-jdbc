@@ -1,6 +1,8 @@
 package com.github.davidmoten.rx.jdbc;
 
 
+import org.sqlite.SQLiteConnection;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -42,7 +44,7 @@ public final class RegexMappableResultSet implements ResultSet {
             if (foundIndex.equals(-1)) {
                 throw new SQLException("Column for pattern ".concat(columnRegex).concat(" not found"));
             }
-            return foundIndex;
+            return foundIndex + 1;
     }
     private Integer findColumnIndex(String columnRegex) {
             for (int i=0;i<columnCount;i++) {
