@@ -10,17 +10,17 @@ import java.util.HashMap;
 import java.util.Map;
 import com.github.davidmoten.rx.jdbc.RegexMappableResultSet.ColumnMatchNotFoundException;
 
-public class NullableIfUnfoundResultSet implements ResultSet {
+public class NullIfNotMatchedResultSet implements ResultSet {
 
     private final ResultSet rs;
     private final HashMap<String,Integer> cachedIndexes = new HashMap<>();
 
-    private NullableIfUnfoundResultSet(ResultSet rs) {
+    private NullIfNotMatchedResultSet(ResultSet rs) {
         this.rs = rs;
     }
 
-    public static NullableIfUnfoundResultSet from(ResultSet rs) {
-        return new NullableIfUnfoundResultSet(rs);
+    public static NullIfNotMatchedResultSet from(ResultSet rs) {
+        return new NullIfNotMatchedResultSet(rs);
     }
 
     @Override
