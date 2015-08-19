@@ -818,21 +818,5 @@ public final class RegexMappableResultSet implements ResultSet {
     public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
         return rs.getObject(findColumn(columnLabel), type);
     }
-
-    public void updateObject(int columnIndex, Object x, SQLType targetSqlType, int scaleOrLength) throws SQLException {
-        rs.updateObject(columnIndex, x, targetSqlType, scaleOrLength);
-    }
-
-    public void updateObject(String columnLabel, Object x, SQLType targetSqlType, int scaleOrLength) throws SQLException {
-        rs.updateObject(findColumn(columnLabel), x, targetSqlType, scaleOrLength);
-    }
-
-    public void updateObject(int columnIndex, Object x, SQLType targetSqlType) throws SQLException {
-        rs.updateObject(columnIndex, x, targetSqlType);
-    }
-
-    public void updateObject(String columnLabel, Object x, SQLType targetSqlType) throws SQLException {
-        rs.updateObject(findColumn(columnLabel), x, targetSqlType);
-    }
 }
 
