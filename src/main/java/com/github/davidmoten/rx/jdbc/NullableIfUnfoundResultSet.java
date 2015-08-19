@@ -8,6 +8,7 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import com.github.davidmoten.rx.jdbc.RegexMappableResultSet.ColumnMatchNotFoundException;
 
 public class NullableIfUnfoundResultSet implements ResultSet {
 
@@ -28,7 +29,7 @@ public class NullableIfUnfoundResultSet implements ResultSet {
         if (foundColumnIndex == null) {
             try {
                 foundColumnIndex = rs.findColumn(columnLabel);
-            } catch (Exception e) {
+            } catch (ColumnMatchNotFoundException e) {
                 foundColumnIndex = Integer.valueOf(-1);
             } finally {
                 cachedIndexes.put(columnLabel, foundColumnIndex);

@@ -30,12 +30,18 @@ public final class RegexMappableResultSet implements ResultSet {
             }
         }
         catch (SQLException e) { 
-            throw new SQLRuntimeException(e);
+            throw new ColumnMatchNotFoundException(e);
         }
     }
 
     public static RegexMappableResultSet from(ResultSet rs) {
         return new RegexMappableResultSet(rs);
+    }
+
+    public static final class ColumnMatchNotFoundException extends SQLRuntimeException {
+        private ColumnMatchNotFoundException(SQLException e) {
+            super(e);
+        }
     }
 
     @Override
