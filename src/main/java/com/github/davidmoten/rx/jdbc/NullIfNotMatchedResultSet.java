@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import com.github.davidmoten.rx.jdbc.RegexMappableResultSet.ColumnMatchNotFoundException;
 
-public class NullIfNotMatchedResultSet implements ResultSet {
+public final class NullIfNotMatchedResultSet implements ResultSet {
 
     private final ResultSet rs;
     private final HashMap<String,Integer> cachedIndexes = new HashMap<>();
