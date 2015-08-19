@@ -829,20 +829,4 @@ public class NullableIfUnfoundResultSet implements ResultSet {
         final int foundIndex = findColumn(columnLabel);
         return foundIndex == -1 ? null : rs.getObject(columnLabel, type);
     }
-
-    public void updateObject(int columnIndex, Object x, SQLType targetSqlType, int scaleOrLength) throws SQLException {
-        rs.updateObject(columnIndex, x, targetSqlType, scaleOrLength);
-    }
-
-    public void updateObject(String columnLabel, Object x, SQLType targetSqlType, int scaleOrLength) throws SQLException {
-        rs.updateObject(columnLabel, x, targetSqlType, scaleOrLength);
-    }
-
-    public void updateObject(int columnIndex, Object x, SQLType targetSqlType) throws SQLException {
-        rs.updateObject(columnIndex, x, targetSqlType);
-    }
-
-    public void updateObject(String columnLabel, Object x, SQLType targetSqlType) throws SQLException {
-        rs.updateObject(columnLabel, x, targetSqlType);
-    }
 }
