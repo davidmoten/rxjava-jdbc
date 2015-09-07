@@ -42,17 +42,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rx.Observable;
-import rx.Observable.Operator;
-import rx.Observer;
-import rx.functions.Action0;
-import rx.functions.Action1;
-import rx.functions.Func1;
-import rx.observables.MathObservable;
-import rx.observers.TestSubscriber;
-
 import com.github.davidmoten.rx.RxUtil;
-import com.github.davidmoten.rx.jdbc.Database.Builder;
 import com.github.davidmoten.rx.jdbc.annotations.Column;
 import com.github.davidmoten.rx.jdbc.annotations.Index;
 import com.github.davidmoten.rx.jdbc.annotations.Query;
@@ -65,6 +55,15 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuple6;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple7;
 import com.github.davidmoten.rx.jdbc.tuple.TupleN;
 import com.zaxxer.hikari.HikariDataSource;
+
+import rx.Observable;
+import rx.Observable.Operator;
+import rx.Observer;
+import rx.functions.Action0;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.observables.MathObservable;
+import rx.observers.TestSubscriber;
 
 public abstract class DatabaseTestBase {
 

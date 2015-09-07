@@ -20,7 +20,6 @@ import com.github.davidmoten.rx.Functions;
 import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.RxUtil.CountingAction;
 import com.github.davidmoten.rx.jdbc.exceptions.TransactionAlreadyOpenException;
-import com.github.davidmoten.util.Optional;
 
 import rx.Observable;
 import rx.Observable.Operator;
@@ -400,7 +399,6 @@ final public class Database {
          *            ResultSet
          * @return this
          */
-        @SuppressWarnings("unchecked")
         public Builder resultSetTransform(Func1<ResultSet, ? extends ResultSet> transform) {
             this.resultSetTransform = transform;
             return this;
