@@ -31,11 +31,13 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import com.github.davidmoten.junit.Asserts;
+
 public class UtilTest {
 
     @Test
     public void obtainCoverageOfPrivateConstructor() {
-        TestingUtil.instantiateUsingPrivateConstructor(Util.class);
+        Asserts.assertIsUtilityClass(Util.class);
     }
 
     @Test
