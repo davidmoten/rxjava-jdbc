@@ -24,7 +24,7 @@ public class DatabaseMasterDetailTest {
         createDatabase(con);
         Database db = Database.from(con);
         List<Master> masters = db.select("select id, name from master order by id")
-        // map to class
+                // map to class
                 .autoMap(Master.class)
                 // as list and get
                 .toList().toBlocking().single();
@@ -40,7 +40,7 @@ public class DatabaseMasterDetailTest {
         createDatabase(con);
         final Database db = Database.from(con);
         List<MasterAndDetails> list = db
-        // get masters
+                // get masters
                 .select("select id, name from master order by id")
                 // map to class
                 .autoMap(Master.class)
@@ -59,12 +59,11 @@ public class DatabaseMasterDetailTest {
                                 // now combine master and details in a
                                 // MasterAndDetails object
                                 .map(new Func1<List<Detail>, MasterAndDetails>() {
-                                    @Override
-                                    public MasterAndDetails call(List<Detail> details) {
-                                        return new MasterAndDetails(master.id(), master.name(),
-                                                details);
-                                    }
-                                });
+                            @Override
+                            public MasterAndDetails call(List<Detail> details) {
+                                return new MasterAndDetails(master.id(), master.name(), details);
+                            }
+                        });
                     }
                 })
                 // log

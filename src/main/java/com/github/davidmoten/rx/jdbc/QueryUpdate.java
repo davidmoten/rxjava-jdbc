@@ -113,7 +113,7 @@ final public class QueryUpdate<T> implements Query {
 
     static <T> Observable<T> get(QueryUpdate<T> queryUpdate) {
         return bufferedParameters(queryUpdate)
-        // execute query for each set of parameters
+                // execute query for each set of parameters
                 .concatMap(queryUpdate.executeOnce());
     }
 
@@ -361,8 +361,8 @@ final public class QueryUpdate<T> implements Query {
          * @return
          */
         public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
-            return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(), builder
-                    .depends(), builder.context(), function));
+            return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(),
+                    builder.depends(), builder.context(), function));
         }
 
         /**

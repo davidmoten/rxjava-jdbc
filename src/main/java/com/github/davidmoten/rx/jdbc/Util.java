@@ -284,8 +284,8 @@ public final class Util {
                         return autoMap(rs, (Constructor<T>) c);
                     }
                 }
-                throw new RuntimeException("constructor with number of parameters=" + n
-                        + "  not found in " + cls);
+                throw new RuntimeException(
+                        "constructor with number of parameters=" + n + "  not found in " + cls);
             }
         } catch (SQLException e) {
             throw new SQLRuntimeException(e);
@@ -367,8 +367,8 @@ public final class Util {
                     String name = ((NamedCol) column).name;
                     index = colIndexes.get(name.toUpperCase());
                     if (index == null) {
-                        throw new SQLRuntimeException("query column names do not include '" + name
-                                + "'");
+                        throw new SQLRuntimeException(
+                                "query column names do not include '" + name + "'");
                     }
                 } else {
                     IndexedCol col = ((IndexedCol) column);
@@ -429,9 +429,10 @@ public final class Util {
         try {
             return newInstance(c, list);
         } catch (RuntimeException e) {
-            throw new RuntimeException("problem with parameters=" + getTypeInfo(list)
-                    + ", rs types=" + getRowInfo(rs)
-                    + ". Be sure not to use primitives in a constructor when calling autoMap().", e);
+            throw new RuntimeException(
+                    "problem with parameters=" + getTypeInfo(list) + ", rs types=" + getRowInfo(rs)
+                            + ". Be sure not to use primitives in a constructor when calling autoMap().",
+                    e);
         }
     }
 
@@ -443,10 +444,8 @@ public final class Util {
                 String sql = query.value();
                 builder.setSql(sql);
             } else
-                throw new RuntimeException(
-                        "Class "
-                                + cls
-                                + " must be annotated with @Query(sql) or sql must be specified to the builder.select() call");
+                throw new RuntimeException("Class " + cls
+                        + " must be annotated with @Query(sql) or sql must be specified to the builder.select() call");
         }
     }
 
@@ -815,8 +814,8 @@ public final class Util {
         } else if (o instanceof InputStream)
             is = (InputStream) o;
         else
-            throw new RuntimeException("cannot insert parameter of type " + cls
-                    + " into blob column " + i);
+            throw new RuntimeException(
+                    "cannot insert parameter of type " + cls + " into blob column " + i);
         Blob c = ps.getConnection().createBlob();
         OutputStream os = c.setBinaryStream(1);
         copy(is, os);
@@ -840,8 +839,8 @@ public final class Util {
         else if (o instanceof Reader)
             r = (Reader) o;
         else
-            throw new RuntimeException("cannot insert parameter of type " + cls
-                    + " into clob column " + i);
+            throw new RuntimeException(
+                    "cannot insert parameter of type " + cls + " into clob column " + i);
         Clob c = ps.getConnection().createClob();
         Writer w = c.setCharacterStream(1);
         copy(r, w);

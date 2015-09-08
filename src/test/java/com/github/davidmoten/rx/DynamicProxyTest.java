@@ -11,11 +11,10 @@ import com.github.davidmoten.rx.jdbc.annotations.Index;
 
 public class DynamicProxyTest {
 
-
     public static interface Thing {
         @Column("table_id")
         int id();
-        
+
         int nonNullNumber();
 
         @Index(2)
@@ -32,13 +31,13 @@ public class DynamicProxyTest {
         assertEquals("fred 2", t.name());
         assertEquals("he's the business! desc", t.description());
     }
-    
-    @Test(expected=NullPointerException.class)
+
+    @Test(expected = NullPointerException.class)
     public void testDynamicProxyReturnsNullForNonNullMethod() {
         Thing t = ProxyService.newInstance(Thing.class);
         t.nonNullNumber();
     }
-    
+
     public static class ProxyService implements java.lang.reflect.InvocationHandler {
 
         @SuppressWarnings("unchecked")
@@ -61,13 +60,12 @@ public class DynamicProxyTest {
                 return "fred " + m.getAnnotation(Index.class).value();
             } else if (name.equals("description")) {
                 return "he's the business! " + column;
-            } else if (name.equals("nonNullNumber")) 
-               return null;
+            } else if (name.equals("nonNullNumber"))
+                return null;
             else
                 throw new RuntimeException("unexpected");
         }
 
-        
     }
-    
+
 }

@@ -57,7 +57,7 @@ final class QueryContext {
     void endTransactionObserve() {
         db.endTransactionObserve();
     }
-    
+
     Func1<ResultSet, ? extends ResultSet> resultSetTransform() {
         return db.getResultSetTransform();
     }

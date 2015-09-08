@@ -48,12 +48,12 @@ public class DatabaseCreator {
         }
         return db;
     }
-    
-     static Connection nextConnection()  {
+
+    static Connection nextConnection() {
         try {
-        Connection con = DriverManager.getConnection(DatabaseCreator.nextUrl());
-        DatabaseCreator.createDatabase(con);
-        return con;
+            Connection con = DriverManager.getConnection(DatabaseCreator.nextUrl());
+            DatabaseCreator.createDatabase(con);
+            return con;
         } catch (SQLException e) {
             throw new SQLRuntimeException(e);
         }
@@ -78,8 +78,12 @@ public class DatabaseCreator {
             c.prepareStatement(
                     "create table address (address_id int primary key, full_address varchar(255) not null)")
                     .execute();
-            c.prepareStatement("insert into address(address_id, full_address) values(1,'57 Something St, El Barrio, Big Place')").execute();
-            c.prepareStatement("create table note(id bigint auto_increment primary key, text varchar(255))").execute();
+            c.prepareStatement(
+                    "insert into address(address_id, full_address) values(1,'57 Something St, El Barrio, Big Place')")
+                    .execute();
+            c.prepareStatement(
+                    "create table note(id bigint auto_increment primary key, text varchar(255))")
+                    .execute();
         } catch (SQLException e) {
             throw new SQLRuntimeException(e);
         }

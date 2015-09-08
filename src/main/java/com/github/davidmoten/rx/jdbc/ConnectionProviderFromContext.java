@@ -20,7 +20,8 @@ public final class ConnectionProviderFromContext implements ConnectionProvider {
     /**
      * Constructor.
      * 
-     * @param jndiResource the name to lookup
+     * @param jndiResource
+     *            the name to lookup
      */
     public ConnectionProviderFromContext(String jndiResource) {
         this.jndiResource = jndiResource;

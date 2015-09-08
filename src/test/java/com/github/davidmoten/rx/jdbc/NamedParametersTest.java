@@ -13,8 +13,8 @@ public class NamedParametersTest {
 
     @Test
     public void testSelect() {
-        JdbcQuery r = NamedParameters
-                .parse("select a, b from tbl where a.name=:name and b.name=:name and c.description = :description");
+        JdbcQuery r = NamedParameters.parse(
+                "select a, b from tbl where a.name=:name and b.name=:name and c.description = :description");
         assertEquals("select a, b from tbl where a.name=? and b.name=? and c.description = ?",
                 r.sql());
         assertEquals(Arrays.asList("name", "name", "description"), r.names());

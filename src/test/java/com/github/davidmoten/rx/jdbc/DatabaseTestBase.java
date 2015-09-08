@@ -1746,7 +1746,7 @@ public abstract class DatabaseTestBase {
         TestSubscriber<Integer> ts = TestSubscriber.create();
         db.select("select name from person").resultSetTransform(transform2).count().subscribe(ts);
         ts.awaitTerminalEvent(10, TimeUnit.SECONDS);
-        assertEquals(Arrays.asList(1,2), list);
+        assertEquals(Arrays.asList(1, 2), list);
     }
 
     /********************************************************

@@ -18,7 +18,7 @@ public class DatabaseDerbyTest {
      */
     public static final OutputStream DEV_NULL = new OutputStream() {
         public void write(int b) {
-            //do nothing
+            // do nothing
         }
     };
 
@@ -29,16 +29,17 @@ public class DatabaseDerbyTest {
         Connection con = DriverManager.getConnection("jdbc:derby:memory:derby1;create=true");
         con.prepareStatement(
                 "create table note(id integer not null generated always as identity (start with 1, increment by 1),\n"
-                        + "text varchar(255) not null)").execute();
+                        + "text varchar(255) not null)")
+                .execute();
         Database db = Database.from(con);
-        assertEquals(Arrays.asList(1, 2), db.update("insert into note(text) values(?),(?)")
-                .parameters("boo", "to").returnGeneratedKeys().getAs(Integer.class).toList()
-                .toBlocking().single());
+        assertEquals(Arrays.asList(1, 2),
+                db.update("insert into note(text) values(?),(?)").parameters("boo", "to")
+                        .returnGeneratedKeys().getAs(Integer.class).toList().toBlocking().single());
     }
 
     private void setup() {
-        //suppress creation of derby.log in project root
-        System.setProperty("derby.stream.error.field", DatabaseDerbyTest.class.getName()
-                + ".DEV_NULL");
+        // suppress creation of derby.log in project root
+        System.setProperty("derby.stream.error.field",
+                DatabaseDerbyTest.class.getName() + ".DEV_NULL");
     }
 }

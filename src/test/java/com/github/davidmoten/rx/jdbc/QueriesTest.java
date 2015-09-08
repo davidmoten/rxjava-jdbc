@@ -8,7 +8,7 @@ public class QueriesTest {
 
     @Test
     public void obtainCoverageOfPrivateConstructor() {
-       Asserts.assertIsUtilityClass(Queries.class);
+        Asserts.assertIsUtilityClass(Queries.class);
     }
 
 }

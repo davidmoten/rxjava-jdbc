@@ -456,8 +456,7 @@ public class UtilTest {
 
     @Test
     public void testCountOfNoQuestionMarksSkipsNestedUnclosedQuotes() {
-        assertEquals(
-                1,
-                Util.countQuestionMarkParameters("select name from person where name > '\"?' and name > ?"));
+        assertEquals(1, Util.countQuestionMarkParameters(
+                "select name from person where name > '\"?' and name > ?"));
     }
 }

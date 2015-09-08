@@ -19,8 +19,8 @@ public interface Query {
     String sql();
 
     /**
-     * Returns the list of names corresponding positionally to the ? characters in
-     * the sql. If names were not used then returns an empty list.
+     * Returns the list of names corresponding positionally to the ? characters
+     * in the sql. If names were not used then returns an empty list.
      * 
      * @return ist of names corresponding positionally to the ? characters in
      *         the sql

@@ -23,7 +23,7 @@ public class Benchmarks {
     @Benchmark
     public void selectUsingLibraryUsingExplicitMapping() {
         db.select("select name from person")
-        //
+                //
                 .get(new ResultSetMapper<String>() {
                     @Override
                     public String call(ResultSet rs) throws SQLException {
@@ -49,18 +49,19 @@ public class Benchmarks {
             throw new RuntimeException(e);
         }
     }
-    
+
     private static Connection createConnection() {
         Connection con = new ConnectionNonClosing(DatabaseCreator.nextConnection());
         Database db = Database.from(con);
-        //insert another 1000 people
-        db.update("insert into person(name, score) values(?,?)").parameters(Observable.range(1,1000).concatMap(new Func1<Integer, Observable<Object>>() {
-            @Override
-            public Observable<Object> call(Integer n) {
-                return Observable.<Object>just("person" + n , n);
-            }}));
+        // insert another 1000 people
+        db.update("insert into person(name, score) values(?,?)").parameters(
+                Observable.range(1, 1000).concatMap(new Func1<Integer, Observable<Object>>() {
+                    @Override
+                    public Observable<Object> call(Integer n) {
+                        return Observable.<Object> just("person" + n, n);
+                    }
+                }));
         return con;
     }
-
 
 }

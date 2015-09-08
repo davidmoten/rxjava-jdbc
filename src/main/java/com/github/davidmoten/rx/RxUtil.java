@@ -43,7 +43,8 @@ public final class RxUtil {
      *         first
      */
     @SuppressWarnings("unchecked")
-    public static <T> Observable<T> concatButIgnoreFirstSequence(Observable<?> o1, Observable<T> o2) {
+    public static <T> Observable<T> concatButIgnoreFirstSequence(Observable<?> o1,
+            Observable<T> o2) {
         return Observable.concat((Observable<T>) o1.ignoreElements(), o2);
     }
 
@@ -198,9 +199,9 @@ public final class RxUtil {
     }
 
     /**
-     * Adds {@code n} to {@code requested} and returns the value prior to addition once the
-     * addition is successful (uses CAS semantics). If overflows then sets
-     * {@code requested} field to {@code Long.MAX_VALUE}.
+     * Adds {@code n} to {@code requested} and returns the value prior to
+     * addition once the addition is successful (uses CAS semantics). If
+     * overflows then sets {@code requested} field to {@code Long.MAX_VALUE}.
      * 
      * @param requested
      *            atomic field updater for a request count

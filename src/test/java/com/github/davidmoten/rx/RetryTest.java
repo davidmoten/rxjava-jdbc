@@ -45,9 +45,9 @@ public class RetryTest {
         // create a retrying observable based on a PublishSubject
         PublishSubject<Integer> subject = PublishSubject.create();
         subject
-        // record item
-        .doOnNext(record)
-        // throw a RuntimeException
+                // record item
+                .doOnNext(record)
+                // throw a RuntimeException
                 .concatMap(throwException)
                 // retry on error
                 .retry()

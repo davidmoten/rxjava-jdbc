@@ -16,10 +16,8 @@ public class DatabaseAsyncTest extends DatabaseTestBase {
     @Test
     public void testDependsUsingAsynchronousQueriesWaitsForFirstByDelayingCalculation() {
         Database db = db().asynchronous();
-        Observable<Integer> insert = db
-                .update("insert into person(name,score) values(?,?)")
-                .parameters("JOHN", 45)
-                .count()
+        Observable<Integer> insert = db.update("insert into person(name,score) values(?,?)")
+                .parameters("JOHN", 45).count()
                 .zipWith(Observable.interval(100, TimeUnit.MILLISECONDS),
                         new Func2<Integer, Long, Integer>() {
                             @Override

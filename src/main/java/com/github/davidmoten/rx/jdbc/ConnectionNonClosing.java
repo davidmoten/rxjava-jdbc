@@ -234,7 +234,8 @@ final class ConnectionNonClosing implements Connection {
     }
 
     @Override
-    public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
+    public PreparedStatement prepareStatement(String sql, String[] columnNames)
+            throws SQLException {
         return con.prepareStatement(sql, columnNames);
     }
 

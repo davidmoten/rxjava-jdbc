@@ -21,11 +21,12 @@ class QueryUpdateOperatorFromObservable<R> implements Operator<Observable<Intege
      * @param operatorType
      */
     QueryUpdateOperatorFromObservable(final QueryUpdate.Builder builder) {
-        operator = RxUtil
-                .toOperator(new Func1<Observable<Observable<R>>, Observable<Observable<Integer>>>() {
+        operator = RxUtil.toOperator(
+                new Func1<Observable<Observable<R>>, Observable<Observable<Integer>>>() {
 
                     @Override
-                    public Observable<Observable<Integer>> call(Observable<Observable<R>> observable) {
+                    public Observable<Observable<Integer>> call(
+                            Observable<Observable<R>> observable) {
 
                         return observable.map(new Func1<Observable<R>, Observable<Integer>>() {
                             @Override
@@ -38,7 +39,8 @@ class QueryUpdateOperatorFromObservable<R> implements Operator<Observable<Intege
     }
 
     @Override
-    public Subscriber<? super Observable<R>> call(Subscriber<? super Observable<Integer>> subscriber) {
+    public Subscriber<? super Observable<R>> call(
+            Subscriber<? super Observable<Integer>> subscriber) {
         return operator.call(subscriber);
     }
 }

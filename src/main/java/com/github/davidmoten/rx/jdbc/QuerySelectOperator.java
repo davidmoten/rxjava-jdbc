@@ -23,12 +23,12 @@ final class QuerySelectOperator<T, R> implements Operator<T, R> {
      * @param builder
      * @param function
      * @param operatorType
-     * @param resultSetTransform 
+     * @param resultSetTransform
      */
     QuerySelectOperator(final QuerySelect.Builder builder,
             final ResultSetMapper<? extends T> function, final OperatorType operatorType) {
-        operator = Transformers.toOperator(new ApplyQuerySelect<R, T>(builder, function,
-                operatorType));
+        operator = Transformers
+                .toOperator(new ApplyQuerySelect<R, T>(builder, function, operatorType));
     }
 
     @Override
@@ -42,8 +42,8 @@ final class QuerySelectOperator<T, R> implements Operator<T, R> {
         private ResultSetMapper<? extends T> function;
         private OperatorType operatorType;
 
-        private ApplyQuerySelect(QuerySelect.Builder builder,
-                ResultSetMapper<? extends T> function, OperatorType operatorType) {
+        private ApplyQuerySelect(QuerySelect.Builder builder, ResultSetMapper<? extends T> function,
+                OperatorType operatorType) {
             this.builder = builder;
             this.function = function;
             this.operatorType = operatorType;

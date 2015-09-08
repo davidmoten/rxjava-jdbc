@@ -12,10 +12,10 @@ class ResultSetCache {
 
     final ResultSet rs;
     final Map<String, Integer> colIndexes;
-    
+
     ResultSetCache(ResultSet rs) {
         this.rs = rs;
-        
+
         this.colIndexes = collectColIndexes(rs);
     }
 
@@ -23,8 +23,8 @@ class ResultSetCache {
         HashMap<String, Integer> map = new HashMap<String, Integer>();
         try {
             ResultSetMetaData metadata = rs.getMetaData();
-            for (int i=1;i<=metadata.getColumnCount();i++) {
-                map.put(metadata.getColumnName(i),i);
+            for (int i = 1; i <= metadata.getColumnCount(); i++) {
+                map.put(metadata.getColumnName(i), i);
             }
             return map;
         } catch (SQLException e) {

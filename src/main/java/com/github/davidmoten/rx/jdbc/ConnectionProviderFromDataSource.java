@@ -17,7 +17,8 @@ public class ConnectionProviderFromDataSource implements ConnectionProvider {
     /**
      * Constructor.
      * 
-     * @param dataSource database connection source
+     * @param dataSource
+     *            database connection source
      */
     public ConnectionProviderFromDataSource(DataSource dataSource) {
         this.dataSource = dataSource;

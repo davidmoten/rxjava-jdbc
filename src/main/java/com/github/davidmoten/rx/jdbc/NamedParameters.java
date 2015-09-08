@@ -44,14 +44,15 @@ public class NamedParameters {
         }
         return new JdbcQuery(parsedQuery.toString(), names);
     }
-    
+
     public static class JdbcQuery {
         private final String sql;
         private List<String> names;
 
         public JdbcQuery(String sql, List<String> names) {
             this.sql = sql;
-            this.names = names;;
+            this.names = names;
+            ;
         }
 
         public String sql() {
@@ -61,7 +62,6 @@ public class NamedParameters {
         public List<String> names() {
             return names;
         }
-        
 
     }
 
