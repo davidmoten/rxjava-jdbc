@@ -307,7 +307,7 @@ final public class QueryUpdate<T> implements Query {
 
         /**
          * Executes the update query immediately, blocking till completion and
-         * returns count of records affected.
+         * returns list of counts of records affected.
          * 
          * @return list of counts of records affected for each execution of the
          *         update query
