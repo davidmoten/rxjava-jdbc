@@ -9,6 +9,7 @@ import java.util.List;
 import rx.Observable;
 import rx.Observable.Operator;
 import rx.functions.Func1;
+import rx.functions.Func2;
 
 import com.github.davidmoten.rx.jdbc.NamedParameters.JdbcQuery;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
@@ -307,13 +308,22 @@ final public class QueryUpdate<T> implements Query {
 
         /**
          * Executes the update query immediately, blocking till completion and
-         * returns list of counts of records affected.
+         * returns total of counts of records affected.
          * 
-         * @return list of counts of records affected for each execution of the
-         *         update query
+         * @return total of counts of records affected by update queries
          */
-        public List<Integer> execute() {
-            return count().toList().toBlocking().single();
+        public int execute() {
+            return count().reduce(0, TotalHolder.TOTAL).toBlocking().single();
+        }
+
+        private static final class TotalHolder {
+            static final Func2<Integer, Integer, Integer> TOTAL = new Func2<Integer, Integer, Integer>() {
+
+                @Override
+                public Integer call(Integer a, Integer b) {
+                    return a + b;
+                }
+            };
         }
 
         /**
