@@ -1,6 +1,5 @@
 package com.github.davidmoten.rx.jdbc;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.junit.Test;
@@ -13,10 +12,9 @@ public class DatabaseExampleTest {
 
     @Test
     public void testCreateAndUseAnInMemoryDatabase() throws SQLException {
-        // little trick for an in-memory h2 database so that closing a
-        // connection to it doesn't throw the db away
-        Connection con = Database.from("jdbc:h2:mem:demo1").getConnectionProvider().get();
-        Database db = Database.from(con);
+        // create an h2 in-memory database that does not get dropped when all
+        // connections closed
+        Database db = Database.from("jdbc:h2:mem:demo1;DB_CLOSE_DELAY=-1");
         db.update(
                 "create table person (name varchar(50) primary key, score int not null,dob date, registered timestamp)")
                 .count().toBlocking().single();
