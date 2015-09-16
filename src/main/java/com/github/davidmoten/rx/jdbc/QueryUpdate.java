@@ -113,7 +113,7 @@ final public class QueryUpdate<T> implements Query {
 
     static <T> Observable<T> get(QueryUpdate<T> queryUpdate) {
         return bufferedParameters(queryUpdate)
-                // execute query for each set of parameters
+        // execute query for each set of parameters
                 .concatMap(queryUpdate.executeOnce());
     }
 
@@ -135,7 +135,7 @@ final public class QueryUpdate<T> implements Query {
                 if (jdbcQuery.sql().equals(QueryUpdateOnSubscribe.COMMIT)
                         || jdbcQuery.sql().equals(QueryUpdateOnSubscribe.ROLLBACK))
                     context.endTransactionSubscribe();
-                return (Observable<T>) result;
+                return result;
             }
         };
     }
@@ -149,7 +149,7 @@ final public class QueryUpdate<T> implements Query {
      * @return
      */
     private Observable<T> executeOnce(final List<Parameter> parameters) {
-        return (Observable<T>) QueryUpdateOnSubscribe.execute(this, parameters);
+        return QueryUpdateOnSubscribe.execute(this, parameters);
     }
 
     /**
@@ -298,11 +298,22 @@ final public class QueryUpdate<T> implements Query {
          * Returns an {@link Observable} with the count of rows affected by the
          * update statement.
          * 
-         * @return
+         * @return Observable of counts of rows affected.
          */
         public Observable<Integer> count() {
             return new QueryUpdate<Integer>(builder.sql(), builder.parameters(), builder.depends(),
                     builder.context(), null).count();
+        }
+
+        /**
+         * Executes the update query immediately, blocking till completion and
+         * returns count of records affected.
+         * 
+         * @return list of counts of records affected for each execution of the
+         *         update query
+         */
+        public List<Integer> execute() {
+            return count().toList().toBlocking().single();
         }
 
         /**
@@ -361,8 +372,8 @@ final public class QueryUpdate<T> implements Query {
          * @return
          */
         public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
-            return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(),
-                    builder.depends(), builder.context(), function));
+            return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(), builder
+                    .depends(), builder.context(), function));
         }
 
         /**
