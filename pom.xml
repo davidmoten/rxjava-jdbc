@@ -24,7 +24,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<checkstyle.version>2.11</checkstyle.version>
 		<findbugs.version>3.0.1</findbugs.version>
-		<javadoc.version>2.9.1</javadoc.version>
+		<javadoc.version>2.10.3</javadoc.version>
 		<pmd.version>3.0.1</pmd.version>
 		<jdepend.version>2.0-beta-2</jdepend.version>
 		<javancss.version>2.0</javancss.version>
@@ -215,6 +215,22 @@
 					<source>${maven.compiler.target}</source>
 					<target>${maven.compiler.target}</target>
 				</configuration>
+			</plugin>
+            <plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>${javadoc.version}</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+						    <goal>jar</goal>
+						</goals>
+						<configuration>
+						    <additionalparam>-Xdoclint:none</additionalparam>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-site-plugin</artifactId>
