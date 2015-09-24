@@ -68,6 +68,8 @@ public class DatabaseExampleTest {
     }
 
     @Test
+    // ignore because infinite and doesn't test results yet apart from critical
+    // failure
     @Ignore
     public void testBackpressureIssue38() {
         Database db = DatabaseCreator.db();
