@@ -8,7 +8,7 @@
 		<version>0.1</version>
 	</parent>
 	<artifactId>rxjava-jdbc</artifactId>
-	<version>0.6.6</version>
+	<version>0.6.7-SNAPSHOT</version>
 
 	<name>${project.artifactId}</name>
 	<description>rx-java Observables for jdbc</description>
