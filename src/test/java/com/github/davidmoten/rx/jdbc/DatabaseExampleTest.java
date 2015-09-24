@@ -6,7 +6,9 @@ import java.sql.SQLException;
 
 import org.junit.Test;
 
+import rx.Observable;
 import rx.functions.Action1;
+import rx.observers.TestSubscriber;
 
 import com.github.davidmoten.rx.jdbc.annotations.Column;
 
@@ -45,4 +47,21 @@ public class DatabaseExampleTest {
         int score();
     }
 
+    @Test
+    public void testParameterOperatorBackpressure() {
+        // use composition to find the first person alphabetically with
+        // a score less than the person with the last name alphabetically
+        // whose name is not XAVIER. Two threads and connections will be used.
+
+        Database db = DatabaseCreator.db();
+        TestSubscriber<String> ts = TestSubscriber.create(0);
+        Observable.just("FRED", "FRED").repeat()
+                .lift(db.select("select name from person where name = ?")
+                        .parameterOperator().getAs(String.class))
+                .subscribe(ts);
+        ts.requestMore(1);
+        ts.assertValueCount(1);
+        ts.unsubscribe();
+    }
+    
 }
