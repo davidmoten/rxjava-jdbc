@@ -521,7 +521,7 @@ Example:
 ```java
 Observable<Integer> score = Observable
     // parameters for coming update
-    .from(Arrays.<Object> asList(4, "FRED"))
+    .just(4, "FRED")
     // update Fred's score to 4
     .lift(db.update("update person set score=? where name=?")
             //parameters are pushed
@@ -601,7 +601,7 @@ assertEquals(3, count);
 ```java
 List<Integer> mins = Observable
     // do 3 times
-    .from(asList(11, 12, 13))
+    .just(11, 12, 13)
     // begin transaction for each item
     .lift(db.beginTransactionOnNextOperator())
     // update all scores to the item
@@ -637,7 +637,7 @@ something like the code below could produce unpredictable results:
 ```java
 Database adb = db.asynchronous();
 Observable
-    .from(asList(1,2,3))
+    .just(1, 2, 3)
     .lift(adb.update("update person set score = ?")
             .parameterOperator());
 ```
@@ -647,7 +647,7 @@ To run those queries synchronously either use a transaction:
 ```java
 Database adb = db.asynchronous();
 Observable
-   .from(asList(1, 2, 3))
+   .just(1, 2, 3)
    .lift(adb.update("update person set score = ?")
            .dependsOn(db.beginTransaction())
            .parameterOperator())
@@ -657,7 +657,7 @@ Observable
 or use the default version of the ```Database``` object that schedules queries using ```Schedulers.trampoline()```.
 
 ```java
-Observable.from(asList(1,2,3))
+Observable.just(1, 2, 3)
           .lift(db.update("update person set score = ?")
                   .parameterOperator());
 ```
