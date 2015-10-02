@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.jdbc.annotations.Column;
 
 import rx.Observable;
@@ -77,7 +78,7 @@ public class DatabaseExampleTest {
         Database db = DatabaseCreator.db();
         TestSubscriber<String> ts = TestSubscriber.create();
         RuntimeException ex = new RuntimeException();
-        Observable.<Observable<Object>>error(ex)
+        Observable.<Observable<Object>> error(ex)
                 .lift(db.select("select name from person where name = ?").parameterListOperator()
                         .getAs(String.class))
                 .subscribe(ts);
@@ -86,20 +87,19 @@ public class DatabaseExampleTest {
 
     @Test
     public void testUpdateParameterListOperatorWithError() {
-        // use composition to find the first person alphabetically with
-        // a score less than the person with the last name alphabetically
-        // whose name is not XAVIER. Two threads and connections will be used.
-
         Database db = DatabaseCreator.db();
-        TestSubscriber<String> ts = TestSubscriber.create();
+        TestSubscriber<Integer> ts = TestSubscriber.create();
         RuntimeException ex = new RuntimeException();
-        Observable.<Observable<Object>>error(ex)
-                .lift(db.select("update person set name=?||'zz' where name = ?").parameterListOperator()
-                        .getAs(String.class))
+        Observable.<Observable<Object>> error(ex)
+                // update
+                .lift(db.update("update person set name=?||'zz' where name = ?")
+                        .parameterListOperator())
+                // flatten
+                .lift(RxUtil.<Integer> flatten())
                 .subscribe(ts);
         ts.assertError(ex);
     }
-    
+
     @Test
     // ignore because infinite and doesn't test results yet apart from critical
     // failure
