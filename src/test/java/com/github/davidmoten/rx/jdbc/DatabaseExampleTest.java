@@ -69,7 +69,7 @@ public class DatabaseExampleTest {
     }
 
     @Test
-    public void testParameterListOperatorWithError() {
+    public void testSelectParameterListOperatorWithError() {
         // use composition to find the first person alphabetically with
         // a score less than the person with the last name alphabetically
         // whose name is not XAVIER. Two threads and connections will be used.
@@ -79,6 +79,22 @@ public class DatabaseExampleTest {
         RuntimeException ex = new RuntimeException();
         Observable.<Observable<Object>>error(ex)
                 .lift(db.select("select name from person where name = ?").parameterListOperator()
+                        .getAs(String.class))
+                .subscribe(ts);
+        ts.assertError(ex);
+    }
+
+    @Test
+    public void testUpdateParameterListOperatorWithError() {
+        // use composition to find the first person alphabetically with
+        // a score less than the person with the last name alphabetically
+        // whose name is not XAVIER. Two threads and connections will be used.
+
+        Database db = DatabaseCreator.db();
+        TestSubscriber<String> ts = TestSubscriber.create();
+        RuntimeException ex = new RuntimeException();
+        Observable.<Observable<Object>>error(ex)
+                .lift(db.select("update person set name=?||'zz' where name = ?").parameterListOperator()
                         .getAs(String.class))
                 .subscribe(ts);
         ts.assertError(ex);
