@@ -3,6 +3,7 @@ package com.github.davidmoten.rx.jdbc;
 import static org.junit.Assert.assertEquals;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -67,6 +68,22 @@ public class DatabaseExampleTest {
         ts.unsubscribe();
     }
 
+    @Test
+    public void testParameterListOperatorWithError() {
+        // use composition to find the first person alphabetically with
+        // a score less than the person with the last name alphabetically
+        // whose name is not XAVIER. Two threads and connections will be used.
+
+        Database db = DatabaseCreator.db();
+        TestSubscriber<String> ts = TestSubscriber.create();
+        RuntimeException ex = new RuntimeException();
+        Observable.<Observable<Object>>error(ex)
+                .lift(db.select("select name from person where name = ?").parameterListOperator()
+                        .getAs(String.class))
+                .subscribe(ts);
+        ts.assertError(ex);
+    }
+    
     @Test
     // ignore because infinite and doesn't test results yet apart from critical
     // failure
