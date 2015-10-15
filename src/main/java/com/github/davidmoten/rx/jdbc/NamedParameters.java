@@ -3,7 +3,11 @@ package com.github.davidmoten.rx.jdbc;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NamedParameters {
+public final class NamedParameters {
+
+    private NamedParameters() {
+        // disallow instantiation
+    }
 
     public static JdbcQuery parse(String namedSql) {
         // was originally using regular expressions, but they didn't work well
@@ -28,7 +32,7 @@ public class NamedParameters {
                     inSingleQuote = true;
                 } else if (c == '"') {
                     inDoubleQuote = true;
-                } else if (c == ':' && i + 1 < length && !doubleColonCast(namedSql,i)
+                } else if (c == ':' && i + 1 < length && !isFollowedOrPrefixedByColon(namedSql, i)
                         && Character.isJavaIdentifierStart(namedSql.charAt(i + 1))) {
                     int j = i + 2;
                     while (j < length && Character.isJavaIdentifierPart(namedSql.charAt(j))) {
@@ -45,18 +49,18 @@ public class NamedParameters {
         return new JdbcQuery(parsedQuery.toString(), names);
     }
 
-    private static boolean doubleColonCast(String sql, int i) {
-        return ':' == sql.charAt(i + 1) || (i > 0  && ':' == sql.charAt(i - 1));
+    // Visible for testing
+    static boolean isFollowedOrPrefixedByColon(String sql, int i) {
+        return ':' == sql.charAt(i + 1) || (i > 0 && ':' == sql.charAt(i - 1));
     }
 
     public static class JdbcQuery {
         private final String sql;
-        private List<String> names;
+        private final List<String> names;
 
         public JdbcQuery(String sql, List<String> names) {
             this.sql = sql;
             this.names = names;
-            ;
         }
 
         public String sql() {
