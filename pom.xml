@@ -8,7 +8,7 @@
 		<version>0.1</version>
 	</parent>
 	<artifactId>rxjava-jdbc</artifactId>
-	<version>0.6.8</version>
+	<version>0.6.8-SNAPSHOT</version>
 
 	<name>${project.artifactId}</name>
 	<description>rx-java Observables for jdbc</description>
@@ -19,6 +19,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <scm.url>scm:git:https://github.com/davidmoten/rxjava-jdbc.git</scm.url>
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<cobertura.version>2.7</cobertura.version>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -72,9 +73,9 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:git@github.com:davidmoten/rxjava-jdbc.git</connection>
-		<developerConnection>scm:git:git@github.com:davidmoten/rxjava-jdbc.git</developerConnection>
-		<url>scm:git:git@github.com:davidmoten/rxjava-jdbc.git</url>
+		<connection>${scm.url}</connection>
+		<developerConnection>${scm.url}</developerConnection>
+		<url>${scm.url}</url>
 		<tag>0.6.8</tag>
 	</scm>
 
