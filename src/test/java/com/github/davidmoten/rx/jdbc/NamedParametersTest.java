@@ -40,4 +40,12 @@ public class NamedParametersTest {
         DatabaseCreator.db().select("select name from person where name = :name").count()
                 .subscribe();
     }
+
+    @Test
+    public void testDoubleColonCastNotProcessed() {
+        JdbcQuery r = NamedParameters.parse(
+                "select a::varchar, b from tbl where a.name=:name");
+        assertEquals("select a::varchar, b from tbl where a.name=?", r.sql());
+        assertEquals(Arrays.asList("name"), r.names());
+    }
 }
