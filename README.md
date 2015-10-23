@@ -715,3 +715,9 @@ The connection is wrapped in a ```ConnectionNonClosing``` which suppresses close
  ```java
  Database db = Database.from(con);
  ```
+
+Note for SQLite Users
+---------------------------
+RxJava-JDBC does work with [SQLite](https://www.sqlite.org/). But due to the nature of the SQLite architecture, there are limitations in a reactive programming environment especially when write operations are involved. If your application performs any write operations to a SQLite database (CREATE,INSERT,UPDATE,DELETE) always use a single ```java.sql.Connection``` without pooling. 
+
+If a source ```Observable``` pushes emissions through a chain of database read and write operations, you will need to separate each database operation with a ```toList().concatMap(Observable::from)```. This will collect items and close the database operation before proceeding to the next one, preventing [SQLITE_INTERRUPT](https://www.sqlite.org/rescode.html#interrupt) exceptions. An example of this workaround [can be found here](http://stackoverflow.com/a/33288805/1373258).
