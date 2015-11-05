@@ -47,9 +47,11 @@ final class Parameter {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Parameter [value=");
+        if (value instanceof String)
+            builder.append("'");
         builder.append(value);
-        builder.append("]");
+        if (value instanceof String)
+            builder.append("'");
         return builder.toString();
     }
 
