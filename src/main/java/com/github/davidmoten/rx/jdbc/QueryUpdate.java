@@ -2,6 +2,7 @@ package com.github.davidmoten.rx.jdbc;
 
 import static com.github.davidmoten.rx.jdbc.Conditions.checkNotNull;
 import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
+import static com.github.davidmoten.util.Preconditions.checkArgument;
 
 import java.sql.ResultSet;
 import java.util.List;
@@ -38,6 +39,7 @@ final public class QueryUpdate<T> implements Query {
     private final Observable<?> depends;
     // nullable!
     private final ResultSetMapper<? extends T> returnGeneratedKeysFunction;
+    private final int batchSize;
 
     /**
      * Private constructor.
@@ -57,11 +59,17 @@ final public class QueryUpdate<T> implements Query {
         checkNotNull(parameters);
         checkNotNull(depends);
         checkNotNull(context);
+        checkArgument(batchSize > 0, "batchSize must be greater than 0");
+        this.batchSize = batchSize;
         this.jdbcQuery = NamedParameters.parse(sql);
         this.parameters = parameters;
         this.depends = depends;
         this.context = context;
         this.returnGeneratedKeysFunction = returnGeneratedKeysFunction;
+    }
+
+    public int batchSize() {
+        return batchSize;
     }
 
     @Override
@@ -156,6 +164,8 @@ final public class QueryUpdate<T> implements Query {
         return QueryUpdateOnSubscribe.execute(this, parameters);
     }
 
+    private static final int DEFAULT_BATCH_SIZE = 1;
+
     /**
      * Builds a {@link QueryUpdate}.
      */
@@ -165,7 +175,7 @@ final public class QueryUpdate<T> implements Query {
          * Standard query builder.
          */
         private final QueryBuilder builder;
-        private int batchSize = 1;
+        private int batchSize = DEFAULT_BATCH_SIZE;
 
         /**
          * Constructor.
@@ -296,7 +306,9 @@ final public class QueryUpdate<T> implements Query {
          *         ResultSet
          */
         public ReturnGeneratedKeysBuilder returnGeneratedKeys() {
-            return new ReturnGeneratedKeysBuilder(builder, batchSize);
+            Preconditions.checkArgument(batchSize == 1,
+                    "batching for returning generated keys is not supported (batchSize must be 1)");
+            return new ReturnGeneratedKeysBuilder(builder);
         }
 
         /**
@@ -380,16 +392,9 @@ final public class QueryUpdate<T> implements Query {
     public static class ReturnGeneratedKeysBuilder {
 
         private final QueryBuilder builder;
-        private int batchSize;
 
-        public ReturnGeneratedKeysBuilder(QueryBuilder builder, int batchSize) {
+        public ReturnGeneratedKeysBuilder(QueryBuilder builder) {
             this.builder = builder;
-            this.batchSize = batchSize;
-        }
-
-        public ReturnGeneratedKeysBuilder batchSize(int size) {
-            this.batchSize = size;
-            return this;
         }
 
         /**
@@ -400,7 +405,7 @@ final public class QueryUpdate<T> implements Query {
          */
         public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
             return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(),
-                    builder.depends(), builder.context(), function, batchSize));
+                    builder.depends(), builder.context(), function, DEFAULT_BATCH_SIZE));
         }
 
         /**
