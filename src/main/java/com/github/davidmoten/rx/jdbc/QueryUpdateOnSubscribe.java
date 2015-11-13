@@ -44,8 +44,9 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      *            one set of parameters to be run with the query
      * @return
      */
-    static <T> Observable<T> execute(QueryUpdate<T> query, List<Parameter> parameters) {
-        return Observable.create(new QueryUpdateOnSubscribe<T>(query, parameters));
+    static <T> Observable<T> execute(QueryUpdate<T> query, List<Parameter> parameters,
+            AtomicInteger batchCounter) {
+        return Observable.create(new QueryUpdateOnSubscribe<T>(query, parameters, batchCounter));
     }
 
     /**
@@ -60,21 +61,24 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      */
     private final List<Parameter> parameters;
 
+    private final AtomicInteger batchCounter;
+
     /**
      * Constructor.
      * 
      * @param query
      * @param parameters
      */
-    private QueryUpdateOnSubscribe(QueryUpdate<T> query, List<Parameter> parameters) {
+    private QueryUpdateOnSubscribe(QueryUpdate<T> query, List<Parameter> parameters,
+            AtomicInteger batchCounter) {
         this.query = query;
         this.parameters = parameters;
+        this.batchCounter = batchCounter;
     }
 
     @Override
     public void call(Subscriber<? super T> subscriber) {
         final State state = new State();
-        final AtomicInteger batchCounter = new AtomicInteger();
         try {
             if (isBeginTransaction())
                 performBeginTransaction(subscriber);

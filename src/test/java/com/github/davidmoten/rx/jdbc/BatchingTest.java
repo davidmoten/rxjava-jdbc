@@ -12,7 +12,6 @@ public class BatchingTest {
     @Test
     public void test() {
         Database db = DatabaseCreator.db();
-
         int numPeopleBefore = db.select("select count(*) from person").getAs(Integer.class)
                 .toBlocking().single();
         Observable<String> names = Observable.just("NANCY", "WARREN", "ALFRED", "BARRY", "ROBERTO");
@@ -22,7 +21,9 @@ public class BatchingTest {
                 // set batch size
                 .batchSize(3)
                 // get parameters from last query
-                .parameters(names).count()
+                .parameters(names)
+                // go
+                .count()
                 // end transaction
                 .count();
         assertTrue(db.commit(count).toBlocking().single());
