@@ -218,7 +218,7 @@ Example:
 String name= db
 	.select("select name from person where name > ?  and score < ? order by name")
 	.parameter("BARRY")
-	.parameters(Observable.from(100))
+	.parameters(Observable.just(100))
 	.getAs(String.class)
 	.first()
 	.toBlocking().single();
@@ -764,7 +764,7 @@ Note for SQLite Users
 *rxjava-jdbc* does support [SQLite](http://sqlite.org/). But due to the [SQLite architecture](http://sqlite.org/faq.html#q5) there are limitations particularly with write operations (CREATE, INSERT, UPDATE, DELETE). If your application has any write operations, [use a single connection](#use-a-single-connection). If a source ```Observable``` pushes emissions through a series of database read/write operations, always collect emissions and flatten them between each database read/write operation. This will prevent a [SQLITE_INTERRUPT](https://sqlite.org/rescode.html#interrupt) exception by never having more than one query open at a time. 
 
 ```java
-Observable<MyItem> = Observable.from(itemstoInsert)
+Observable<MyItem> = Observable.just(itemstoInsert)
 		.compose(executeInsertsAndGetKeys())
 		.toList().concatMap(Observable::from)
 		.compose(selectAndAutoMap());
