@@ -230,6 +230,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         } else {
             keysOption = Statement.NO_GENERATED_KEYS;
         }
+        // TODO for batching we need to reuse prepared statements!
         state.ps = state.con.prepareStatement(query.sql(), keysOption);
         Util.setParameters(state.ps, parameters, query.names());
 
