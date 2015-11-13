@@ -10,7 +10,7 @@ import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
  * Provides a singleton {@link Connection} sourced from a
  * {@link ConnectionProvider} that has autoCommit set to false.
  */
-final class ConnectionProviderSingletonManualCommit implements ConnectionProvider {
+final class ConnectionProviderSingletonManualCommitStatementCaching implements ConnectionProvider {
 
     /**
      * Singleton connection.
@@ -20,7 +20,7 @@ final class ConnectionProviderSingletonManualCommit implements ConnectionProvide
     /**
      * Ensures thread-safe setting of con
      */
-    private AtomicBoolean connectionSet = new AtomicBoolean(false);
+    private final AtomicBoolean connectionSet = new AtomicBoolean(false);
 
     /**
      * Provides the singleton connection.
@@ -33,7 +33,7 @@ final class ConnectionProviderSingletonManualCommit implements ConnectionProvide
      * @param cp
      *            connection provider.
      */
-    ConnectionProviderSingletonManualCommit(ConnectionProvider cp) {
+    ConnectionProviderSingletonManualCommitStatementCaching(ConnectionProvider cp) {
         this.cp = cp;
     }
 
@@ -47,7 +47,7 @@ final class ConnectionProviderSingletonManualCommit implements ConnectionProvide
                 throw new SQLRuntimeException(e);
             }
         }
-        return con;
+        return new ConnectionStatementCaching(con);
     }
 
     @Override

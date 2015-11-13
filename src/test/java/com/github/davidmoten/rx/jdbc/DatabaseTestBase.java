@@ -1041,7 +1041,7 @@ public abstract class DatabaseTestBase {
         cp.close();
         EasyMock.expectLastCall().once();
         EasyMock.replay(cp);
-        new ConnectionProviderSingletonManualCommit(cp).close();
+        new ConnectionProviderSingletonManualCommitStatementCaching(cp).close();
         EasyMock.verify(cp);
     }
 

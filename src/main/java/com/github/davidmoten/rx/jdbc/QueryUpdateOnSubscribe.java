@@ -341,7 +341,8 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
     private void close(State state) {
         // ensure close happens once only to avoid race conditions
         if (state.closed.compareAndSet(false, true)) {
-            Util.closeQuietly(state.ps);
+            if (query.batchSize() == 1)
+                Util.closeQuietly(state.ps);
             if (isCommit() || isRollback())
                 Util.closeQuietly(state.con);
             else
