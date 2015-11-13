@@ -6,11 +6,6 @@ import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
 import java.sql.ResultSet;
 import java.util.List;
 
-import rx.Observable;
-import rx.Observable.Operator;
-import rx.functions.Func1;
-import rx.functions.Func2;
-
 import com.github.davidmoten.rx.jdbc.NamedParameters.JdbcQuery;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
@@ -20,6 +15,12 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuple6;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple7;
 import com.github.davidmoten.rx.jdbc.tuple.TupleN;
 import com.github.davidmoten.rx.jdbc.tuple.Tuples;
+import com.github.davidmoten.util.Preconditions;
+
+import rx.Observable;
+import rx.Observable.Operator;
+import rx.functions.Func1;
+import rx.functions.Func2;
 
 /**
  * Always emits an Observable<Integer> of size 1 containing the number of
@@ -47,9 +48,11 @@ final public class QueryUpdate<T> implements Query {
      * @param context
      * @param returnGeneratedKeysFunction
      *            nullable!
+     * @param batchSize
      */
     private QueryUpdate(String sql, Observable<Parameter> parameters, Observable<?> depends,
-            QueryContext context, ResultSetMapper<? extends T> returnGeneratedKeysFunction) {
+            QueryContext context, ResultSetMapper<? extends T> returnGeneratedKeysFunction,
+            int batchSize) {
         checkNotNull(sql);
         checkNotNull(parameters);
         checkNotNull(depends);
@@ -114,7 +117,7 @@ final public class QueryUpdate<T> implements Query {
 
     static <T> Observable<T> get(QueryUpdate<T> queryUpdate) {
         return bufferedParameters(queryUpdate)
-        // execute query for each set of parameters
+                // execute query for each set of parameters
                 .concatMap(queryUpdate.executeOnce());
     }
 
@@ -162,6 +165,7 @@ final public class QueryUpdate<T> implements Query {
          * Standard query builder.
          */
         private final QueryBuilder builder;
+        private int batchSize = 1;
 
         /**
          * Constructor.
@@ -292,7 +296,7 @@ final public class QueryUpdate<T> implements Query {
          *         ResultSet
          */
         public ReturnGeneratedKeysBuilder returnGeneratedKeys() {
-            return new ReturnGeneratedKeysBuilder(builder);
+            return new ReturnGeneratedKeysBuilder(builder, batchSize);
         }
 
         /**
@@ -303,7 +307,7 @@ final public class QueryUpdate<T> implements Query {
          */
         public Observable<Integer> count() {
             return new QueryUpdate<Integer>(builder.sql(), builder.parameters(), builder.depends(),
-                    builder.context(), null).count();
+                    builder.context(), null, batchSize).count();
         }
 
         /**
@@ -365,14 +369,27 @@ final public class QueryUpdate<T> implements Query {
             builder.clearParameters();
             return this;
         }
+
+        public Builder batchSize(int size) {
+            Preconditions.checkArgument(size > 0, "size must be greater than zero");
+            this.batchSize = size;
+            return this;
+        }
     }
 
     public static class ReturnGeneratedKeysBuilder {
 
         private final QueryBuilder builder;
+        private int batchSize;
 
-        public ReturnGeneratedKeysBuilder(QueryBuilder builder) {
+        public ReturnGeneratedKeysBuilder(QueryBuilder builder, int batchSize) {
             this.builder = builder;
+            this.batchSize = batchSize;
+        }
+
+        public ReturnGeneratedKeysBuilder batchSize(int size) {
+            this.batchSize = size;
+            return this;
         }
 
         /**
@@ -382,8 +399,8 @@ final public class QueryUpdate<T> implements Query {
          * @return
          */
         public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
-            return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(), builder
-                    .depends(), builder.context(), function));
+            return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(),
+                    builder.depends(), builder.context(), function, batchSize));
         }
 
         /**
