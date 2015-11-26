@@ -20,7 +20,7 @@ final class ConnectionProviderSingletonManualCommit implements ConnectionProvide
     /**
      * Ensures thread-safe setting of con
      */
-    private AtomicBoolean connectionSet = new AtomicBoolean(false);
+    private final AtomicBoolean connectionSet = new AtomicBoolean(false);
 
     /**
      * Provides the singleton connection.
@@ -40,7 +40,7 @@ final class ConnectionProviderSingletonManualCommit implements ConnectionProvide
     @Override
     public Connection get() {
         if (connectionSet.compareAndSet(false, true)) {
-            con = cp.get();
+            con = new ConnectionDelegator(cp.get());
             try {
                 con.setAutoCommit(false);
             } catch (SQLException e) {
