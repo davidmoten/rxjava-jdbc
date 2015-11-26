@@ -6,11 +6,6 @@ import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
 import java.sql.ResultSet;
 import java.util.List;
 
-import rx.Observable;
-import rx.Observable.Operator;
-import rx.functions.Func1;
-import rx.functions.Func2;
-
 import com.github.davidmoten.rx.jdbc.NamedParameters.JdbcQuery;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple3;
@@ -20,6 +15,11 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuple6;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple7;
 import com.github.davidmoten.rx.jdbc.tuple.TupleN;
 import com.github.davidmoten.rx.jdbc.tuple.Tuples;
+
+import rx.Observable;
+import rx.Observable.Operator;
+import rx.functions.Func1;
+import rx.functions.Func2;
 
 /**
  * Always emits an Observable<Integer> of size 1 containing the number of
@@ -114,7 +114,7 @@ final public class QueryUpdate<T> implements Query {
 
     static <T> Observable<T> get(QueryUpdate<T> queryUpdate) {
         return bufferedParameters(queryUpdate)
-        // execute query for each set of parameters
+                // execute query for each set of parameters
                 .concatMap(queryUpdate.executeOnce());
     }
 
@@ -162,6 +162,8 @@ final public class QueryUpdate<T> implements Query {
          * Standard query builder.
          */
         private final QueryBuilder builder;
+
+        private int batchSize = 1;
 
         /**
          * Constructor.
@@ -365,6 +367,12 @@ final public class QueryUpdate<T> implements Query {
             builder.clearParameters();
             return this;
         }
+
+        public Builder batchSize(int n) {
+            batchSize = n;
+            return this;
+        }
+
     }
 
     public static class ReturnGeneratedKeysBuilder {
@@ -382,8 +390,8 @@ final public class QueryUpdate<T> implements Query {
          * @return
          */
         public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
-            return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(), builder
-                    .depends(), builder.context(), function));
+            return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(),
+                    builder.depends(), builder.context(), function));
         }
 
         /**

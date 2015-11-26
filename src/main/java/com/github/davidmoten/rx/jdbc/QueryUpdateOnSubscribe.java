@@ -183,12 +183,14 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
     @SuppressWarnings("unchecked")
     private void performRollback(Subscriber<? super T> subscriber, State state) {
         log.debug("rolling back");
-        query.context().endTransactionObserve();
         Conditions.checkTrue(!Util.isAutoCommit(state.con));
         Util.rollback(state.con);
         // must close before onNext so that connection is released and is
         // available to a query that might process the onNext
         close(state);
+        // reset the current connection provider and set transaction open =
+        // false
+        query.context().endTransactionObserve();
         subscriber.onNext((T) Integer.valueOf(0));
         log.debug("rolled back");
         complete(subscriber);

@@ -165,4 +165,5 @@ final class QueryBuilder {
     void setSql(String sql) {
         this.sql = sql;
     }
+
 }
