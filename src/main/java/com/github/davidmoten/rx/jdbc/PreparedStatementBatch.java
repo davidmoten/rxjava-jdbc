@@ -97,7 +97,9 @@ class PreparedStatementBatch implements PreparedStatement {
 
     @Override
     public void close() throws SQLException {
-        ps.close();
+        // don't close if batching because that will happen on connection commit
+        if (!Batch.get().enabled())
+            ps.close();
     }
 
     @Override

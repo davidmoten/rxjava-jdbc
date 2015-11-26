@@ -71,6 +71,7 @@ final class ConnectionBatch implements Connection {
     public void commit() throws SQLException {
         if (Batch.get().enabled() && Batch.get().countAdded() > 0) {
             Batch.get().getPreparedStatement().executeBatch();
+            Batch.set(Batch.get().reset());
         }
         con.commit();
     }
@@ -82,6 +83,7 @@ final class ConnectionBatch implements Connection {
 
     @Override
     public void close() throws SQLException {
+        Batch.set(Batch.NO_BATCHING);
         con.close();
     }
 
@@ -219,7 +221,10 @@ final class ConnectionBatch implements Connection {
     }
 
     private static PreparedStatement wrap(PreparedStatement ps) {
-        return new PreparedStatementBatch(ps);
+        if (Batch.get().getPreparedStatement() == null) {
+            Batch.set(Batch.get().setPreparedStatement(new PreparedStatementBatch(ps)));
+        }
+        return Batch.get().getPreparedStatement();
     }
 
     @Override

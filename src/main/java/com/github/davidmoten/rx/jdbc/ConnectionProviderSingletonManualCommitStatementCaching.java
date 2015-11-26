@@ -47,7 +47,7 @@ final class ConnectionProviderSingletonManualCommitStatementCaching implements C
                 throw new SQLRuntimeException(e);
             }
         }
-        return new ConnectionStatementCaching(con);
+        return new ConnectionBatch(con);
     }
 
     @Override
