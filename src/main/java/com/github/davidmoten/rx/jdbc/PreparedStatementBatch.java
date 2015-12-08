@@ -26,9 +26,21 @@ import java.util.Calendar;
 class PreparedStatementBatch implements PreparedStatement {
 
     private final PreparedStatement ps;
+    private String sql;
+    private int keysOption;
 
-    PreparedStatementBatch(PreparedStatement ps) {
+    PreparedStatementBatch(PreparedStatement ps, String sql, int keysOption) {
         this.ps = ps;
+        this.sql = sql;
+        this.keysOption = keysOption;
+    }
+
+    public String getSql() {
+        return sql;
+    }
+
+    public int getKeysOption() {
+        return keysOption;
     }
 
     @Override
@@ -53,12 +65,13 @@ class PreparedStatementBatch implements PreparedStatement {
 
     @Override
     public int executeUpdate(String sql) throws SQLException {
-        if (Batch.get().enabled()) {
-            Batch.set(Batch.get().setPreparedStatement(this));
+        Batch batch = Batch.get();
+        if (batch.enabled()) {
+            Batch.set(batch.setPreparedStatement(this));
             ps.addBatch(sql);
-            if (Batch.get().complete()) {
-                Batch.set(Batch.get().reset());
-                return sum(ps.executeBatch());
+            batch.addOne();
+            if (batch.complete()) {
+                return sum(executeBatch());
             } else {
                 return 0;
             }
@@ -69,11 +82,13 @@ class PreparedStatementBatch implements PreparedStatement {
 
     @Override
     public int executeUpdate() throws SQLException {
-        if (Batch.get().enabled()) {
-            Batch.set(Batch.get().setPreparedStatement(this));
+        Batch batch = Batch.get();
+        if (batch.enabled()) {
+            batch.setPreparedStatement(this);
             ps.addBatch();
-            if (Batch.get().complete()) {
-                return sum(ps.executeBatch());
+            batch.addOne();
+            if (batch.complete()) {
+                return sum(executeBatch());
             } else {
                 return 0;
             }
@@ -310,11 +325,13 @@ class PreparedStatementBatch implements PreparedStatement {
 
     @Override
     public void addBatch(String sql) throws SQLException {
+        Batch.get().addOne();
         ps.addBatch(sql);
     }
 
     @Override
     public void addBatch() throws SQLException {
+        Batch.get().addOne();
         ps.addBatch();
     }
 
@@ -326,13 +343,13 @@ class PreparedStatementBatch implements PreparedStatement {
 
     @Override
     public void clearBatch() throws SQLException {
-        Batch.set(Batch.get().reset());
+        Batch.get().reset();
         ps.clearBatch();
     }
 
     @Override
     public int[] executeBatch() throws SQLException {
-        Batch.set(Batch.get().reset());
+        Batch.get().reset();
         return ps.executeBatch();
     }
 

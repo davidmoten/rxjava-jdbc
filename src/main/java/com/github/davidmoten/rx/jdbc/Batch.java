@@ -1,7 +1,5 @@
 package com.github.davidmoten.rx.jdbc;
 
-import java.sql.PreparedStatement;
-
 final class Batch {
 
     private static final ThreadLocal<Batch> batch = new ThreadLocal<Batch>() {
@@ -20,8 +18,8 @@ final class Batch {
     }
 
     final int size;
-    final int added;
-    private PreparedStatement ps;
+    int added;
+    private PreparedStatementBatch ps;
 
     Batch(int size, int added) {
         this.size = size;
@@ -33,7 +31,8 @@ final class Batch {
     }
 
     Batch addOne() {
-        return new Batch(size, added + 1);
+        added++;
+        return this;
     }
 
     boolean complete() {
@@ -41,13 +40,14 @@ final class Batch {
     }
 
     boolean enabled() {
-        return size == 1;
+        return size > 1;
     }
 
     static final Batch NO_BATCHING = new Batch(1, 0);
 
     public Batch reset() {
-        return new Batch(size);
+        added = 0;
+        return this;
     }
 
     public int countAdded() {
@@ -59,7 +59,7 @@ final class Batch {
         return this;
     }
 
-    public PreparedStatement getPreparedStatement() {
+    public PreparedStatementBatch getPreparedStatement() {
         return this.ps;
     }
 

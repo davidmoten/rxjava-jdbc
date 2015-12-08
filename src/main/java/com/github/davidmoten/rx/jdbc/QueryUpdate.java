@@ -6,7 +6,6 @@ import static com.github.davidmoten.util.Preconditions.checkArgument;
 
 import java.sql.ResultSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.github.davidmoten.rx.jdbc.NamedParameters.JdbcQuery;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
@@ -42,7 +41,6 @@ final public class QueryUpdate<T> implements Query {
     // nullable!
     private final ResultSetMapper<? extends T> returnGeneratedKeysFunction;
     private final int batchSize;
-    private AtomicInteger batchCounter;
 
     /**
      * Private constructor.
@@ -128,13 +126,12 @@ final public class QueryUpdate<T> implements Query {
 
     static <T> Observable<T> get(final QueryUpdate<T> queryUpdate) {
         return Observable.defer(new Func0<Observable<T>>() {
-            final AtomicInteger batchCounter = new AtomicInteger();
 
             @Override
             public Observable<T> call() {
                 return bufferedParameters(queryUpdate)
                         // execute query for each set of parameters
-                        .concatMap(queryUpdate.executeOnce(batchCounter));
+                        .concatMap(queryUpdate.executeOnce());
             }
         });
     }
@@ -146,14 +143,14 @@ final public class QueryUpdate<T> implements Query {
      * @param query
      * @return
      */
-    private Func1<List<Parameter>, Observable<T>> executeOnce(final AtomicInteger batchCounter) {
+    private Func1<List<Parameter>, Observable<T>> executeOnce() {
         return new Func1<List<Parameter>, Observable<T>>() {
             @Override
             public Observable<T> call(final List<Parameter> params) {
                 if (jdbcQuery.sql().equals(QueryUpdateOnSubscribe.BEGIN_TRANSACTION)) {
                     context.beginTransactionSubscribe();
                 }
-                Observable<T> result = executeOnce(params, batchCounter)
+                Observable<T> result = executeOnce(params)
                         .subscribeOn(context.scheduler());
                 if (jdbcQuery.sql().equals(QueryUpdateOnSubscribe.COMMIT)
                         || jdbcQuery.sql().equals(QueryUpdateOnSubscribe.ROLLBACK))
@@ -171,9 +168,8 @@ final public class QueryUpdate<T> implements Query {
      * @param parameters
      * @return
      */
-    private Observable<T> executeOnce(final List<Parameter> parameters,
-            AtomicInteger batchCounter) {
-        return QueryUpdateOnSubscribe.execute(this, parameters, batchCounter);
+    private Observable<T> executeOnce(final List<Parameter> parameters) {
+        return QueryUpdateOnSubscribe.execute(this, parameters);
     }
 
     private static final int DEFAULT_BATCH_SIZE = 1;
@@ -396,6 +392,7 @@ final public class QueryUpdate<T> implements Query {
 
         public Builder batchSize(int size) {
             Preconditions.checkArgument(size > 0, "size must be greater than zero");
+            Batch.set(new Batch(batchSize));
             this.batchSize = size;
             return this;
         }

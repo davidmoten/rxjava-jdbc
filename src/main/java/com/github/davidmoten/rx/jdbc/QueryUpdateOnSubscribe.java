@@ -1,10 +1,10 @@
 package com.github.davidmoten.rx.jdbc;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,9 +44,8 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      *            one set of parameters to be run with the query
      * @return
      */
-    static <T> Observable<T> execute(QueryUpdate<T> query, List<Parameter> parameters,
-            AtomicInteger batchCounter) {
-        return Observable.create(new QueryUpdateOnSubscribe<T>(query, parameters, batchCounter));
+    static <T> Observable<T> execute(QueryUpdate<T> query, List<Parameter> parameters) {
+        return Observable.create(new QueryUpdateOnSubscribe<T>(query, parameters));
     }
 
     /**
@@ -61,19 +60,15 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      */
     private final List<Parameter> parameters;
 
-    private final AtomicInteger batchCounter;
-
     /**
      * Constructor.
      * 
      * @param query
      * @param parameters
      */
-    private QueryUpdateOnSubscribe(QueryUpdate<T> query, List<Parameter> parameters,
-            AtomicInteger batchCounter) {
+    private QueryUpdateOnSubscribe(QueryUpdate<T> query, List<Parameter> parameters) {
         this.query = query;
         this.parameters = parameters;
-        this.batchCounter = batchCounter;
     }
 
     @Override
@@ -86,11 +81,11 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
                 getConnection(state);
                 subscriber.add(createUnsubscriptionAction(state));
                 if (isCommit())
-                    performCommit(subscriber, state, batchCounter);
+                    performCommit(subscriber, state);
                 else if (isRollback())
                     performRollback(subscriber, state);
                 else
-                    performUpdate(subscriber, state, batchCounter);
+                    performUpdate(subscriber, state);
             }
         } catch (Throwable e) {
             query.context().endTransactionObserve();
@@ -158,21 +153,10 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      * 
      * @param subscriber
      * @param state
-     * @param batchCounter
      * @throws SQLException
      */
     @SuppressWarnings("unchecked")
-    private void performCommit(Subscriber<? super T> subscriber, State state,
-            AtomicInteger batchCounter) throws SQLException {
-        int counter = batchCounter.get();
-        if (counter > 0) {
-            log.debug("executing batch size=" + counter);
-            int count = sum(state.ps.executeBatch());
-            log.debug("on commit batch executed returning count of ", count);
-            // probably not needed
-            batchCounter.set(0);
-        }
-
+    private void performCommit(Subscriber<? super T> subscriber, State state) throws SQLException {
         query.context().endTransactionObserve();
         if (subscriber.isUnsubscribed())
             return;
@@ -218,24 +202,16 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      * Executes the prepared statement.
      * 
      * @param subscriber
-     * @param batchCounter
      * 
      * @throws SQLException
      */
     @SuppressWarnings("unchecked")
-    private void performUpdate(final Subscriber<? super T> subscriber, State state,
-            AtomicInteger batchCounter) throws SQLException {
+    private void performUpdate(final Subscriber<? super T> subscriber, State state) throws SQLException {
         if (subscriber.isUnsubscribed()) {
             return;
         }
-        int keysOption;
-        if (query.returnGeneratedKeys()) {
-            keysOption = Statement.RETURN_GENERATED_KEYS;
-        } else {
-            keysOption = Statement.NO_GENERATED_KEYS;
-        }
         // TODO for batching we need to reuse prepared statements!
-        state.ps = state.con.prepareStatement(query.sql(), keysOption);
+        state.ps = getPreparedStatement(state);
         Util.setParameters(state.ps, parameters, query.names());
 
         if (subscriber.isUnsubscribed())
@@ -243,19 +219,8 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
 
         final int count;
         try {
-            if (query.batchSize() == 1) {
-                log.debug("executing sql={}, parameters {}", query.sql(), parameters);
-                count = state.ps.executeUpdate();
-            } else if (batchCounter.incrementAndGet() == query.batchSize()) {
-                log.debug("executing batch sql={}, parameters {}", query.sql(), parameters);
-                count = sum(state.ps.executeBatch());
-                // reset batch counter
-                batchCounter.set(0);
-            } else {
-                log.debug("adding batch sql={}, parameters {}", query.sql(), parameters);
-                state.ps.addBatch();
-                count = 0;
-            }
+            log.debug("executing sql={}, parameters {}", query.sql(), parameters);
+            count = state.ps.executeUpdate();
             log.debug("executed ps={}", state.ps);
             if (query.returnGeneratedKeys()) {
                 log.debug("getting generated keys");
@@ -285,7 +250,24 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         }
     }
 
-    private static int sum(int[] values) {
+    public PreparedStatement getPreparedStatement(State state) throws SQLException {
+        int keysOption;
+        if (query.returnGeneratedKeys()) {
+            keysOption = Statement.RETURN_GENERATED_KEYS;
+        } else {
+            keysOption = Statement.NO_GENERATED_KEYS;
+        }
+        if (Batch.get().getPreparedStatement() == null
+                || !Batch.get().getPreparedStatement().getSql().equals(query.sql())
+                || Batch.get().getPreparedStatement().getKeysOption() != keysOption) {
+            Batch.get().setPreparedStatement(
+                    new PreparedStatementBatch(state.con.prepareStatement(query.sql(), keysOption), query.sql(), keysOption));
+
+        }
+        return Batch.get().getPreparedStatement();
+    }
+
+    static int sum(int[] values) {
         int sum = 0;
         for (int n : values) {
             sum += n;
@@ -345,13 +327,22 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
     private void close(State state) {
         // ensure close happens once only to avoid race conditions
         if (state.closed.compareAndSet(false, true)) {
-            if (query.batchSize() == 1)
-                Util.closeQuietly(state.ps);
-            if (isCommit() || isRollback())
+            PreparedStatement ps = state.ps;
+            if (!Batch.get().enabled()) {
+                close(ps);
+            }
+            if (isCommit() || isRollback()) {
+                close(ps);
                 Util.closeQuietly(state.con);
-            else
+            } else {
                 Util.closeQuietlyIfAutoCommit(state.con);
+            }
         }
+    }
+
+    private void close(PreparedStatement ps) {
+        Util.closeQuietly(ps);
+        Batch.get().setPreparedStatement(null);
     }
 
 }
