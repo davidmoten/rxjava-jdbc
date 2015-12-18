@@ -83,7 +83,7 @@ final class ConnectionBatch implements Connection {
 
     @Override
     public void close() throws SQLException {
-        Batch.set(Batch.NO_BATCHING);
+        Batch.set(new Batch(1, 0));
         con.close();
     }
 

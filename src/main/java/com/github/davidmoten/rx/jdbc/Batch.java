@@ -5,7 +5,7 @@ final class Batch {
     private static final ThreadLocal<Batch> batch = new ThreadLocal<Batch>() {
         @Override
         protected Batch initialValue() {
-            return Batch.NO_BATCHING;
+            return new Batch(1, 0);
         }
     };
 
@@ -42,8 +42,6 @@ final class Batch {
     boolean enabled() {
         return size > 1;
     }
-
-    static final Batch NO_BATCHING = new Batch(1, 0);
 
     public Batch reset() {
         added = 0;
