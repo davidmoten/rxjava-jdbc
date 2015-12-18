@@ -255,8 +255,8 @@ public abstract class DatabaseTestBase {
     public void testPushEmptyList() {
         Database db = db();
         Observable<Integer> rowsAffected = Observable
-                // generate two integers
-                .range(1, 2)
+                // generate twenty integers
+                .range(1, 20)
                 // replace the integers with empty lists
                 .map(toEmpty())
                 // execute the update
@@ -265,7 +265,7 @@ public abstract class DatabaseTestBase {
                 .lift(RxUtil.<Integer> flatten())
                 // total the affected records
                 .lift(SUM_INTEGER);
-        assertIs(6, rowsAffected);
+        assertIs(60, rowsAffected);
     }
 
     @Test
