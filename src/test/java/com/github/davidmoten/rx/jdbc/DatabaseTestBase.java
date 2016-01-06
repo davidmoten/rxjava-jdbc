@@ -776,6 +776,16 @@ public abstract class DatabaseTestBase {
     }
 
     @Test
+    public void testStringArray() throws Exception {
+        Database db = db();
+        String[] lines = new String[] {"123 Main St.", "Nowhere, USA"};
+
+        int actual = db.update("INSERT INTO person_lines (name, lines) VALUES (?, ?)")
+                .parameters("fred", lines).count().first().toBlocking().single();
+        assertEquals(1, actual);
+    }
+
+    @Test
     public void testDatabaseBuilder() {
         Database.builder().connectionProvider(connectionProvider())
                 .nonTransactionalSchedulerOnCurrentThread().build();

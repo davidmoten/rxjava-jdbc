@@ -84,6 +84,10 @@ public class DatabaseCreator {
             c.prepareStatement(
                     "create table note(id bigint auto_increment primary key, text varchar(255))")
                     .execute();
+
+            c.prepareStatement(
+                    "create table person_lines (name varchar(50) not null,  lines array)")
+                    .execute();
         } catch (SQLException e) {
             throw new SQLRuntimeException(e);
         }

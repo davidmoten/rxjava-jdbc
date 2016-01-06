@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
@@ -107,7 +108,10 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
             state.ps = state.con.prepareStatement(query.sql(), ResultSet.TYPE_FORWARD_ONLY,
                     ResultSet.CONCUR_READ_ONLY);
             log.debug("setting parameters");
-            Util.setParameters(state.ps, parameters, query.names());
+            List<Subscription> subscriptions = Util.setParameters(state.ps, parameters, query.names());
+            for (Subscription subscription : subscriptions) {
+                subscriber.add(subscription);
+            }
         }
     }
 
