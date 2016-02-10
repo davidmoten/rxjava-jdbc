@@ -186,7 +186,7 @@ You'll see ```toBlocking()``` used in the examples in this page and in
 the unit tests but in your application code you should try to avoid using it. The most benefit 
 from the reactive style is obtained by *not leaving the monad*. That is, stay in Observable land and make 
 the most of it. Chain everything together and leave ```toBlocking``` to 
-an endpoint or better still just subscribe with an ```Observer```.
+an endpoint or better still just subscribe with a ```Subscriber```.
 
 Dependencies
 --------------
