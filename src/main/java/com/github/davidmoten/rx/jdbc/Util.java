@@ -12,6 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -33,10 +34,13 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import rx.Subscription;
+import rx.functions.Action0;
 import rx.functions.Func1;
 
 import com.github.davidmoten.rx.jdbc.QuerySelect.Builder;
 import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
+import rx.subscriptions.Subscriptions;
 
 /**
  * Utility methods.
@@ -751,8 +755,9 @@ public final class Util {
      * @param params
      * @throws SQLException
      */
-    static void setParameters(PreparedStatement ps, List<Parameter> params, boolean namesAllowed)
+    static List<Subscription> setParameters(PreparedStatement ps, List<Parameter> params, boolean namesAllowed)
             throws SQLException {
+        final List<Subscription> subscriptions = new ArrayList<>();
         for (int i = 1; i <= params.size(); i++) {
             if (params.get(i - 1).hasName() && !namesAllowed)
                 throw new SQLException("named parameter found but sql does not contain names");
@@ -787,14 +792,47 @@ public final class Util {
                         Calendar cal = Calendar.getInstance();
                         java.util.Date date = (java.util.Date) o;
                         ps.setTimestamp(i, new java.sql.Timestamp(date.getTime()), cal);
+                    } else if (cls.isArray() && !cls.getComponentType().isPrimitive()) {
+                        Subscription subscription = configureArray(ps, i, (Object[]) o);
+                        if (subscription != null) {
+                            subscriptions.add(subscription);
+                        }
                     } else
                         ps.setObject(i, o);
                 }
             } catch (SQLException e) {
                 log.debug("{} when setting ps.setObject({},{})", e.getMessage(), i, o);
+                for (Subscription subscription : subscriptions) {
+                    subscription.unsubscribe();
+                }
                 throw e;
             }
         }
+
+        return subscriptions;
+    }
+
+    private static Subscription configureArray(PreparedStatement ps, int i, Object[] o) throws SQLException {
+        if (String[].class.isAssignableFrom(o.getClass()) && !getDatabaseProductName(ps).equals("H2")) {
+            final Array array = ps.getConnection().createArrayOf("varchar", o);
+            Subscription subscription = Subscriptions.create(new ArrayFreeAction(array));
+
+            try {
+                ps.setArray(i, array);
+            } catch (SQLException e) {
+                array.free();
+                throw e;
+            }
+
+            return subscription;
+        } else {
+            ps.setObject(i, o);
+            return null;
+        }
+    }
+
+    private static String getDatabaseProductName(PreparedStatement ps) throws SQLException {
+        return ps.getConnection().getMetaData().getDatabaseProductName();
     }
 
     /**
@@ -905,8 +943,8 @@ public final class Util {
         return ResultSetMapperToOne.INSTANCE;
     }
 
-    public static void setNamedParameters(PreparedStatement ps, List<Parameter> parameters,
-            List<String> names) throws SQLException {
+    public static List<Subscription> setNamedParameters(PreparedStatement ps, List<Parameter> parameters,
+                                                        List<String> names) throws SQLException {
         Map<String, Parameter> map = new HashMap<String, Parameter>();
         for (Parameter p : parameters) {
             if (p.hasName()) {
@@ -924,15 +962,32 @@ public final class Util {
             Parameter p = map.get(name);
             list.add(p);
         }
-        Util.setParameters(ps, list, true);
+        return Util.setParameters(ps, list, true);
     }
 
-    static void setParameters(PreparedStatement ps, List<Parameter> parameters, List<String> names)
+    static List<Subscription> setParameters(PreparedStatement ps, List<Parameter> parameters, List<String> names)
             throws SQLException {
         if (names.isEmpty()) {
-            Util.setParameters(ps, parameters, false);
+            return Util.setParameters(ps, parameters, false);
         } else {
-            Util.setNamedParameters(ps, parameters, names);
+            return Util.setNamedParameters(ps, parameters, names);
+        }
+    }
+
+    private static class ArrayFreeAction implements Action0 {
+        private final Array array;
+
+        public ArrayFreeAction(Array array) {
+            this.array = array;
+        }
+
+        @Override
+        public void call() {
+            try {
+                array.free();
+            } catch (Exception e) {
+                // ignore
+            }
         }
     }
 }
