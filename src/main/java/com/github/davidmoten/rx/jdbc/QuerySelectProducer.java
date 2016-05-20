@@ -138,7 +138,7 @@ class QuerySelectProducer<T> implements Producer {
      * @param subscriber
      */
     private void handleException(Throwable e, Subscriber<? super T> subscriber) {
-        log.debug("onError: " + e.getMessage());
+        log.debug("onError: {}", e.getMessage());
         Exceptions.throwOrReport(e, subscriber);
     }
 
