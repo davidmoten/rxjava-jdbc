@@ -9,10 +9,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.davidmoten.rx.RxUtil;
+
 import rx.Producer;
 import rx.Subscriber;
-
-import com.github.davidmoten.rx.RxUtil;
+import rx.exceptions.Exceptions;
 
 class QuerySelectProducer<T> implements Producer {
 
@@ -56,7 +57,7 @@ class QuerySelectProducer<T> implements Producer {
             }
             closeQuietly();
             complete(subscriber);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             closeAndHandleException(e);
         }
     }
@@ -90,7 +91,7 @@ class QuerySelectProducer<T> implements Producer {
         }
     }
 
-    private void closeAndHandleException(Exception e) {
+    private void closeAndHandleException(Throwable e) {
         try {
             closeQuietly();
         } finally {
@@ -136,13 +137,9 @@ class QuerySelectProducer<T> implements Producer {
      * @param e
      * @param subscriber
      */
-    private void handleException(Exception e, Subscriber<? super T> subscriber) {
+    private void handleException(Throwable e, Subscriber<? super T> subscriber) {
         log.debug("onError: " + e.getMessage());
-        if (subscriber.isUnsubscribed())
-            log.debug("unsubscribed");
-        else {
-            subscriber.onError(e);
-        }
+        Exceptions.throwOrReport(e, subscriber);
     }
 
     /**

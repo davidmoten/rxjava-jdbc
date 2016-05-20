@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
+import rx.exceptions.Exceptions;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
@@ -67,7 +68,7 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
             }
             subscriber.setProducer(new QuerySelectProducer<T>(function, subscriber, state.con,
                     state.ps, state.rs));
-        } catch (Exception e) {
+        } catch (Throwable e) {
             query.context().endTransactionObserve();
             query.context().endTransactionSubscribe();
             try {
@@ -138,13 +139,9 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
      * @param e
      * @param subscriber
      */
-    private void handleException(Exception e, Subscriber<? super T> subscriber) {
+    private void handleException(Throwable e, Subscriber<? super T> subscriber) {
         log.debug("onError: " + e.getMessage());
-        if (subscriber.isUnsubscribed())
-            log.debug("unsubscribed");
-        else {
-            subscriber.onError(e);
-        }
+        Exceptions.throwOrReport(e, subscriber);
     }
 
     /**

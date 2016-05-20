@@ -1702,7 +1702,7 @@ public abstract class DatabaseTestBase {
                 .resultSetTransform(transform).build();
         db.select("select name from person").count().subscribe(ts);
         ts.awaitTerminalEvent();
-        assertEquals(1, (int) count.get());
+        assertEquals(1, count.get());
     }
 
     @Test
@@ -1719,7 +1719,7 @@ public abstract class DatabaseTestBase {
         TestSubscriber<Integer> ts = TestSubscriber.create();
         db().select("select name from person").resultSetTransform(transform).count().subscribe(ts);
         ts.awaitTerminalEvent(10, TimeUnit.SECONDS);
-        assertEquals(1, (int) count.get());
+        assertEquals(1, count.get());
     }
 
     @Test

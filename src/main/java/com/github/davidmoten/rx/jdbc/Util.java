@@ -33,10 +33,10 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rx.functions.Func1;
-
 import com.github.davidmoten.rx.jdbc.QuerySelect.Builder;
 import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
+
+import rx.functions.Func1;
 
 /**
  * Utility methods.
@@ -611,7 +611,6 @@ public final class Util {
             if (rs.getObject(i) == null) {
                 return null;
             }
-
             final int type = rs.getMetaData().getColumnType(i);
             // TODO java.util.Calendar support
             // TODO XMLGregorian Calendar support
