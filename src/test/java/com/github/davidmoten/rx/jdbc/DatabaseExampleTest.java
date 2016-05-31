@@ -3,7 +3,6 @@ package com.github.davidmoten.rx.jdbc;
 import static org.junit.Assert.assertEquals;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -95,8 +94,7 @@ public class DatabaseExampleTest {
                 .lift(db.update("update person set name=?||'zz' where name = ?")
                         .parameterListOperator())
                 // flatten
-                .lift(RxUtil.<Integer> flatten())
-                .subscribe(ts);
+                .lift(RxUtil.<Integer> flatten()).subscribe(ts);
         ts.assertError(ex);
     }
 

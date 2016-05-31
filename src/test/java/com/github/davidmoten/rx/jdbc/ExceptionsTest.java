@@ -30,6 +30,7 @@ public class ExceptionsTest {
         Observable.error(new MyException()).subscribe();
     }
 
+    @SuppressWarnings("serial")
     private static class MyException extends RuntimeException {
 
     }
