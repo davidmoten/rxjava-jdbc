@@ -34,11 +34,20 @@ public class Tuple2<T1, T2> {
     }
 
     /**
-     * Returns the first memmber of the tuple.
+     * Returns the first member of the tuple.
      * 
      * @return
      */
     public T1 value1() {
+        return value1;
+    }
+
+    /**
+     * Returns the first member of the tuple.
+     * 
+     * @return
+     */
+    public T1 _1() {
         return value1;
     }
 
@@ -48,6 +57,15 @@ public class Tuple2<T1, T2> {
      * @return
      */
     public T2 value2() {
+        return value2;
+    }
+
+    /**
+     * Returns the 2nd member of the tuple.
+     * 
+     * @return
+     */
+    public T2 _2() {
         return value2;
     }
 

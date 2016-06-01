@@ -38,6 +38,18 @@ public class Tuple3<T1, T2, T3> {
         return value3;
     }
 
+    public T1 _1() {
+        return value1;
+    }
+
+    public T2 _2() {
+        return value2;
+    }
+
+    public T3 _3() {
+        return value3;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
