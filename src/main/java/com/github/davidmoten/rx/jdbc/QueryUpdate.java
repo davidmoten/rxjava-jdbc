@@ -20,6 +20,7 @@ import com.github.davidmoten.util.Preconditions;
 
 import rx.Observable;
 import rx.Observable.Operator;
+import rx.functions.Action0;
 import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.functions.Func2;
@@ -41,21 +42,22 @@ final public class QueryUpdate<T> implements Query {
     // nullable!
     private final ResultSetMapper<? extends T> returnGeneratedKeysFunction;
     private final int batchSize;
+    private final Action0 afterBatchCommit;
 
     /**
      * Private constructor.
-     * 
-     * @param sql
+     *  @param sql
      * @param parameters
      * @param depends
      * @param context
      * @param returnGeneratedKeysFunction
-     *            nullable!
+*            nullable!
      * @param batchSize
+     * @param afterBatchCommit
      */
     private QueryUpdate(String sql, Observable<Parameter> parameters, Observable<?> depends,
-            QueryContext context, ResultSetMapper<? extends T> returnGeneratedKeysFunction,
-            int batchSize) {
+                        QueryContext context, ResultSetMapper<? extends T> returnGeneratedKeysFunction,
+                        int batchSize, Action0 afterBatchCommit) {
         checkNotNull(sql);
         checkNotNull(parameters);
         checkNotNull(depends);
@@ -67,10 +69,15 @@ final public class QueryUpdate<T> implements Query {
         this.depends = depends;
         this.context = context;
         this.returnGeneratedKeysFunction = returnGeneratedKeysFunction;
+        this.afterBatchCommit = afterBatchCommit;
     }
 
     public int batchSize() {
         return batchSize;
+    }
+
+    public Action0 afterBatchCommit() {
+        return afterBatchCommit;
     }
 
     @Override
@@ -169,7 +176,7 @@ final public class QueryUpdate<T> implements Query {
      * @return
      */
     private Observable<T> executeOnce(final List<Parameter> parameters) {
-        return QueryUpdateOnSubscribe.execute(this, parameters);
+        return QueryUpdateOnSubscribe.execute(this, parameters, afterBatchCommit);
     }
 
     private static final int DEFAULT_BATCH_SIZE = 1;
@@ -184,6 +191,7 @@ final public class QueryUpdate<T> implements Query {
          */
         private final QueryBuilder builder;
         private int batchSize = DEFAULT_BATCH_SIZE;
+        private Action0 afterBatchCommit;
 
         /**
          * Constructor.
@@ -327,7 +335,7 @@ final public class QueryUpdate<T> implements Query {
          */
         public Observable<Integer> count() {
             return new QueryUpdate<Integer>(builder.sql(), builder.parameters(), builder.depends(),
-                    builder.context(), null, batchSize).count();
+                    builder.context(), null, batchSize, afterBatchCommit).count();
         }
 
         /**
@@ -396,6 +404,11 @@ final public class QueryUpdate<T> implements Query {
             this.batchSize = size;
             return this;
         }
+
+        Builder afterBatchCommit(Action0 afterBatchCommit) {
+            this.afterBatchCommit = afterBatchCommit;
+            return this;
+        }
     }
 
     public static class ReturnGeneratedKeysBuilder {
@@ -414,7 +427,7 @@ final public class QueryUpdate<T> implements Query {
          */
         public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
             return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(),
-                    builder.depends(), builder.context(), function, DEFAULT_BATCH_SIZE));
+                    builder.depends(), builder.context(), function, DEFAULT_BATCH_SIZE, null));
         }
 
         /**

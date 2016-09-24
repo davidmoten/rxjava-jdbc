@@ -42,10 +42,11 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      * 
      * @param params
      *            one set of parameters to be run with the query
+     * @param afterBatchCommit
      * @return
      */
-    static <T> Observable<T> execute(QueryUpdate<T> query, List<Parameter> parameters) {
-        return Observable.create(new QueryUpdateOnSubscribe<T>(query, parameters));
+    static <T> Observable<T> execute(QueryUpdate<T> query, List<Parameter> parameters, Action0 afterBatchCommit) {
+        return Observable.create(new QueryUpdateOnSubscribe<T>(query, parameters, afterBatchCommit));
     }
 
     /**
@@ -60,15 +61,18 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      */
     private final List<Parameter> parameters;
 
+    private final Action0 afterBatchCommit;
+
     /**
      * Constructor.
-     * 
-     * @param query
+     *  @param query
+     * @param afterBatchCommit
      * @param parameters
      */
-    private QueryUpdateOnSubscribe(QueryUpdate<T> query, List<Parameter> parameters) {
+    private QueryUpdateOnSubscribe(QueryUpdate<T> query, List<Parameter> parameters, Action0 afterBatchCommit) {
         this.query = query;
         this.parameters = parameters;
+        this.afterBatchCommit = afterBatchCommit;
     }
 
     @Override
