@@ -642,7 +642,7 @@ final public class Database {
      */
     void beginTransactionObserve() {
         log.debug("beginTransactionObserve");
-        currentConnectionProvider.set(new ConnectionProviderSingletonManualCommit(cp));
+        currentConnectionProvider.set(new ConnectionProviderSingletonManualCommitStatementCaching(cp));
         if (isTransactionOpen.get() != null && isTransactionOpen.get())
             throw new TransactionAlreadyOpenException();
         isTransactionOpen.set(true);

@@ -2,14 +2,10 @@ package com.github.davidmoten.rx.jdbc;
 
 import static com.github.davidmoten.rx.jdbc.Conditions.checkNotNull;
 import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
+import static com.github.davidmoten.util.Preconditions.checkArgument;
 
 import java.sql.ResultSet;
 import java.util.List;
-
-import rx.Observable;
-import rx.Observable.Operator;
-import rx.functions.Func1;
-import rx.functions.Func2;
 
 import com.github.davidmoten.rx.jdbc.NamedParameters.JdbcQuery;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple2;
@@ -20,6 +16,14 @@ import com.github.davidmoten.rx.jdbc.tuple.Tuple6;
 import com.github.davidmoten.rx.jdbc.tuple.Tuple7;
 import com.github.davidmoten.rx.jdbc.tuple.TupleN;
 import com.github.davidmoten.rx.jdbc.tuple.Tuples;
+import com.github.davidmoten.util.Preconditions;
+
+import rx.Observable;
+import rx.Observable.Operator;
+import rx.functions.Action0;
+import rx.functions.Func0;
+import rx.functions.Func1;
+import rx.functions.Func2;
 
 /**
  * Always emits an Observable<Integer> of size 1 containing the number of
@@ -37,28 +41,43 @@ final public class QueryUpdate<T> implements Query {
     private final Observable<?> depends;
     // nullable!
     private final ResultSetMapper<? extends T> returnGeneratedKeysFunction;
+    private final int batchSize;
+    private final Action0 afterBatchCommit;
 
     /**
      * Private constructor.
-     * 
-     * @param sql
+     *  @param sql
      * @param parameters
      * @param depends
      * @param context
      * @param returnGeneratedKeysFunction
-     *            nullable!
+*            nullable!
+     * @param batchSize
+     * @param afterBatchCommit
      */
     private QueryUpdate(String sql, Observable<Parameter> parameters, Observable<?> depends,
-            QueryContext context, ResultSetMapper<? extends T> returnGeneratedKeysFunction) {
+                        QueryContext context, ResultSetMapper<? extends T> returnGeneratedKeysFunction,
+                        int batchSize, Action0 afterBatchCommit) {
         checkNotNull(sql);
         checkNotNull(parameters);
         checkNotNull(depends);
         checkNotNull(context);
+        checkArgument(batchSize > 0, "batchSize must be greater than 0");
+        this.batchSize = batchSize;
         this.jdbcQuery = NamedParameters.parse(sql);
         this.parameters = parameters;
         this.depends = depends;
         this.context = context;
         this.returnGeneratedKeysFunction = returnGeneratedKeysFunction;
+        this.afterBatchCommit = afterBatchCommit;
+    }
+
+    public int batchSize() {
+        return batchSize;
+    }
+
+    public Action0 afterBatchCommit() {
+        return afterBatchCommit;
     }
 
     @Override
@@ -112,10 +131,16 @@ final public class QueryUpdate<T> implements Query {
         return returnGeneratedKeysFunction != null;
     }
 
-    static <T> Observable<T> get(QueryUpdate<T> queryUpdate) {
-        return bufferedParameters(queryUpdate)
-        // execute query for each set of parameters
-                .concatMap(queryUpdate.executeOnce());
+    static <T> Observable<T> get(final QueryUpdate<T> queryUpdate) {
+        return Observable.defer(new Func0<Observable<T>>() {
+
+            @Override
+            public Observable<T> call() {
+                return bufferedParameters(queryUpdate)
+                        // execute query for each set of parameters
+                        .concatMap(queryUpdate.executeOnce());
+            }
+        });
     }
 
     /**
@@ -132,7 +157,8 @@ final public class QueryUpdate<T> implements Query {
                 if (jdbcQuery.sql().equals(QueryUpdateOnSubscribe.BEGIN_TRANSACTION)) {
                     context.beginTransactionSubscribe();
                 }
-                Observable<T> result = executeOnce(params).subscribeOn(context.scheduler());
+                Observable<T> result = executeOnce(params)
+                        .subscribeOn(context.scheduler());
                 if (jdbcQuery.sql().equals(QueryUpdateOnSubscribe.COMMIT)
                         || jdbcQuery.sql().equals(QueryUpdateOnSubscribe.ROLLBACK))
                     context.endTransactionSubscribe();
@@ -150,8 +176,10 @@ final public class QueryUpdate<T> implements Query {
      * @return
      */
     private Observable<T> executeOnce(final List<Parameter> parameters) {
-        return QueryUpdateOnSubscribe.execute(this, parameters);
+        return QueryUpdateOnSubscribe.execute(this, parameters, afterBatchCommit);
     }
+
+    private static final int DEFAULT_BATCH_SIZE = 1;
 
     /**
      * Builds a {@link QueryUpdate}.
@@ -162,6 +190,8 @@ final public class QueryUpdate<T> implements Query {
          * Standard query builder.
          */
         private final QueryBuilder builder;
+        private int batchSize = DEFAULT_BATCH_SIZE;
+        private Action0 afterBatchCommit;
 
         /**
          * Constructor.
@@ -292,6 +322,8 @@ final public class QueryUpdate<T> implements Query {
          *         ResultSet
          */
         public ReturnGeneratedKeysBuilder returnGeneratedKeys() {
+            Preconditions.checkArgument(batchSize == 1,
+                    "batching for returning generated keys is not supported (batchSize must be 1)");
             return new ReturnGeneratedKeysBuilder(builder);
         }
 
@@ -303,7 +335,7 @@ final public class QueryUpdate<T> implements Query {
          */
         public Observable<Integer> count() {
             return new QueryUpdate<Integer>(builder.sql(), builder.parameters(), builder.depends(),
-                    builder.context(), null).count();
+                    builder.context(), null, batchSize, afterBatchCommit).count();
         }
 
         /**
@@ -365,6 +397,18 @@ final public class QueryUpdate<T> implements Query {
             builder.clearParameters();
             return this;
         }
+
+        public Builder batchSize(int size) {
+            Preconditions.checkArgument(size > 0, "size must be greater than zero");
+            Batch.set(new Batch(batchSize));
+            this.batchSize = size;
+            return this;
+        }
+
+        Builder afterBatchCommit(Action0 afterBatchCommit) {
+            this.afterBatchCommit = afterBatchCommit;
+            return this;
+        }
     }
 
     public static class ReturnGeneratedKeysBuilder {
@@ -382,8 +426,8 @@ final public class QueryUpdate<T> implements Query {
          * @return
          */
         public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
-            return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(), builder
-                    .depends(), builder.context(), function));
+            return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(),
+                    builder.depends(), builder.context(), function, DEFAULT_BATCH_SIZE, null));
         }
 
         /**
