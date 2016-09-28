@@ -2,6 +2,7 @@ package com.github.davidmoten.rx.jdbc;
 
 import static com.github.davidmoten.rx.jdbc.Conditions.checkNotNull;
 import static com.github.davidmoten.rx.jdbc.Queries.bufferedParameters;
+import static com.github.davidmoten.rx.jdbc.QueryUpdateOnSubscribe.sum;
 import static com.github.davidmoten.util.Preconditions.checkArgument;
 
 import java.sql.ResultSet;
@@ -20,6 +21,8 @@ import com.github.davidmoten.util.Preconditions;
 
 import rx.Observable;
 import rx.Observable.Operator;
+import rx.Subscriber;
+import rx.functions.Action1;
 import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.functions.Func2;
@@ -27,7 +30,7 @@ import rx.functions.Func2;
 /**
  * Always emits an Observable<Integer> of size 1 containing the number of
  * affected records.
- * 
+ *
  * @param <T>
  *            type of returned observable (Integer for count, custom for
  *            returning generated keys)
@@ -41,10 +44,11 @@ final public class QueryUpdate<T> implements Query {
     // nullable!
     private final ResultSetMapper<? extends T> returnGeneratedKeysFunction;
     private final int batchSize;
+    private final Action1<int[]> doOnBatchCommit;
 
     /**
      * Private constructor.
-     * 
+     *
      * @param sql
      * @param parameters
      * @param depends
@@ -55,7 +59,7 @@ final public class QueryUpdate<T> implements Query {
      */
     private QueryUpdate(String sql, Observable<Parameter> parameters, Observable<?> depends,
             QueryContext context, ResultSetMapper<? extends T> returnGeneratedKeysFunction,
-            int batchSize) {
+            int batchSize, Action1<int[]> doOnBatchCommit) {
         checkNotNull(sql);
         checkNotNull(parameters);
         checkNotNull(depends);
@@ -67,6 +71,7 @@ final public class QueryUpdate<T> implements Query {
         this.depends = depends;
         this.context = context;
         this.returnGeneratedKeysFunction = returnGeneratedKeysFunction;
+        this.doOnBatchCommit = doOnBatchCommit;
     }
 
     public int batchSize() {
@@ -107,7 +112,7 @@ final public class QueryUpdate<T> implements Query {
      * Returns the results of an update query. Should be an {@link Observable}
      * of size 1 containing the number of records affected by the update (or
      * insert) statement.
-     * 
+     *
      * @param query
      * @return
      */
@@ -125,13 +130,36 @@ final public class QueryUpdate<T> implements Query {
     }
 
     static <T> Observable<T> get(final QueryUpdate<T> queryUpdate) {
+
+
         return Observable.defer(new Func0<Observable<T>>() {
 
             @Override
             public Observable<T> call() {
+
+                final State state = new State();
+
                 return bufferedParameters(queryUpdate)
                         // execute query for each set of parameters
-                        .concatMap(queryUpdate.executeOnce());
+                        .concatMap(queryUpdate.executeOnce(state)).concatWith(Observable.create(new Observable.OnSubscribe<T>() {
+                            @Override
+                            public void call(Subscriber<? super T> subscriber) {
+                                final Batch batch = Batch.get();
+                                if (batch.enabled() && batch.added > 0 && !subscriber.isUnsubscribed()) {
+                                    try {
+                                        int[] affectedRowCounts = state.ps.executeBatch();
+                                        if (queryUpdate.doOnBatchCommit != null) {
+                                            queryUpdate.doOnBatchCommit.call(affectedRowCounts);
+                                        }
+                                        int count = sum(state.ps.executeBatch());
+                                        subscriber.onNext((T) (Integer) count);
+                                    } catch (Exception e) {
+                                        subscriber.onError(e);
+                                    }
+                                }
+                                subscriber.onCompleted();
+                            }
+                        }));
             }
         });
     }
@@ -139,18 +167,18 @@ final public class QueryUpdate<T> implements Query {
     /**
      * Returns a {@link Func1} that itself returns the results of pushing
      * parameters through an update query.
-     * 
+     *
      * @param query
      * @return
      */
-    private Func1<List<Parameter>, Observable<T>> executeOnce() {
+    private Func1<List<Parameter>, Observable<T>> executeOnce(final State state) {
         return new Func1<List<Parameter>, Observable<T>>() {
             @Override
             public Observable<T> call(final List<Parameter> params) {
                 if (jdbcQuery.sql().equals(QueryUpdateOnSubscribe.BEGIN_TRANSACTION)) {
                     context.beginTransactionSubscribe();
                 }
-                Observable<T> result = executeOnce(params)
+                Observable<T> result = executeOnce(params, state, doOnBatchCommit)
                         .subscribeOn(context.scheduler());
                 if (jdbcQuery.sql().equals(QueryUpdateOnSubscribe.COMMIT)
                         || jdbcQuery.sql().equals(QueryUpdateOnSubscribe.ROLLBACK))
@@ -163,13 +191,13 @@ final public class QueryUpdate<T> implements Query {
     /**
      * Returns the results of an update query. Should return an
      * {@link Observable} of size one containing the rows affected count.
-     * 
+     *
      * @param query
      * @param parameters
      * @return
      */
-    private Observable<T> executeOnce(final List<Parameter> parameters) {
-        return QueryUpdateOnSubscribe.execute(this, parameters);
+    private Observable<T> executeOnce(final List<Parameter> parameters, State state, Action1<int[]> doOnBatchCommit) {
+        return QueryUpdateOnSubscribe.execute(this, state, parameters, doOnBatchCommit);
     }
 
     private static final int DEFAULT_BATCH_SIZE = 1;
@@ -184,10 +212,11 @@ final public class QueryUpdate<T> implements Query {
          */
         private final QueryBuilder builder;
         private int batchSize = DEFAULT_BATCH_SIZE;
+        private Action1<int[]> doOnBatchCommit;
 
         /**
          * Constructor.
-         * 
+         *
          * @param sql
          * @param db
          */
@@ -199,7 +228,7 @@ final public class QueryUpdate<T> implements Query {
          * Appends the given parameters to the parameter list for the query. If
          * there are more parameters than required for one execution of the
          * query then more than one execution of the query will occur.
-         * 
+         *
          * @param parameters
          * @return this
          */
@@ -212,7 +241,7 @@ final public class QueryUpdate<T> implements Query {
          * Appends the given parameter values to the parameter list for the
          * query. If there are more parameters than required for one execution
          * of the query then more than one execution of the query will occur.
-         * 
+         *
          * @param objects
          * @return this
          */
@@ -225,7 +254,7 @@ final public class QueryUpdate<T> implements Query {
          * Appends a parameter to the parameter list for the query. If there are
          * more parameters than required for one execution of the query then
          * more than one execution of the query will occur.
-         * 
+         *
          * @param value
          * @return this
          */
@@ -238,7 +267,7 @@ final public class QueryUpdate<T> implements Query {
          * Sets a named parameter. If name is null throws a
          * {@link NullPointerException}. If value is instance of Observable then
          * throws an {@link IllegalArgumentException}.
-         * 
+         *
          * @param name
          *            the parameter name. Cannot be null.
          * @param value
@@ -254,7 +283,7 @@ final public class QueryUpdate<T> implements Query {
          * parameter and handles null appropriately. If there are more
          * parameters than required for one execution of the query then more
          * than one execution of the query will occur.
-         * 
+         *
          * @param value
          *            the string to insert in the CLOB column
          * @return this
@@ -269,7 +298,7 @@ final public class QueryUpdate<T> implements Query {
          * parameter and handles null appropriately. If there are more
          * parameters than required for one execution of the query then more
          * than one execution of the query will occur.
-         * 
+         *
          * @param value
          * @return this
          */
@@ -281,7 +310,7 @@ final public class QueryUpdate<T> implements Query {
         /**
          * Appends a dependency to the dependencies that have to complete their
          * emitting before the query is executed.
-         * 
+         *
          * @param dependency
          * @return this
          */
@@ -295,7 +324,7 @@ final public class QueryUpdate<T> implements Query {
          * <code>true</code> for commit or <code>false</code> for rollback) to
          * the dependencies that have to complete their emitting before the
          * query is executed.
-         * 
+         *
          * @return this
          */
         public Builder dependsOnLastTransaction() {
@@ -309,7 +338,7 @@ final public class QueryUpdate<T> implements Query {
          * and some have limitations in their support (h2 for instance only
          * returns the last generated key when multiple inserts happen in the
          * one statement).
-         * 
+         *
          * @return a builder used to specify how to process the generated keys
          *         ResultSet
          */
@@ -322,23 +351,25 @@ final public class QueryUpdate<T> implements Query {
         /**
          * Returns an {@link Observable} with the count of rows affected by the
          * update statement.
-         * 
+         *
          * @return Observable of counts of rows affected.
          */
         public Observable<Integer> count() {
             return new QueryUpdate<Integer>(builder.sql(), builder.parameters(), builder.depends(),
-                    builder.context(), null, batchSize).count();
+                    builder.context(), null, batchSize,doOnBatchCommit).count();
         }
 
         /**
          * Executes the update query immediately, blocking till completion and
          * returns total of counts of records affected.
-         * 
+         *
          * @return total of counts of records affected by update queries
          */
         public int execute() {
             return count().reduce(0, TotalHolder.TOTAL).toBlocking().single();
         }
+
+
 
         private static final class TotalHolder {
             static final Func2<Integer, Integer, Integer> TOTAL = new Func2<Integer, Integer, Integer>() {
@@ -353,7 +384,7 @@ final public class QueryUpdate<T> implements Query {
         /**
          * Returns an {@link Operator} to allow the query to be pushed
          * parameters via the {@link Observable#lift(Operator)} method.
-         * 
+         *
          * @return operator that acts on parameters
          */
         public Operator<Integer, Object> parameterOperator() {
@@ -363,7 +394,7 @@ final public class QueryUpdate<T> implements Query {
         /**
          * Returns an {@link Operator} to allow the query to be pushed
          * dependencies via the {@link Observable#lift(Operator)} method.
-         * 
+         *
          * @return operator that acts on dependencies
          */
         public Operator<Integer, Object> dependsOnOperator() {
@@ -373,7 +404,7 @@ final public class QueryUpdate<T> implements Query {
         /**
          * Returns an {@link Operator} to allow the query to be run once per
          * parameter list in the source.
-         * 
+         *
          * @return operator
          */
         public Operator<Observable<Integer>, Observable<Object>> parameterListOperator() {
@@ -382,7 +413,7 @@ final public class QueryUpdate<T> implements Query {
 
         /**
          * Clears the parameter inputs for the query.
-         * 
+         *
          * @return the current builder
          */
         public Builder clearParameters() {
@@ -392,8 +423,13 @@ final public class QueryUpdate<T> implements Query {
 
         public Builder batchSize(int size) {
             Preconditions.checkArgument(size > 0, "size must be greater than zero");
-            Batch.set(new Batch(batchSize));
+            Batch.set(new Batch(size));
             this.batchSize = size;
+            return this;
+        }
+
+        public Builder doOnBatchCommit(Action1<int[]> doOnBatchCommit) {
+            this.doOnBatchCommit = doOnBatchCommit;
             return this;
         }
     }
@@ -414,7 +450,7 @@ final public class QueryUpdate<T> implements Query {
          */
         public <T> Observable<T> get(ResultSetMapper<? extends T> function) {
             return QueryUpdate.get(new QueryUpdate<T>(builder.sql(), builder.parameters(),
-                    builder.depends(), builder.context(), function, DEFAULT_BATCH_SIZE));
+                    builder.depends(), builder.context(), function, DEFAULT_BATCH_SIZE,null));
         }
 
         /**

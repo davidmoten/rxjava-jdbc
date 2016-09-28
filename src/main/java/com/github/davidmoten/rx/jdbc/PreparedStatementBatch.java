@@ -30,6 +30,8 @@ class PreparedStatementBatch implements PreparedStatement {
     private int keysOption;
 
     PreparedStatementBatch(PreparedStatement ps, String sql, int keysOption) {
+        if (ps instanceof PreparedStatementBatch) throw new RuntimeException("PreparedStatementBatch cannot delegate to a PreparedStatementBatch");
+
         this.ps = ps;
         this.sql = sql;
         this.keysOption = keysOption;

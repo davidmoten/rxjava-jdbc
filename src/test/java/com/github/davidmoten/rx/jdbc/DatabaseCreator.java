@@ -24,6 +24,11 @@ public class DatabaseCreator {
     public static Database db() {
         ConnectionProvider cp = connectionProvider();
         Connection con = cp.get();
+        try {
+            con.setAutoCommit(false);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         createDatabase(con);
         try {
             con.close();

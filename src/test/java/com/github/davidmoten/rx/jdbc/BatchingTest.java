@@ -6,12 +6,16 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import rx.Observable;
+import rx.functions.Action1;
+
+import java.util.Arrays;
 
 public class BatchingTest {
 
     @Test
     public void test() {
-        Database db = DatabaseCreator.db();
+        final Database db = DatabaseCreator.db();
+
         int numPeopleBefore = db.select("select count(*) from person").getAs(Integer.class)
                 .toBlocking().single();
         Observable<String> names = Observable.just("NANCY", "WARREN", "ALFRED", "BARRY", "ROBERTO");
@@ -20,6 +24,13 @@ public class BatchingTest {
                 .dependsOn(db.beginTransaction())
                 // set batch size
                 .batchSize(3)
+                .doOnBatchCommit(new Action1<int[]>() {
+                    @Override
+                    public void call(int[] integers) {
+                        System.out.println(db.select("select count(*) from person").getAs(Integer.class)
+                                .toBlocking().single());
+                    }
+                })
                 // get parameters from last query
                 .parameters(names)
                 // go

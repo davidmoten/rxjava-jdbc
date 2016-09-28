@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ import rx.Subscriber;
 import rx.Subscription;
 import rx.exceptions.Exceptions;
 import rx.functions.Action0;
+import rx.functions.Action1;
 import rx.subscriptions.Subscriptions;
 
 /**
@@ -39,19 +41,23 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
     /**
      * Returns an Observable of the results of pushing one set of parameters
      * through a select query.
-     * 
+     *
      * @param params
      *            one set of parameters to be run with the query
+     * @param state
+     * @param doOnBatchCommit
      * @return
      */
-    static <T> Observable<T> execute(QueryUpdate<T> query, List<Parameter> parameters) {
-        return Observable.create(new QueryUpdateOnSubscribe<T>(query, parameters));
+    static <T> Observable<T> execute(QueryUpdate<T> query, final State state, List<Parameter> parameters, final Action1<int[]> doOnBatchCommit) {
+        return Observable.create(new QueryUpdateOnSubscribe<T>(query, state, parameters, doOnBatchCommit));
     }
 
     /**
      * The query to be executed.
      */
     private final QueryUpdate<T> query;
+
+    private final State state;
 
     /**
      * The parameters to run the query against (may be a subset of the query
@@ -60,20 +66,25 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      */
     private final List<Parameter> parameters;
 
+    private final Action1<int[]> doOnBatchCommit;
+
     /**
      * Constructor.
-     * 
      * @param query
+     * @param state
      * @param parameters
+     * @param doOnBatchCommit
      */
-    private QueryUpdateOnSubscribe(QueryUpdate<T> query, List<Parameter> parameters) {
+    private QueryUpdateOnSubscribe(QueryUpdate<T> query, State state, List<Parameter> parameters, Action1<int[]> doOnBatchCommit) {
         this.query = query;
+        this.state = state;
         this.parameters = parameters;
+        this.doOnBatchCommit = doOnBatchCommit;
     }
 
     @Override
     public void call(Subscriber<? super T> subscriber) {
-        final State state = new State();
+
         try {
             if (isBeginTransaction())
                 performBeginTransaction(subscriber);
@@ -131,7 +142,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
 
     /**
      * Returns true if and only if the sql statement is a commit command.
-     * 
+     *
      * @return if is commit
      */
     private boolean isCommit() {
@@ -140,7 +151,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
 
     /**
      * Returns true if and only if the sql statement is a rollback command.
-     * 
+     *
      * @return if is rollback
      */
     private boolean isRollback() {
@@ -150,7 +161,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
     /**
      * Commits the current transaction. Throws {@link RuntimeException} if
      * connection is in autoCommit mode.
-     * 
+     *
      * @param subscriber
      * @param state
      * @throws SQLException
@@ -180,7 +191,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
     /**
      * Rolls back the current transaction. Throws {@link RuntimeException} if
      * connection is in autoCommit mode.
-     * 
+     *
      * @param subscriber
      * @param state
      */
@@ -200,9 +211,9 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
 
     /**
      * Executes the prepared statement.
-     * 
+     *
      * @param subscriber
-     * 
+     *
      * @throws SQLException
      */
     @SuppressWarnings("unchecked")
@@ -210,17 +221,24 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         if (subscriber.isUnsubscribed()) {
             return;
         }
-        // TODO for batching we need to reuse prepared statements!
+
         state.ps = getPreparedStatement(state);
         Util.setParameters(state.ps, parameters, query.names());
 
         if (subscriber.isUnsubscribed())
             return;
 
-        final int count;
+        final Batch batch = Batch.get();
+
+        int count = -1;
         try {
             log.debug("executing sql={}, parameters {}", query.sql(), parameters);
-            count = state.ps.executeUpdate();
+
+            if (batch.size == 1) {
+                count = state.ps.executeUpdate();
+            } else {
+                state.ps.addBatch();
+            }
             log.debug("executed ps={}", state.ps);
             if (query.returnGeneratedKeys()) {
                 log.debug("getting generated keys");
@@ -238,14 +256,25 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         } catch (SQLException e) {
             throw new SQLException("failed to execute sql=" + query.sql(), e);
         }
+        if (batch.size > 1 && batch.complete()) {
+            int[] affectedRowCounts = state.ps.executeBatch();
+            if (doOnBatchCommit != null) {
+                doOnBatchCommit.call(affectedRowCounts);
+            }
+            count = sum(affectedRowCounts);
+        }
+
         if (!query.returnGeneratedKeys()) {
             // must close before onNext so that connection is released and is
             // available to a query that might process the onNext
             close(state);
             if (subscriber.isUnsubscribed())
                 return;
-            log.debug("onNext");
-            subscriber.onNext((T) (Integer) count);
+
+            if (count != -1) {
+                log.debug("onNext");
+                subscriber.onNext((T) (Integer) count);
+            }
             complete(subscriber);
         }
     }
@@ -260,9 +289,9 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         if (Batch.get().getPreparedStatement() == null
                 || !Batch.get().getPreparedStatement().getSql().equals(query.sql())
                 || Batch.get().getPreparedStatement().getKeysOption() != keysOption) {
-            Batch.get().setPreparedStatement(
-                    new PreparedStatementBatch(state.con.prepareStatement(query.sql(), keysOption), query.sql(), keysOption));
-
+            /*Batch.get().setPreparedStatement(
+                    new PreparedStatementBatch(state.con.prepareStatement(query.sql(), keysOption), query.sql(), keysOption));*/
+            state.con.prepareStatement(query.sql(), keysOption);
         }
         return Batch.get().getPreparedStatement();
     }
