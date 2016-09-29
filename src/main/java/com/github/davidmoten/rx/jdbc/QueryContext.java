@@ -11,54 +11,66 @@ import rx.functions.Func1;
  */
 final class QueryContext {
 
-    private final Database db;
+	private final Database db;
+	private final int batchSize;
 
-    /**
-     * Constructor.
-     * 
-     * @param executor
-     * @param connectionProvider
-     */
-    QueryContext(Database db) {
-        this.db = db;
-    }
+	QueryContext(Database db) {
+		this(db, 1);
+	}
 
-    /**
-     * Returns the scheduler service to use to run queries with this context.
-     * 
-     * @return
-     */
-    Scheduler scheduler() {
-        return db.currentScheduler();
-    }
+	public QueryContext(Database db, int batchSize) {
+		this.db = db;
+		this.batchSize = batchSize;
+	}
 
-    /**
-     * Returns the connection provider for queries with this context.
-     * 
-     * @return
-     */
-    ConnectionProvider connectionProvider() {
-        return db.connectionProvider();
-    }
+	/**
+	 * Returns the scheduler service to use to run queries with this context.
+	 * 
+	 * @return
+	 */
+	Scheduler scheduler() {
+		return db.currentScheduler();
+	}
 
-    void beginTransactionObserve() {
-        db.beginTransactionObserve();
+	/**
+	 * Returns the connection provider for queries with this context.
+	 * 
+	 * @return
+	 */
+	ConnectionProvider connectionProvider() {
+		return db.connectionProvider();
+	}
 
-    }
+	void beginTransactionObserve() {
+		db.beginTransactionObserve();
+	}
 
-    void beginTransactionSubscribe() {
-        db.beginTransactionSubscribe();
-    }
+	void beginTransactionSubscribe() {
+		db.beginTransactionSubscribe();
+	}
 
-    void endTransactionSubscribe() {
-        db.endTransactionSubscribe();
-    }
+	void endTransactionSubscribe() {
+		db.endTransactionSubscribe();
+	}
 
-    void endTransactionObserve() {
-        db.endTransactionObserve();
-    }
+	void endTransactionObserve() {
+		db.endTransactionObserve();
+	}
+	
+	void setupBatching() {
+		db.batching(batchSize);
+	}
 
-    Func1<ResultSet, ? extends ResultSet> resultSetTransform() {
-        return db.getResultSetTransform();
-    }
+	Func1<ResultSet, ? extends ResultSet> resultSetTransform() {
+		return db.getResultSetTransform();
+	}
+
+	QueryContext batched(int batchSize) {
+		return new QueryContext(db, batchSize);
+	}
+	
+	int batchSize() {
+		return batchSize;
+	}
+
 }
