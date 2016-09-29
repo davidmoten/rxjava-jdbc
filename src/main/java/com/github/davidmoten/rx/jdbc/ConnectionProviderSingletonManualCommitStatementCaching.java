@@ -40,14 +40,14 @@ final class ConnectionProviderSingletonManualCommitStatementCaching implements C
     @Override
     public Connection get() {
         if (connectionSet.compareAndSet(false, true)) {
-            con = cp.get();
+            con = new ConnectionBatch(cp.get());
             try {
                 con.setAutoCommit(false);
             } catch (SQLException e) {
                 throw new SQLRuntimeException(e);
             }
         }
-        return new ConnectionBatch(con);
+        return con;
     }
 
     @Override

@@ -183,7 +183,7 @@ final public class QueryUpdate<T> implements Query {
          * Standard query builder.
          */
         private final QueryBuilder builder;
-        private int batchSize = DEFAULT_BATCH_SIZE;
+        int batchSize = DEFAULT_BATCH_SIZE;
 
         /**
          * Constructor.
@@ -392,7 +392,6 @@ final public class QueryUpdate<T> implements Query {
 
         public Builder batchSize(int size) {
             Preconditions.checkArgument(size > 0, "size must be greater than zero");
-            Batch.set(new Batch(batchSize));
             this.batchSize = size;
             return this;
         }

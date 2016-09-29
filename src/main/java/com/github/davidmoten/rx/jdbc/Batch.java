@@ -1,64 +1,84 @@
 package com.github.davidmoten.rx.jdbc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 final class Batch {
 
-    private static final ThreadLocal<Batch> batch = new ThreadLocal<Batch>() {
-        @Override
-        protected Batch initialValue() {
-            return new Batch(1, 0);
-        }
-    };
+	private static final Logger log = LoggerFactory.getLogger(Batch.class);
+	
+	private static final ThreadLocal<Batch> batch = new ThreadLocal<Batch>() {
+		@Override
+		protected Batch initialValue() {
+			return DEFAULT;
+		}
+	};
 
-    public static Batch get() {
-        return batch.get();
-    }
+	private static final Batch DEFAULT = new Batch(1, 0);
 
-    public static void set(Batch b) {
-        batch.set(b);
-    }
+	public static boolean isDefault() {
+		return batch.get() == DEFAULT;
+	}
 
-    final int size;
-    int added;
-    private PreparedStatementBatch ps;
+	public static Batch get() {
+		return batch.get();
+	}
 
-    Batch(int size, int added) {
-        this.size = size;
-        this.added = added;
-    }
+	public static void set(Batch b) {
+		batch.set(b);
+	}
 
-    Batch(int size) {
-        this(size, 0);
-    }
+	final int size;
+	int added;
+	private PreparedStatementBatch ps;
 
-    Batch addOne() {
-        added++;
-        return this;
-    }
+	Batch(int size, int added) {
+		this.size = size;
+		this.added = added;
+	}
 
-    boolean complete() {
-        return size == added;
-    }
+	Batch(int size) {
+		this(size, 0);
+	}
 
-    boolean enabled() {
-        return size > 1;
-    }
+	Batch addOne() {
+		added++;
+		return this;
+	}
 
-    public Batch reset() {
-        added = 0;
-        return this;
-    }
+	boolean complete() {
+		return size == added;
+	}
 
-    public int countAdded() {
-        return added;
-    }
+	boolean enabled() {
+		return size > 1;
+	}
 
-    public Batch setPreparedStatement(PreparedStatementBatch ps) {
-        this.ps = ps;
-        return this;
-    }
+	public Batch reset() {
+		added = 0;
+		return this;
+	}
 
-    public PreparedStatementBatch getPreparedStatement() {
-        return this.ps;
-    }
+	public int countAdded() {
+		return added;
+	}
+
+	public Batch setPreparedStatement(PreparedStatementBatch ps) {
+		this.ps = ps;
+		return this;
+	}
+
+	public PreparedStatementBatch getPreparedStatement() {
+		return this.ps;
+	}
+
+	@Override
+	public String toString() {
+		return "Batch [size=" + size + ", added=" + added + "]";
+	}
+
+	public static void setToDefault() {
+		set(DEFAULT);
+	}
 
 }

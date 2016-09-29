@@ -83,7 +83,7 @@ final class ConnectionBatch implements Connection {
 
     @Override
     public void close() throws SQLException {
-        Batch.set(new Batch(1, 0));
+        Batch.setToDefault();
         con.close();
     }
 
@@ -221,10 +221,7 @@ final class ConnectionBatch implements Connection {
     }
 
     private static PreparedStatement wrap(PreparedStatement ps, String sql, int keysOption) throws SQLException {
-        if (Batch.get().getPreparedStatement() == null
-                || Batch.get().getPreparedStatement().getConnection() != ps.getConnection()
-                || !Batch.get().getPreparedStatement().getSql().equals(sql)
-                || Batch.get().getPreparedStatement().getKeysOption() != keysOption) {
+        if (Batch.get().getPreparedStatement() == null) {
             Batch.get().setPreparedStatement(new PreparedStatementBatch(ps, sql, keysOption));
         }
         return Batch.get().getPreparedStatement();
