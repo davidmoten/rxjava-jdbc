@@ -43,7 +43,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      *            one set of parameters to be run with the query
      * @return
      */
-    static <T> Observable<T> execute(QueryUpdate<T> query, List<Parameter> parameters) {
+    static <T> Observable<T> create(QueryUpdate<T> query, List<Parameter> parameters) {
         return Observable.create(new QueryUpdateOnSubscribe<T>(query, parameters));
     }
 
@@ -77,6 +77,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
             if (isBeginTransaction())
                 performBeginTransaction(subscriber);
             else {
+                query.context().setupBatching();
                 getConnection(state);
                 subscriber.add(createUnsubscriptionAction(state));
                 if (isCommit())
@@ -113,9 +114,9 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
     @SuppressWarnings("unchecked")
     private void performBeginTransaction(Subscriber<? super T> subscriber) {
         query.context().beginTransactionObserve();
-        log.debug("beginTransaction emitting 1");
+        debug("beginTransaction emitting 1");
         subscriber.onNext((T) Integer.valueOf(1));
-        log.debug("emitted 1");
+        debug("emitted 1");
         complete(subscriber);
     }
 
@@ -123,9 +124,9 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      * Gets the current connection.
      */
     private void getConnection(State state) {
-        log.debug("getting connection");
         state.con = query.context().connectionProvider().get();
-        log.debug("cp={}", query.context().connectionProvider());
+        debug("getting connection");
+        debug("cp={}", query.context().connectionProvider());
     }
 
     /**
@@ -155,11 +156,12 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      */
     @SuppressWarnings("unchecked")
     private void performCommit(Subscriber<? super T> subscriber, State state) {
+        getConnection(state);
         query.context().endTransactionObserve();
         if (subscriber.isUnsubscribed())
             return;
 
-        log.debug("committing");
+        debug("committing");
         Conditions.checkTrue(!Util.isAutoCommit(state.con));
         Util.commit(state.con);
         // must close before onNext so that connection is released and is
@@ -170,7 +172,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
             return;
 
         subscriber.onNext((T) Integer.valueOf(1));
-        log.debug("committed");
+        debug("committed");
         complete(subscriber);
     }
 
@@ -183,7 +185,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      */
     @SuppressWarnings("unchecked")
     private void performRollback(Subscriber<? super T> subscriber, State state) {
-        log.debug("rolling back");
+        debug("rolling back");
         query.context().endTransactionObserve();
         Conditions.checkTrue(!Util.isAutoCommit(state.con));
         Util.rollback(state.con);
@@ -191,7 +193,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         // available to a query that might process the onNext
         close(state);
         subscriber.onNext((T) Integer.valueOf(0));
-        log.debug("rolled back");
+        debug("rolled back");
         complete(subscriber);
     }
 
@@ -222,13 +224,19 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
 
         int count;
         try {
-            log.debug("executing sql={}, parameters {}", query.sql(), parameters);
-            count = state.ps.executeUpdate();
-            log.debug("executed ps={}", state.ps);
+            debug("executing sql={}, parameters {}", query.sql(), parameters);
+            if (state.ps instanceof PreparedStatementBatch
+                    && parameters instanceof ArrayListFinal) {
+                count = state.ps.executeUpdate();
+                count += ((PreparedStatementBatch) state.ps).executeBatchRemaining();
+            } else {
+                count = state.ps.executeUpdate();
+            }
+            debug("executed ps={}", state.ps);
             if (query.returnGeneratedKeys()) {
-                log.debug("getting generated keys");
+                debug("getting generated keys");
                 ResultSet rs = state.ps.getGeneratedKeys();
-                log.debug("returned generated key result set {}", rs);
+                debug("returned generated key result set {}", rs);
                 state.rs = rs;
                 Observable<Parameter> params = Observable.just(new Parameter(state));
                 Observable<Object> depends = Observable.empty();
@@ -247,7 +255,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
             close(state);
             if (subscriber.isUnsubscribed())
                 return;
-            log.debug("onNext");
+            debug("onNext");
             subscriber.onNext((T) (Integer) count);
             complete(subscriber);
         }
@@ -281,10 +289,10 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      */
     private void complete(Subscriber<? super T> subscriber) {
         if (!subscriber.isUnsubscribed()) {
-            log.debug("onCompleted");
+            debug("onCompleted");
             subscriber.onCompleted();
         } else
-            log.debug("unsubscribed");
+            debug("unsubscribed");
     }
 
     /**
@@ -294,7 +302,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
      * @param subscriber
      */
     private void handleException(Throwable e, Subscriber<? super T> subscriber) {
-        log.debug("onError: ", e.getMessage());
+        debug("onError: ", e.getMessage());
         Exceptions.throwOrReport(e, subscriber);
     }
 
@@ -311,6 +319,10 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
             else
                 Util.closeQuietlyIfAutoCommit(state.con);
         }
+    }
+
+    private static void debug(String message, Object... objects) {
+        log.debug(message, objects);
     }
 
 }

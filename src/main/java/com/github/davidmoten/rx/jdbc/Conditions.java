@@ -40,5 +40,11 @@ final class Conditions {
         if (obj == null)
             throw new NullPointerException("argument cannot be null");
     }
+    
+    static void checkArgument(boolean b, String message) {
+    	if (!b) {
+    		throw new IllegalArgumentException(message);
+    	}
+    }
 
 }

@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.github.davidmoten.rx.Functions;
 import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.RxUtil.CountingAction;
+import com.github.davidmoten.rx.Strings;
 import com.github.davidmoten.rx.jdbc.exceptions.TransactionAlreadyOpenException;
 
 import rx.Observable;
@@ -27,7 +28,6 @@ import rx.Scheduler;
 import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.functions.Func2;
-import rx.observables.StringObservable;
 import rx.schedulers.Schedulers;
 
 /**
@@ -116,7 +116,7 @@ final public class Database {
             Func1<ResultSet, ? extends ResultSet> resultSetTransform) {
         Conditions.checkNotNull(cp);
         this.cp = cp;
-        currentConnectionProvider.set(cp);
+        this.currentConnectionProvider.set(cp);
         if (nonTransactionalSchedulerFactory != null)
             this.nonTransactionalSchedulerFactory = nonTransactionalSchedulerFactory;
         else
@@ -535,7 +535,7 @@ final public class Database {
         return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
             @Override
             public Observable<Boolean> call(Observable<T> source) {
-                return updateBuilder.dependsOn(source).count().map(IS_NON_ZERO);
+                return updateBuilder.dependsOn(source).count().exists(IS_NON_ZERO);
             }
         });
     }
@@ -555,7 +555,8 @@ final public class Database {
         QueryUpdate.Builder u = createCommitOrRollbackQuery(commit);
         for (Observable<?> dep : depends)
             u = u.dependsOn(dep);
-        Observable<Boolean> result = u.count().map(IS_NON_ZERO);
+
+        Observable<Boolean> result = u.count().exists(IS_NON_ZERO);
         lastTransactionResult.set(result);
         return result;
     }
@@ -648,6 +649,16 @@ final public class Database {
         isTransactionOpen.set(true);
     }
 
+    void batching(int batchSize) {
+        log.debug("batching size=" + batchSize);
+        if (batchSize > 1) {
+            if (!(currentConnectionProvider.get() instanceof ConnectionProviderBatch)) {
+                currentConnectionProvider.set(
+                        new ConnectionProviderBatch(currentConnectionProvider.get(), batchSize));
+            }
+        }
+    }
+
     /**
      * Sets the current thread local {@link Scheduler} to be
      * {@link Schedulers#trampoline()}.
@@ -671,6 +682,10 @@ final public class Database {
      */
     void endTransactionObserve() {
         log.debug("endTransactionObserve");
+        ConnectionProvider c = currentConnectionProvider.get();
+        if (c instanceof ConnectionProviderBatch) {
+            c.close();
+        }
         currentConnectionProvider.set(cp);
         isTransactionOpen.set(false);
         rsCache.set(null);
@@ -847,13 +862,13 @@ final public class Database {
      * @return
      */
     public Observable<Integer> run(Observable<String> commands) {
-        return commands.reduce(Observable.<Integer> empty(),
+        return commands.reduce(Observable.<Integer>empty(),
                 new Func2<Observable<Integer>, String, Observable<Integer>>() {
                     @Override
                     public Observable<Integer> call(Observable<Integer> dep, String command) {
                         return update(command).dependsOn(dep).count();
                     }
-                }).lift(RxUtil.<Integer> flatten());
+                }).lift(RxUtil.<Integer>flatten());
     }
 
     /**
@@ -895,8 +910,8 @@ final public class Database {
      * @return
      */
     public Observable<Integer> run(InputStream is, Charset charset, String delimiter) {
-        return StringObservable
-                .split(StringObservable.from(new InputStreamReader(is, charset)), ";").lift(run());
+        return Strings.split(Strings.from(new InputStreamReader(is, charset)), ";") //
+                .lift(run());
     }
 
     /**
