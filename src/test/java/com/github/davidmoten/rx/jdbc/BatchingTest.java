@@ -126,7 +126,7 @@ public final class BatchingTest {
 				//
 				.returnGeneratedKeys();
 	}
-
+	
 	private static ConnectionProvider createConnectionProvider(final Connection con) {
 		return new ConnectionProvider() {
 
