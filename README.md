@@ -98,7 +98,7 @@ it (even without Java 8 lambdas!), I wondered what it could offer for JDBC usage
 Here's a simple example:
 ```java
 Database db = Database.from(url);
-List<String> names = db.
+List<String> names = db
 		.select("select name from person where name > ? order by name")
 		.parameter("ALEX")
 		.getAs(String.class)
