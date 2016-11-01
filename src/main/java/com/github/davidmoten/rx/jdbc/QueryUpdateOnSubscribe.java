@@ -8,6 +8,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
+
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Subscriber;
@@ -209,6 +211,9 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
             throws SQLException {
         if (subscriber.isUnsubscribed()) {
             return;
+        }
+        if (query.context().batchSize() > 0 && !query.context().isTransactionOpen()) {
+            throw new SQLRuntimeException("batching can only be performed within a transaction");
         }
         int keysOption;
         if (query.returnGeneratedKeys()) {

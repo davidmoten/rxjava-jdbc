@@ -649,12 +649,17 @@ final public class Database {
         isTransactionOpen.set(true);
     }
 
+    boolean isTransactionOpen() {
+        Boolean value = isTransactionOpen.get();
+        return value != null && value;
+    }
+
     void batching(int batchSize) {
         log.debug("batching size=" + batchSize);
         if (batchSize > 1) {
             if (!(currentConnectionProvider.get() instanceof ConnectionProviderBatch)) {
-                currentConnectionProvider.set(
-                        new ConnectionProviderBatch(currentConnectionProvider.get(), batchSize));
+                currentConnectionProvider
+                        .set(new ConnectionProviderBatch(connectionProvider(), batchSize));
             }
         }
     }
