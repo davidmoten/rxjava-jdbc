@@ -57,7 +57,7 @@ import com.github.davidmoten.rx.jdbc.tuple.TupleN;
 import com.zaxxer.hikari.HikariDataSource;
 
 import rx.Observable;
-import rx.Observable.Operator;
+import rx.Observable.Transformer;
 import rx.Observer;
 import rx.functions.Action0;
 import rx.functions.Action1;
@@ -260,11 +260,12 @@ public abstract class DatabaseTestBase {
                 // replace the integers with empty lists
                 .map(toEmpty())
                 // execute the update
-                .lift(db.update("update person set score = score + 1").parameterListOperator())
+                .compose(
+                        db.update("update person set score = score + 1").parameterListTransformer())
                 // flatten
-                .lift(RxUtil.<Integer> flatten())
+                .compose(RxUtil.<Integer> flatten())
                 // total the affected records
-                .lift(SUM_INTEGER);
+                .compose(SUM_INTEGER);
         assertIs(6, rowsAffected);
     }
 
@@ -484,7 +485,7 @@ public abstract class DatabaseTestBase {
     }
 
     @Test
-    public void testCompositionUsingLift() {
+    public void testCompositionUsingCompose() {
         // use composition to find the first person alphabetically with
         // a score less than the person with the last name alphabetically
         // whose name is not XAVIER. Two threads and connections will be used.
@@ -493,8 +494,8 @@ public abstract class DatabaseTestBase {
         Observable<String> name = db
                 .select("select score from person where name <> ? order by name")
                 .parameter("XAVIER").getAs(Integer.class).last()
-                .lift(db.select("select name from person where score < ? order by name")
-                        .parameterOperator().getAs(String.class))
+                .compose(db.select("select name from person where score < ? order by name")
+                        .parameterTransformer().getAs(String.class))
                 .first();
         assertIs("FRED", name);
     }
@@ -840,14 +841,14 @@ public abstract class DatabaseTestBase {
     }
 
     @Test
-    public void testLiftWithParameters() {
-        int score = just("FRED").lift(db().select("select score from person where name=?")
-                .parameterOperator().getAs(Integer.class)).toBlocking().single();
+    public void testComposeWithParameters() {
+        int score = just("FRED").compose(db().select("select score from person where name=?")
+                .parameterTransformer().getAs(Integer.class)).toBlocking().single();
         assertEquals(21, score);
     }
 
     @Test
-    public void testLiftWithManyParameters() {
+    public void testcomposeWithManyParameters() {
         int score = Observable
                 // range
                 .range(1, 3)
@@ -855,27 +856,28 @@ public abstract class DatabaseTestBase {
                 .doOnEach(log())
                 // to parameter
                 .map(constant("FRED"))
-                .lift(db()
+                .compose(db()
                         // select
                         .select("select score from person where name=?")
                         // push parameters
-                        .parameterOperator()
+                        .parameterTransformer()
                         // get score as integer
                         .getAs(Integer.class))
                 // sum values
-                .lift(SUM_INTEGER)
+                .compose(SUM_INTEGER)
                 // block and get
                 .toBlocking().single();
         assertEquals(3 * 21, score);
     }
 
-    private final Operator<Integer, Integer> SUM_INTEGER = RxUtil
-            .toOperator(new Func1<Observable<Integer>, Observable<Integer>>() {
-                @Override
-                public Observable<Integer> call(Observable<Integer> source) {
-                    return MathObservable.sumInteger(source);
-                }
-            });
+    private final Transformer<Integer, Integer> SUM_INTEGER = new Transformer<Integer, Integer>() {
+
+        @Override
+        public Observable<Integer> call(Observable<Integer> source) {
+            return MathObservable.sumInteger(source);
+        }
+
+    };
 
     @Test
     public void testDetector() throws InterruptedException {
@@ -893,12 +895,12 @@ public abstract class DatabaseTestBase {
     }
 
     @Test
-    public void testParametersAreUnsubscribedIfUnsubscribedPostParameterOperatorLift()
+    public void testParametersAreUnsubscribedIfUnsubscribedPostParameterOperatorcompose()
             throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         Observable.interval(100, TimeUnit.MILLISECONDS).doOnEach(log()).map(constant("FRED"))
                 .doOnUnsubscribe(countDown(latch))
-                .lift(db().select("select score from person where name=?").parameterOperator()
+                .compose(db().select("select score from person where name=?").parameterTransformer()
                         .getAs(Integer.class))
                 .take(1).subscribe(log());
         assertTrue(latch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
@@ -921,37 +923,37 @@ public abstract class DatabaseTestBase {
     }
 
     @Test
-    public void testLiftSelectWithDependencies() {
+    public void testcomposeSelectWithDependencies() {
         Database db = db();
         Observable<Integer> count = db.update("update person set score=? where name=?")
                 .parameters(4, "FRED").count()
-                .lift(db.select("select score from person where name=?").parameters("FRED")
-                        .dependsOnOperator().getAs(Integer.class));
+                .compose(db.select("select score from person where name=?").parameters("FRED")
+                        .dependsOnTransformer().getAs(Integer.class));
         assertIs(4, count);
     }
 
     @Test
-    public void testLiftUpdateWithParameters() {
+    public void testcomposeUpdateWithParameters() {
         Database db = db();
-        Observable<Integer> count = just(4, "FRED")
-                .lift(db.update("update person set score=? where name=?").parameterOperator());
+        Observable<Integer> count = just(4, "FRED").compose(
+                db.update("update person set score=? where name=?").parameterTransformer());
         assertIs(1, count);
     }
 
     @Test
-    public void testLiftUpdateWithDependencies() {
+    public void testcomposeUpdateWithDependencies() {
         Database db = db();
         Observable<Integer> score = Observable
                 // parameters for coming update
                 .just(4, "FRED")
                 // update Fred's score to 4
-                .lift(db.update("update person set score=? where name=?").parameterOperator())
+                .compose(db.update("update person set score=? where name=?").parameterTransformer())
                 // update everyone with score of 4 to 14
-                .lift(db.update("update person set score=? where score=?").parameters(14, 4)
-                        .dependsOnOperator())
+                .compose(db.update("update person set score=? where score=?").parameters(14, 4)
+                        .dependsOnTransformer())
                 // get Fred's score
-                .lift(db.select("select score from person where name=?").parameters("FRED")
-                        .dependsOnOperator().getAs(Integer.class));
+                .compose(db.select("select score from person where name=?").parameters("FRED")
+                        .dependsOnTransformer().getAs(Integer.class));
         assertIs(14, score);
     }
 
@@ -1111,12 +1113,13 @@ public abstract class DatabaseTestBase {
                 // set name parameter
                 .just("FRED")
                 // push into update
-                .lift(db.update("update person set score=1 where name=?").dependsOn(begin)
-                        .parameterOperator())
+                .compose(db.update("update person set score=1 where name=?").dependsOn(begin)
+                        .parameterTransformer())
                 // map num rows affected to JOHN
                 .map(constant("JOHN"))
                 // push into second update
-                .lift(db.update("update person set score=2 where name=?").parameterOperator());
+                .compose(
+                        db.update("update person set score=2 where name=?").parameterTransformer());
         db.commit(updates).toBlocking().single();
     }
 
@@ -1128,14 +1131,14 @@ public abstract class DatabaseTestBase {
                 // set name parameter
                 .just("FRED")
                 // push into update
-                .lift(db.update("update person set score=1 where name=?").dependsOn(begin)
-                        .parameterOperator())
+                .compose(db.update("update person set score=1 where name=?").dependsOn(begin)
+                        .parameterTransformer())
                 // map num rows affected to JOHN
-                .lift(db.commitOperator())
+                .compose(db.commit_())
                 // select query
-                .lift(db.select("select name from person where score=1")
+                .compose(db.select("select name from person where score=1")
                         // depends on commit
-                        .dependsOnOperator()
+                        .dependsOnTransformer()
                         // return names
                         .getAs(String.class))
                 // return first name
@@ -1170,11 +1173,11 @@ public abstract class DatabaseTestBase {
                 // get name
                 .getAs(String.class)
                 // push name as parameter to next select
-                .lift(db
+                .compose(db
                         // select scores
                         .select("select score from person where name=?")
                         // parameters are pushed
-                        .parameterOperator()
+                        .parameterTransformer()
                         // get score as integer
                         .getAs(Integer.class))
                 // sort scores
@@ -1202,15 +1205,15 @@ public abstract class DatabaseTestBase {
                 // log
                 .doOnEach(log())
                 // update twice
-                .lift(db.update("update person set score=?")
+                .compose(db.update("update person set score=?")
                         // push parameters
-                        .parameterOperator())
+                        .parameterTransformer())
                 // commit on last
-                .lift(db.commitOnCompleteOperator())
+                .compose(db.commitOnComplete_())
                 // get count of 88s
-                .lift(db.select("select count(*) from person where score=88")
+                .compose(db.select("select count(*) from person where score=88")
                         // depends on previous
-                        .dependsOnOperator()
+                        .dependsOnTransformer()
                         // count as Long
                         .getAs(Long.class))
                 // block and get result
@@ -1229,15 +1232,15 @@ public abstract class DatabaseTestBase {
                 // log
                 .doOnEach(log())
                 // update twice
-                .lift(db.update("update person set score=?")
+                .compose(db.update("update person set score=?")
                         // push parameters
-                        .parameterOperator())
+                        .parameterTransformer())
                 // commit on last
-                .lift(db.rollbackOnCompleteOperator())
+                .compose(db.rollbackOnComplete_())
                 // get count of 88s
-                .lift(db.select("select count(*) from person where score=88")
+                .compose(db.select("select count(*) from person where score=88")
                         // depends on previous
-                        .dependsOnOperator()
+                        .dependsOnTransformer()
                         // count as Long
                         .getAs(Long.class))
                 // block and get result
@@ -1252,21 +1255,21 @@ public abstract class DatabaseTestBase {
                 // do 3 times
                 .just(11, 12, 13)
                 // begin transaction for each item
-                .lift(db.beginTransactionOnNextOperator())
+                .compose(db.beginTransactionOnNext_())
                 // update all scores to the item
-                .lift(db.update("update person set score=?").parameterOperator())
+                .compose(db.update("update person set score=?").parameterTransformer())
                 // to empty parameter list
                 .map(toEmpty())
                 // increase score
-                .lift(db.update("update person set score=score + 5").parameterListOperator())
+                .compose(db.update("update person set score=score + 5").parameterListTransformer())
                 // only expect one result so can flatten
-                .lift(RxUtil.<Integer> flatten())
+                .compose(RxUtil.<Integer> flatten())
                 // commit transaction
-                .lift(db.commitOnNextOperator())
+                .compose(db.commitOnNext_())
                 // to empty lists
                 .map(toEmpty())
                 // return count
-                .lift(db.select("select min(score) from person").dependsOnOperator()
+                .compose(db.select("select min(score) from person").dependsOnTransformer()
                         .getAs(Integer.class));
         assertIs(18, min);
     }
@@ -1281,17 +1284,17 @@ public abstract class DatabaseTestBase {
                 // log
                 .doOnEach(log())
                 // begin trans
-                .lift(db.<Observable<Object>> beginTransactionOnNextOperator())
+                .compose(db.<Observable<Object>> beginTransactionOnNext_())
                 // log
                 .doOnEach(log())
                 // update
-                .lift(db.update("update person set score = ?")
+                .compose(db.update("update person set score = ?")
                         // push lists of parameters
-                        .parameterListOperator())
+                        .parameterListTransformer())
                 // log
                 .doOnEach(log())
                 // commit
-                .lift(db.<Integer> commitOnNextListOperator())
+                .compose(db.<Integer> commitOnNextList_())
                 // total rows affected
                 .count()
                 // block and get result
@@ -1309,17 +1312,17 @@ public abstract class DatabaseTestBase {
                 // log
                 .doOnEach(log())
                 // begin trans
-                .lift(db.<Observable<Object>> beginTransactionOnNextOperator())
+                .compose(db.<Observable<Object>> beginTransactionOnNext_())
                 // log
                 .doOnEach(log())
                 // update
-                .lift(db.update("update person set score = ? where name=?")
+                .compose(db.update("update person set score = ? where name=?")
                         // push lists of parameters
-                        .parameterListOperator())
+                        .parameterListTransformer())
                 // log
                 .doOnEach(log())
                 // commit
-                .lift(db.<Integer> commitOnNextListOperator())
+                .compose(db.<Integer> commitOnNextList_())
                 // total rows affected
                 .count()
                 // block and get result
@@ -1367,11 +1370,11 @@ public abstract class DatabaseTestBase {
                 // count names
                 .count()
                 // do something else
-                .lift(db
+                .compose(db
                         // get max score
                         .select("select max(score) from person")
                         // run the previous statement first
-                        .dependsOnOperator()
+                        .dependsOnTransformer()
                         // as integer
                         .getAs(Integer.class));
         assertIs(34, count);
@@ -1385,9 +1388,9 @@ public abstract class DatabaseTestBase {
         final Set<String> set = Collections.newSetFromMap(new HashMap<String, Boolean>());
         Observable<Integer> count = Observable.just(1, 2, 3, 4, 5)
                 // select
-                .lift(db.select("select name from person where score >?")
+                .compose(db.select("select name from person where score >?")
                         // push parameters to this query
-                        .parameterOperator()
+                        .parameterTransformer()
                         // get name as string
                         .getAs(String.class))
                 // record thread name
@@ -1412,17 +1415,17 @@ public abstract class DatabaseTestBase {
                 // generate 1,2,3
                 .just(1, 2, 3)
                 // update score with that value
-                .lift(db.update("update person set score = ?")
+                .compose(db.update("update person set score = ?")
                         // participates in a transaction
                         .dependsOn(begin)
                         // parameters are pushed to this update statement
-                        .parameterOperator())
+                        .parameterTransformer())
                 // commit transaction
-                .lift(db.commitOnCompleteOperator())
+                .compose(db.commitOnComplete_())
                 // count names with score 3
-                .lift(db.select("select count(name) from person where score=3")
+                .compose(db.select("select count(name) from person where score=3")
                         // must commit first
-                        .dependsOnOperator().getAs(Integer.class));
+                        .dependsOnTransformer().getAs(Integer.class));
         assertIs(3, count);
     }
 

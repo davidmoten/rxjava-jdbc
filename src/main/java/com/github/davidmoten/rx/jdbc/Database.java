@@ -23,7 +23,7 @@ import com.github.davidmoten.rx.Strings;
 import com.github.davidmoten.rx.jdbc.exceptions.TransactionAlreadyOpenException;
 
 import rx.Observable;
-import rx.Observable.Operator;
+import rx.Observable.Transformer;
 import rx.Scheduler;
 import rx.functions.Func0;
 import rx.functions.Func1;
@@ -514,30 +514,30 @@ final public class Database {
      * Waits for the source to complete before returning the result of
      * db.commit();
      * 
-     * @return commit operator
+     * @return commit Transformer
      */
-    public <T> Operator<Boolean, T> commitOperator() {
-        return commitOrRollbackOperator(true);
+    public <T> Transformer<T, Boolean> commit_() {
+        return commitOrRollback_(true);
     }
 
     /**
      * Waits for the source to complete before returning the result of
      * db.rollback();
      * 
-     * @return rollback operator
+     * @return rollback Transformer
      */
-    public <T> Operator<Boolean, T> rollbackOperator() {
-        return commitOrRollbackOperator(false);
+    public <T> Transformer<T, Boolean> rollback_() {
+        return commitOrRollback_(false);
     }
 
-    private <T> Operator<Boolean, T> commitOrRollbackOperator(final boolean commit) {
+    private <T> Transformer<T, Boolean> commitOrRollback_(final boolean commit) {
         final QueryUpdate.Builder updateBuilder = createCommitOrRollbackQuery(commit);
-        return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
+        return new Transformer<T, Boolean>() {
             @Override
             public Observable<Boolean> call(Observable<T> source) {
                 return updateBuilder.dependsOn(source).count().exists(IS_NON_ZERO);
             }
-        });
+        };
     }
 
     /**
@@ -692,41 +692,41 @@ final public class Database {
     }
 
     /**
-     * Returns an {@link Operator} that performs commit or rollback of a
+     * Returns an {@link Transformer} that performs commit or rollback of a
      * transaction.
      * 
      * @param isCommit
      * @return
      */
-    private <T> Operator<Boolean, T> commitOrRollbackOnCompleteOperator(final boolean isCommit) {
-        return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
+    private <T> Transformer<T, Boolean> commitOrRollbackOnComplete_(final boolean isCommit) {
+        return new Transformer<T, Boolean>() {
             @Override
             public Observable<Boolean> call(Observable<T> source) {
-                return commitOrRollbackOnCompleteOperatorIfAtLeastOneValue(isCommit, Database.this,
-                        source);
+                return commitOrRollbackOnCompleteTransformerIfAtLeastOneValue(isCommit,
+                        Database.this, source);
             }
-        });
+        };
     }
 
     /**
      * Commits current transaction on the completion of source if and only if
      * the source sequence is non-empty.
      * 
-     * @return operator that commits on completion of source.
+     * @return Transformer that commits on completion of source.
      */
-    public <T> Operator<Boolean, T> commitOnCompleteOperator() {
-        return commitOrRollbackOnCompleteOperator(true);
+    public <T> Transformer<T, Boolean> commitOnComplete_() {
+        return commitOrRollbackOnComplete_(true);
     }
 
     /**
      * Rolls back current transaction on the completion of source if and only if
      * the source sequence is non-empty.
      * 
-     * @return operator that rolls back on completion of source.
+     * @return Transformer that rolls back on completion of source.
      */
 
-    public <T> Operator<Boolean, T> rollbackOnCompleteOperator() {
-        return commitOrRollbackOnCompleteOperator(false);
+    public <T> Transformer<T, Boolean> rollbackOnComplete_() {
+        return commitOrRollbackOnComplete_(false);
     }
 
     /**
@@ -735,15 +735,15 @@ final public class Database {
      * share the same {@link Connection} until transaction is rolled back or
      * committed.
      * 
-     * @return begin transaction operator
+     * @return begin transaction Transformer
      */
-    public <T> Operator<T, T> beginTransactionOnNextOperator() {
-        return RxUtil.toOperator(new Func1<Observable<T>, Observable<T>>() {
+    public <T> Transformer<T, T> beginTransactionOnNext_() {
+        return new Transformer<T, T>() {
             @Override
             public Observable<T> call(Observable<T> source) {
                 return beginTransactionOnNext(Database.this, source);
             }
-        });
+        };
     }
 
     /**
@@ -751,21 +751,21 @@ final public class Database {
      * 
      * @return
      */
-    public <T> Operator<Boolean, T> commitOnNextOperator() {
-        return commitOrRollbackOnNextOperator(true);
+    public <T> Transformer<T, Boolean> commitOnNext_() {
+        return commitOrRollbackOnNext_(true);
     }
 
-    public <T> Operator<Boolean, Observable<T>> commitOnNextListOperator() {
-        return commitOrRollbackOnNextListOperator(true);
+    public <T> Transformer<Observable<T>, Boolean> commitOnNextList_() {
+        return commitOrRollbackOnNextList_(true);
     }
 
-    public <T> Operator<Boolean, Observable<T>> rollbackOnNextListOperator() {
-        return commitOrRollbackOnNextListOperator(false);
+    public <T> Transformer<Observable<T>, Boolean> rollbackOnNextList_() {
+        return commitOrRollbackOnNextList_(false);
     }
 
-    private <T> Operator<Boolean, Observable<T>> commitOrRollbackOnNextListOperator(
+    private <T> Transformer<Observable<T>, Boolean> commitOrRollbackOnNextList_(
             final boolean isCommit) {
-        return RxUtil.toOperator(new Func1<Observable<Observable<T>>, Observable<Boolean>>() {
+        return new Transformer<Observable<T>, Boolean>() {
             @Override
             public Observable<Boolean> call(Observable<Observable<T>> source) {
                 return source.concatMap(new Func1<Observable<T>, Observable<Boolean>>() {
@@ -778,7 +778,7 @@ final public class Database {
                     }
                 });
             }
-        });
+        };
     }
 
     /**
@@ -786,20 +786,20 @@ final public class Database {
      * 
      * @return
      */
-    public Operator<Boolean, ?> rollbackOnNextOperator() {
-        return commitOrRollbackOnNextOperator(false);
+    public Transformer<?, Boolean> rollbackOnNext_() {
+        return commitOrRollbackOnNext_(false);
     }
 
-    private <T> Operator<Boolean, T> commitOrRollbackOnNextOperator(final boolean isCommit) {
-        return RxUtil.toOperator(new Func1<Observable<T>, Observable<Boolean>>() {
+    private <T> Transformer<T, Boolean> commitOrRollbackOnNext_(final boolean isCommit) {
+        return new Transformer<T, Boolean>() {
             @Override
             public Observable<Boolean> call(Observable<T> source) {
                 return commitOrRollbackOnNext(isCommit, Database.this, source);
             }
-        });
+        };
     }
 
-    private static <T> Observable<Boolean> commitOrRollbackOnCompleteOperatorIfAtLeastOneValue(
+    private static <T> Observable<Boolean> commitOrRollbackOnCompleteTransformerIfAtLeastOneValue(
             final boolean isCommit, final Database db, Observable<T> source) {
         CountingAction<T> counter = RxUtil.counter();
         Observable<Boolean> commit = counter
@@ -808,7 +808,7 @@ final public class Database {
                 // greater than zero or empty
                 .filter(greaterThanZero())
                 // commit if at least one value
-                .lift(db.commitOrRollbackOperator(isCommit));
+                .compose(db.commitOrRollback_(isCommit));
         return Observable
                 // concatenate
                 .concat(source
@@ -862,27 +862,27 @@ final public class Database {
      * @return
      */
     public Observable<Integer> run(Observable<String> commands) {
-        return commands.reduce(Observable.<Integer>empty(),
+        return commands.reduce(Observable.<Integer> empty(),
                 new Func2<Observable<Integer>, String, Observable<Integer>>() {
                     @Override
                     public Observable<Integer> call(Observable<Integer> dep, String command) {
                         return update(command).dependsOn(dep).count();
                     }
-                }).lift(RxUtil.<Integer>flatten());
+                }).flatMap(Functions.<Observable<Integer>> identity());
     }
 
     /**
-     * Returns an {@link Operator} version of {@link #run(Observable)}.
+     * Returns an {@link Transformer} version of {@link #run(Observable)}.
      * 
      * @return
      */
-    public Operator<Integer, String> run() {
-        return RxUtil.toOperator(new Func1<Observable<String>, Observable<Integer>>() {
+    public Transformer<String, Integer> run() {
+        return new Transformer<String, Integer>() {
             @Override
             public Observable<Integer> call(Observable<String> commands) {
                 return run(commands);
             }
-        });
+        };
     }
 
     /**
@@ -911,7 +911,7 @@ final public class Database {
      */
     public Observable<Integer> run(InputStream is, Charset charset, String delimiter) {
         return Strings.split(Strings.from(new InputStreamReader(is, charset)), ";") //
-                .lift(run());
+                .compose(run());
     }
 
     /**

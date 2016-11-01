@@ -19,7 +19,7 @@ import com.github.davidmoten.rx.jdbc.tuple.TupleN;
 import com.github.davidmoten.rx.jdbc.tuple.Tuples;
 
 import rx.Observable;
-import rx.Observable.Operator;
+import rx.Observable.Transformer;
 import rx.functions.Func1;
 import rx.functions.Func2;
 
@@ -355,33 +355,33 @@ final public class QueryUpdate<T> implements Query {
         }
 
         /**
-         * Returns an {@link Operator} to allow the query to be pushed
-         * parameters via the {@link Observable#lift(Operator)} method.
+         * Returns an {@link Transformer} to allow the query to be pushed
+         * parameters via the {@link Observable#compose(Transformer)} method.
          * 
-         * @return operator that acts on parameters
+         * @return Transformer that acts on parameters
          */
-        public Operator<Integer, Object> parameterOperator() {
-            return new QueryUpdateOperator<Object>(this, OperatorType.PARAMETER);
+        public Transformer<Object, Integer> parameterTransformer() {
+            return new QueryUpdateTransformer<Object>(this, OperatorType.PARAMETER);
         }
 
         /**
-         * Returns an {@link Operator} to allow the query to be pushed
-         * dependencies via the {@link Observable#lift(Operator)} method.
+         * Returns an {@link Transformer} to allow the query to be pushed
+         * dependencies via the {@link Observable#compose(Transformer)} method.
          * 
-         * @return operator that acts on dependencies
+         * @return Transformer that acts on dependencies
          */
-        public Operator<Integer, Object> dependsOnOperator() {
-            return new QueryUpdateOperator<Object>(this, OperatorType.DEPENDENCY);
+        public Transformer<Object, Integer> dependsOnTransformer() {
+            return new QueryUpdateTransformer<Object>(this, OperatorType.DEPENDENCY);
         }
 
         /**
-         * Returns an {@link Operator} to allow the query to be run once per
+         * Returns an {@link Transformer} to allow the query to be run once per
          * parameter list in the source.
          * 
-         * @return operator
+         * @return transformer
          */
-        public Operator<Observable<Integer>, Observable<Object>> parameterListOperator() {
-            return new QueryUpdateOperatorFromObservable<Object>(this);
+        public Transformer<Observable<Object>, Observable<Integer>> parameterListTransformer() {
+            return new QueryUpdateTransformerFromObservable<Object>(this);
         }
 
         /**
