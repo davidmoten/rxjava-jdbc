@@ -212,7 +212,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         if (subscriber.isUnsubscribed()) {
             return;
         }
-        if (query.context().batchSize() > 0 && !query.context().isTransactionOpen()) {
+        if (query.context().batchSize() > 1 && !query.context().isTransactionOpen()) {
             throw new SQLRuntimeException("batching can only be performed within a transaction");
         }
         int keysOption;
