@@ -60,7 +60,7 @@ public class DatabaseExampleTest {
         Database db = DatabaseCreator.db();
         TestSubscriber<String> ts = TestSubscriber.create(0);
         Observable.just("FRED", "FRED").repeat()
-                .lift(db.select("select name from person where name = ?").parameterOperator()
+                .compose(db.select("select name from person where name = ?").parameterTransformer()
                         .getAs(String.class))
                 .subscribe(ts);
         ts.requestMore(1);
@@ -78,8 +78,8 @@ public class DatabaseExampleTest {
         TestSubscriber<String> ts = TestSubscriber.create();
         RuntimeException ex = new RuntimeException();
         Observable.<Observable<Object>> error(ex)
-                .lift(db.select("select name from person where name = ?").parameterListOperator()
-                        .getAs(String.class))
+                .compose(db.select("select name from person where name = ?")
+                        .parameterListTransformer().getAs(String.class))
                 .subscribe(ts);
         ts.assertError(ex);
     }
@@ -91,10 +91,10 @@ public class DatabaseExampleTest {
         RuntimeException ex = new RuntimeException();
         Observable.<Observable<Object>> error(ex)
                 // update
-                .lift(db.update("update person set name=?||'zz' where name = ?")
-                        .parameterListOperator())
+                .compose(db.update("update person set name=?||'zz' where name = ?")
+                        .parameterListTransformer())
                 // flatten
-                .lift(RxUtil.<Integer> flatten()).subscribe(ts);
+                .compose(RxUtil.<Integer> flatten()).subscribe(ts);
         ts.assertError(ex);
     }
 
@@ -108,7 +108,7 @@ public class DatabaseExampleTest {
         final CountDownLatch latch = new CountDownLatch(1);
         Observable.interval(0, 1, TimeUnit.MILLISECONDS).onBackpressureLatest()
                 // .doOnNext(t -> System.out.println("start " + t))
-                .lift(db.select("SELECT * FROM (VALUES (?)) AS v").parameterOperator()
+                .compose(db.select("SELECT * FROM (VALUES (?)) AS v").parameterTransformer()
                         .getAs(String.class))
                 // .doOnNext(t -> System.out.println("result " + t))
                 .concatMap(new Func1<String, Observable<String>>() {

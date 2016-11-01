@@ -18,25 +18,25 @@ public class TransactionOnNextOperatorTest {
                 // do 3 times
                 .just(11, 12, 13)
                 // begin transaction for each item
-                .lift(db.beginTransactionOnNextOperator())
+                .compose(db.beginTransactionOnNext_())
                 // update all scores to the item
-                .lift(db.update("update person set score=?").parameterOperator())
+                .compose(db.update("update person set score=?").parameterTransformer())
                 // to empty parameter list
                 .map(toEmpty())
                 // increase score
-                .lift(db.update("update person set score=score + 5").parameterListOperator())
+                .compose(db.update("update person set score=score + 5").parameterListTransformer())
                 // only expect one result so can flatten
-                .lift(RxUtil.<Integer> flatten())
+                .compose(RxUtil.<Integer> flatten())
                 // commit transaction
-                .lift(db.commitOnNextOperator())
+                .compose(db.commitOnNext_())
                 // to empty lists
                 .map(toEmpty())
                 // return count
-                .lift(db.select("select min(score) from person").dependsOnOperator()
+                .compose(db.select("select min(score) from person").dependsOnTransformer()
                         .getAs(Integer.class));
         assertIs(18, min);
     }
-    
+
     static <T> void assertIs(T t, Observable<T> observable) {
         assertEquals(t, observable.toBlocking().single());
     }
