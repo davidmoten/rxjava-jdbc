@@ -1,6 +1,6 @@
 package com.github.davidmoten.rx.jdbc;
 
-import com.github.davidmoten.util.Preconditions;
+import com.github.davidmoten.guavamini.Preconditions;
 
 import rx.Observable;
 
