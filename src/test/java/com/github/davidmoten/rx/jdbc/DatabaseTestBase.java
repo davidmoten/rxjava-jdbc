@@ -1131,7 +1131,8 @@ public abstract class DatabaseTestBase {
                 // set name parameter
                 .just("FRED")
                 // push into update
-                .compose(db.update("update person set score=1 where name=?").dependsOn(begin)
+                .compose(db.update("update person set score=1 where name=?") //
+                        .dependsOn(begin) //
                         .parameterTransformer())
                 // map num rows affected to JOHN
                 .compose(db.commit_())
