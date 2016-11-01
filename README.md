@@ -57,7 +57,7 @@ Table of Contents
 		- [Insert a Blob](#insert-a-clob)
 		- [Insert a Null Blob](#insert-a-null-blob)
 		- [Read a Blob](#read-a-blob)
-	- [Lift](#lift)
+	- [Compose](#compose)
 	- [Transactions](#transactions)
 		- [Transactions as dependency](#transactions-as-dependency)
 		- [onNext Transactions](#onNext-transactions)
@@ -166,15 +166,15 @@ String name = db
 		.toBlocking().single();
 assertEquals("FRED", name);
 ```
-or alternatively using the ```Observable.lift()``` method to chain everything in one command:
+or alternatively using the ```Observable.compose()``` method to chain everything in one command:
 ```java
 String name = db
     .select("select score from person where name <> ? order by name")
     .parameter("XAVIER")
     .getAs(Integer.class)
     .last()
-    .lift(db.select("select name from person where score < ? order by name")
-            .parameterOperator()
+    .compose(db.select("select name from person where score < ? order by name")
+            .parameterTransformer()
             .getAs(String.class))
     .first()
     .toBlocking().single();
@@ -548,18 +548,18 @@ Observable<InputStream> document = db.select("select document from person_clob")
 				.getAs(InputStream.class);
 ```
 
-Lift
+Compose
 -----------------------------------
 
-Using the ```Observable.lift()``` method you can perform multiple queries without breaking method chaining. ```Observable.lift()``` 
-requires an ```Operator``` parameter which are available via 
+Using the ```Observable.compose()``` method you can perform multiple queries without breaking method chaining. ```Observable.compose()``` 
+requires a ```Transformer``` parameter which are available via 
 
-* ```db.select(sql).parameterOperator().getXXX()```
-* ```db.select(sql).parameterListOperator().getXXX()```
-* ```db.select(sql).dependsOnOperator().getXXX()```
-* ```db.update(sql).parameterOperator()```
-* ```db.update(sql).parameterListOperator()```
-* ```db.update(sql).dependsOnOperator()```
+* ```db.select(sql).parameterTransformer().getXXX()```
+* ```db.select(sql).parameterListTransformer().getXXX()```
+* ```db.select(sql).dependsOnTransformer().getXXX()```
+* ```db.update(sql).parameterTransformer()```
+* ```db.update(sql).parameterListTransformer()```
+* ```db.update(sql).dependsOnTransformer()```
 
 Example:   
 ```java
@@ -567,29 +567,29 @@ Observable<Integer> score = Observable
     // parameters for coming update
     .just(4, "FRED")
     // update Fred's score to 4
-    .lift(db.update("update person set score=? where name=?")
+    .compose(db.update("update person set score=? where name=?")
             //parameters are pushed
-            .parameterOperator())
+            .parameterTransformer())
     // update everyone with score of 4 to 14
-    .lift(db.update("update person set score=? where score=?")
+    .compose(db.update("update person set score=? where score=?")
             .parameters(14, 4)
             //wait for completion of previous observable
-            .dependsOnOperator())
+            .dependsOnTransformer())
     // get Fred's score
-    .lift(db.select("select score from person where name=?")
+    .compose(db.select("select score from person where name=?")
             .parameters("FRED")
             //wait for completion of previous observable
-            .dependsOnOperator()
+            .dependsOnTransformer()
 			.getAs(Integer.class));
 ```
 
 Note that conditional evaluation of a query is obtained using 
-the ```parameterOperator()``` method (no parameters means no query run) 
-whereas using ```dependsOnOperator()``` just waits for the 
+the ```parameterTransformer()``` method (no parameters means no query run) 
+whereas using ```dependsOnTransformer()``` just waits for the 
 dependency to complete and ignores how many items the dependency emits.  
 
 If the query does not require parameters you can push it an empty list 
-and use the ```parameterListOperator()``` to force execution.
+and use the ```parameterListTransformer()``` to force execution.
 
 Example:
 ```java
@@ -600,7 +600,7 @@ Observable<Integer> rowsAffected = Observable
     .map(toEmpty())
     //execute the update twice with an empty list
     .lift(db.update("update person set score = score + 1")
-            .parameterListOperator())
+            .parameterListTransformer())
     // flatten
     .lift(RxUtil.<Integer> flatten())
     // total the affected records
@@ -647,21 +647,21 @@ List<Integer> mins = Observable
     // do 3 times
     .just(11, 12, 13)
     // begin transaction for each item
-    .lift(db.beginTransactionOnNextOperator())
+    .lift(db.beginTransactionOnNext_())
     // update all scores to the item
-    .lift(db.update("update person set score=?").parameterOperator())
+    .lift(db.update("update person set score=?").parameterTransformer())
     // to empty parameter list
     .map(toEmpty())
     // increase score
-    .lift(db.update("update person set score=score + 5").parameterListOperator())
+    .lift(db.update("update person set score=score + 5").parameterListTransformer())
     //only expect one result so can flatten
     .lift(RxUtil.<Integer>flatten())
     // commit transaction
-    .lift(db.commitOnNextOperator())
+    .lift(db.commitOnNext_())
     // to empty lists
     .map(toEmpty())
     // return count
-    .lift(db.select("select min(score) from person").parameterListOperator()
+    .lift(db.select("select min(score) from person").parameterListTransformer()
             .getAs(Integer.class))
     // list the results
     .toList()
@@ -675,7 +675,7 @@ Note that for each ```commit*``` method there is an corresponding ```rollback```
 Asynchronous queries
 --------------------------
 Unless run within a transaction all queries are synchronous by default. However, if you request an asynchronous 
-version of the database using ```Database.asynchronous()``` or if you use asynchronous operators then watch out because this means that 
+version of the database using ```Database.asynchronous()``` or if you use asynchronous Transformers then watch out because this means that 
 something like the code below could produce unpredictable results:
 
 ```java
@@ -683,7 +683,7 @@ Database adb = db.asynchronous();
 Observable
     .just(1, 2, 3)
     .lift(adb.update("update person set score = ?")
-            .parameterOperator());
+            .parameterTransformer());
 ```
 After running this code you have no guarantee that the *update person set score=1* ran before the *update person set score=2*. 
 To run those queries synchronously either use a transaction:
@@ -694,8 +694,8 @@ Observable
    .just(1, 2, 3)
    .lift(adb.update("update person set score = ?")
            .dependsOn(db.beginTransaction())
-           .parameterOperator())
-    .lift(adb.commitOnCompleteOperator());
+           .parameterTransformer())
+    .lift(adb.commitOnComplete_());
 ```
 
 or use the default version of the ```Database``` object that schedules queries using ```Schedulers.trampoline()```.
@@ -703,7 +703,7 @@ or use the default version of the ```Database``` object that schedules queries u
 ```java
 Observable.just(1, 2, 3)
           .lift(db.update("update person set score = ?")
-                  .parameterOperator());
+                  .parameterTransformer());
 ```
 
 Backpressure
