@@ -293,13 +293,15 @@ final public class Database {
         private Func1<ResultSet, ? extends ResultSet> resultSetTransform = IDENTITY_TRANSFORM;
 
         private static class Pool {
-            int minSize;
-            int maxSize;
+            final int minSize;
+            final int maxSize;
+            final long connectionTimeoutMs;
 
-            Pool(int minSize, int maxSize) {
+            Pool(int minSize, int maxSize, long connectionTimeoutMs) {
                 super();
                 this.minSize = minSize;
                 this.maxSize = maxSize;
+                this.connectionTimeoutMs = connectionTimeoutMs;
             }
         }
 
@@ -351,7 +353,20 @@ final public class Database {
          * @return
          */
         public Builder pool(int minPoolSize, int maxPoolSize) {
-            pool = new Pool(minPoolSize, maxPoolSize);
+            return pool(minPoolSize, maxPoolSize, 30000);
+        }
+        
+        /**
+         * Sets the {@link ConnectionProvider} to use a connection pool with the
+         * given jdbc url and pool size.
+         * 
+         * @param url
+         * @param minPoolSize
+         * @param maxPoolSize
+         * @return
+         */
+        public Builder pool(int minPoolSize, int maxPoolSize, long connectionTimeoutMs) {
+            pool = new Pool(minPoolSize, maxPoolSize, connectionTimeoutMs);
             return this;
         }
 
@@ -362,8 +377,8 @@ final public class Database {
          * @param url
          * @return
          */
-        public Builder pooled(String url) {
-            this.cp = new ConnectionProviderPooled(url, 0, 10);
+        public Builder pool(String url) {
+            this.cp = new ConnectionProviderPooled(url, null, null, 0, 10, 30000L);
             return this;
         }
 
@@ -412,7 +427,7 @@ final public class Database {
         public Database build() {
             if (url != null && pool != null)
                 cp = new ConnectionProviderPooled(url, username, password, pool.minSize,
-                        pool.maxSize);
+                        pool.maxSize, pool.connectionTimeoutMs);
             else if (url != null)
                 cp = new ConnectionProviderFromUrl(url, username, password);
             return new Database(cp, nonTransactionalSchedulerFactory, resultSetTransform);

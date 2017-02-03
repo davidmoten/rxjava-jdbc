@@ -12,6 +12,8 @@ import com.zaxxer.hikari.HikariDataSource;
  */
 public final class ConnectionProviderPooled implements ConnectionProvider {
 
+    private static final int DEFAULT_CONNECTION_TIMEOUT_MS = 30000;
+
     /**
      * HikariCP connection pool.
      */
@@ -26,11 +28,15 @@ public final class ConnectionProviderPooled implements ConnectionProvider {
      * Constructor.
      * 
      * @param url
+     * @param password
+     * @param username
      * @param minPoolSize
      * @param maxPoolSize
+     * @param connectionTimeoutMs
      */
-    public ConnectionProviderPooled(String url, int minPoolSize, int maxPoolSize) {
-        this(createPool(url, null, null, minPoolSize, maxPoolSize));
+    public ConnectionProviderPooled(String url, String username, String password, int minPoolSize,
+            int maxPoolSize, long connectionTimeoutMs) {
+        this(createPool(url, username, password, minPoolSize, maxPoolSize, connectionTimeoutMs));
     }
 
     // Visible for testing
@@ -54,7 +60,11 @@ public final class ConnectionProviderPooled implements ConnectionProvider {
      */
     public ConnectionProviderPooled(String url, String username, String password, int minPoolSize,
             int maxPoolSize) {
-        this(createPool(url, username, password, minPoolSize, maxPoolSize));
+        this(createPool(url, username, password, minPoolSize, maxPoolSize, DEFAULT_CONNECTION_TIMEOUT_MS));
+    }
+
+    public ConnectionProviderPooled(String url, int minPoolSize, int maxPoolSize) {
+        this(createPool(url, null, null, minPoolSize, maxPoolSize, DEFAULT_CONNECTION_TIMEOUT_MS));
     }
 
     /**
@@ -70,10 +80,11 @@ public final class ConnectionProviderPooled implements ConnectionProvider {
      *            minimum database connection pool size
      * @param maxPoolSize
      *            maximum database connection pool size
+     * @param connectionTimeoutMs
      * @return
      */
     private static HikariDataSource createPool(String url, String username, String password,
-            int minPoolSize, int maxPoolSize) {
+            int minPoolSize, int maxPoolSize, long connectionTimeoutMs) {
 
         HikariDataSource ds = new HikariDataSource();
         ds.setJdbcUrl(url);
@@ -81,6 +92,7 @@ public final class ConnectionProviderPooled implements ConnectionProvider {
         ds.setPassword(password);
         ds.setMinimumIdle(minPoolSize);
         ds.setMaximumPoolSize(maxPoolSize);
+        ds.setConnectionTimeout(connectionTimeoutMs);
         return ds;
     }
 
