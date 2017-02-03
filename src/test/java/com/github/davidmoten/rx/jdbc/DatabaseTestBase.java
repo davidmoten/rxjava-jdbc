@@ -793,7 +793,7 @@ public abstract class DatabaseTestBase {
         // and again to test idempotentcy
         cp.close();
     }
-
+    
     @Test(expected = RuntimeException.class)
     public void testConnectionPoolWhenExceptionThrown() throws SQLException {
         HikariDataSource pool = new HikariDataSource();
@@ -819,6 +819,25 @@ public abstract class DatabaseTestBase {
     @Test
     public void testDatabaseBuilderWithPool() {
         Database.builder().url(nextUrl()).pool(0, 5).build().close();
+    }
+    
+    @Test
+    public void testDatabaseBuilderWithPoolAndConfigured() {
+        Database.builder().url(nextUrl()).pool(0, 5).configure(new Action1<HikariDataSource>() {
+            @Override
+            public void call(HikariDataSource ds) {
+                ds.setConnectionTimeout(10000);
+            }}).build().close();
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void testDatabaseBuilderWithPoolAndIllegallyConfiguredThrows() {
+        Database.builder().url(nextUrl()).pool(0, 5).configure(new Action1<HikariDataSource>() {
+            @Override
+            public void call(HikariDataSource ds) {
+                //too short!
+                ds.setConnectionTimeout(1);
+            }}).build().close();
     }
 
     @Test

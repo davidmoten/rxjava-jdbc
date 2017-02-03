@@ -7,6 +7,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.github.davidmoten.rx.jdbc.exceptions.SQLRuntimeException;
 import com.zaxxer.hikari.HikariDataSource;
 
+import rx.functions.Action1;
+
 /**
  * Provides database connection pooling using HikariCP.
  */
@@ -60,11 +62,26 @@ public final class ConnectionProviderPooled implements ConnectionProvider {
      */
     public ConnectionProviderPooled(String url, String username, String password, int minPoolSize,
             int maxPoolSize) {
-        this(createPool(url, username, password, minPoolSize, maxPoolSize, DEFAULT_CONNECTION_TIMEOUT_MS));
+        this(createPool(url, username, password, minPoolSize, maxPoolSize,
+                DEFAULT_CONNECTION_TIMEOUT_MS));
     }
 
     public ConnectionProviderPooled(String url, int minPoolSize, int maxPoolSize) {
         this(createPool(url, null, null, minPoolSize, maxPoolSize, DEFAULT_CONNECTION_TIMEOUT_MS));
+    }
+
+    public ConnectionProviderPooled(String url, String username, String password, int minSize,
+            int maxSize, long connectionTimeoutMs, Action1<HikariDataSource> configureDataSource) {
+        this(configure(createPool(url, username, password, minSize, maxSize, connectionTimeoutMs),
+                configureDataSource));
+    }
+
+    private static HikariDataSource configure(HikariDataSource ds,
+            Action1<HikariDataSource> configure) {
+        if (configure != null) {
+            configure.call(ds);
+        }
+        return ds;
     }
 
     /**

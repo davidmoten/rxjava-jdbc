@@ -16,15 +16,18 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.davidmoten.guavamini.Preconditions;
 import com.github.davidmoten.rx.Functions;
 import com.github.davidmoten.rx.RxUtil;
 import com.github.davidmoten.rx.RxUtil.CountingAction;
 import com.github.davidmoten.rx.Strings;
 import com.github.davidmoten.rx.jdbc.exceptions.TransactionAlreadyOpenException;
+import com.zaxxer.hikari.HikariDataSource;
 
 import rx.Observable;
 import rx.Observable.Transformer;
 import rx.Scheduler;
+import rx.functions.Action1;
 import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.functions.Func2;
@@ -291,6 +294,7 @@ final public class Database {
         private String username;
         private String password;
         private Func1<ResultSet, ? extends ResultSet> resultSetTransform = IDENTITY_TRANSFORM;
+        private Action1<HikariDataSource> configureDataSource;
 
         private static class Pool {
             final int minSize;
@@ -355,7 +359,7 @@ final public class Database {
         public Builder pool(int minPoolSize, int maxPoolSize) {
             return pool(minPoolSize, maxPoolSize, 30000);
         }
-        
+
         /**
          * Sets the {@link ConnectionProvider} to use a connection pool with the
          * given jdbc url and pool size.
@@ -367,6 +371,11 @@ final public class Database {
          */
         public Builder pool(int minPoolSize, int maxPoolSize, long connectionTimeoutMs) {
             pool = new Pool(minPoolSize, maxPoolSize, connectionTimeoutMs);
+            return this;
+        }
+
+        public Builder configure(Action1<HikariDataSource> configureDataSource) {
+            this.configureDataSource = configureDataSource;
             return this;
         }
 
@@ -425,11 +434,13 @@ final public class Database {
          * @return the constructed Database
          */
         public Database build() {
-            if (url != null && pool != null)
+            if (url != null && pool != null) {
                 cp = new ConnectionProviderPooled(url, username, password, pool.minSize,
-                        pool.maxSize, pool.connectionTimeoutMs);
-            else if (url != null)
+                        pool.maxSize, pool.connectionTimeoutMs, configureDataSource);
+            } else if (url != null) {
+                Preconditions.checkArgument(configureDataSource == null, "cannot configure data source unless pool specified");
                 cp = new ConnectionProviderFromUrl(url, username, password);
+            }
             return new Database(cp, nonTransactionalSchedulerFactory, resultSetTransform);
         }
     }
