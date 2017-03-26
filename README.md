@@ -599,12 +599,12 @@ Observable<Integer> rowsAffected = Observable
     //replace the integers with empty observables
     .map(toEmpty())
     //execute the update twice with an empty list
-    .lift(db.update("update person set score = score + 1")
+    .compose(db.update("update person set score = score + 1")
             .parameterListTransformer())
     // flatten
-    .lift(RxUtil.<Integer> flatten())
+    .compose(RxUtil.<Integer> flatten())
     // total the affected records
-    .lift(SUM_INTEGER);
+    .compose(SUM_INTEGER);
 ```
 
 Transactions
@@ -647,21 +647,21 @@ List<Integer> mins = Observable
     // do 3 times
     .just(11, 12, 13)
     // begin transaction for each item
-    .lift(db.beginTransactionOnNext_())
+    .compose(db.beginTransactionOnNext_())
     // update all scores to the item
-    .lift(db.update("update person set score=?").parameterTransformer())
+    .compose(db.update("update person set score=?").parameterTransformer())
     // to empty parameter list
     .map(toEmpty())
     // increase score
-    .lift(db.update("update person set score=score + 5").parameterListTransformer())
+    .compose(db.update("update person set score=score + 5").parameterListTransformer())
     //only expect one result so can flatten
-    .lift(RxUtil.<Integer>flatten())
+    .compose(RxUtil.<Integer>flatten())
     // commit transaction
-    .lift(db.commitOnNext_())
+    .compose(db.commitOnNext_())
     // to empty lists
     .map(toEmpty())
     // return count
-    .lift(db.select("select min(score) from person").parameterListTransformer()
+    .compose(db.select("select min(score) from person").parameterListTransformer()
             .getAs(Integer.class))
     // list the results
     .toList()
@@ -682,7 +682,7 @@ something like the code below could produce unpredictable results:
 Database adb = db.asynchronous();
 Observable
     .just(1, 2, 3)
-    .lift(adb.update("update person set score = ?")
+    .compose(adb.update("update person set score = ?")
             .parameterTransformer());
 ```
 After running this code you have no guarantee that the *update person set score=1* ran before the *update person set score=2*. 
@@ -692,17 +692,17 @@ To run those queries synchronously either use a transaction:
 Database adb = db.asynchronous();
 Observable
    .just(1, 2, 3)
-   .lift(adb.update("update person set score = ?")
+   .compose(adb.update("update person set score = ?")
            .dependsOn(db.beginTransaction())
            .parameterTransformer())
-    .lift(adb.commitOnComplete_());
+    .compose(adb.commitOnComplete_());
 ```
 
 or use the default version of the ```Database``` object that schedules queries using ```Schedulers.trampoline()```.
 
 ```java
 Observable.just(1, 2, 3)
-          .lift(db.update("update person set score = ?")
+          .compose(db.update("update person set score = ?")
                   .parameterTransformer());
 ```
 
