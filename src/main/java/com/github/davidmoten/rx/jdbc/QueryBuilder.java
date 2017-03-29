@@ -32,7 +32,7 @@ final class QueryBuilder {
     /**
      * Execution context to use to run the query.
      */
-    private final QueryContext context;
+    private QueryContext context;
 
     /**
      * Constructor.
@@ -44,6 +44,15 @@ final class QueryBuilder {
         this.sql = sql;
         this.db = db;
         this.context = db.queryContext();
+    }
+
+    /**
+     * Sets the {@code FETCH_SIZE} for the query.
+     *
+     * @param fetchSize
+     */
+    void fetchSize(int fetchSize) {
+        this.context = this.context.fetchSize(fetchSize);
     }
 
     /**

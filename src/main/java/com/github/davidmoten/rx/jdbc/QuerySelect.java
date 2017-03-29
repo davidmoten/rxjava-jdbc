@@ -219,6 +219,19 @@ final public class QuerySelect implements Query {
         }
 
         /**
+         * Sets the {@code FETCH_SIZE} to be used by the query.
+         *
+         * @param fetchSize The fetch size to be used. A non-positive value will be ignored.
+         */
+        public Builder fetchSize(int fetchSize) {
+            if (fetchSize > 0) {
+                builder.fetchSize(fetchSize);
+            }
+
+            return this;
+        }
+
+        /**
          * Appends a dependency to the dependencies that have to complete their
          * emitting before the query is executed.
          * 

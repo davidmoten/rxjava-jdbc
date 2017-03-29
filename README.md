@@ -759,6 +759,30 @@ The connection is wrapped in a ```ConnectionNonClosing``` which suppresses close
  ```java
  Database db = Database.from(con);
  ```
+
+Fetch Size
+----------------------------
+The ```fetch size``` setting in [statements](https://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html#setFetchSize(int))
+allows to specify how many rows should be fetched from the database at once. In other words, instead of fetching all
+data in the ```ResultSet``` at once, potentially consuming a lot of memory in the heap, the ```fetch size``` setting
+allows to trade time, due to multiple round-trips to the database, in exchange for lower memory consumption.
+
+Example:
+```java
+db
+    .select("select * from person")
+    // set fetch size
+    .fetchSize(10)
+    //
+    .autoMap(Person.class)
+    // 
+    .take(20)
+	// log
+	.doOnEach(RxUtil.log());
+```
+In this case, there JDBC driver will do two round trips, each time fetching 10 rows and transforming each in an instance
+of ```Person```. 
+
 Note for SQLite Users
 ----------------------------
 *rxjava-jdbc* does support [SQLite](http://sqlite.org/). But due to the [SQLite architecture](http://sqlite.org/faq.html#q5) there are limitations particularly with write operations (CREATE, INSERT, UPDATE, DELETE). If your application has any write operations, [use a single connection](#use-a-single-connection). If a source ```Observable``` pushes emissions through a series of database read/write operations, always collect emissions and flatten them between each database read/write operation. This will prevent a [SQLITE_INTERRUPT](https://sqlite.org/rescode.html#interrupt) exception by never having more than one query open at a time. 
