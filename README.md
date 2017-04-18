@@ -308,7 +308,7 @@ If you nominate an interface then dynamic proxies (a java reflection feature) ar
 
 If you nominate a concrete class then the columns of the result set are mapped to parameters in the constructor (again using reflection).
 
-###Automap using an interface
+### Automap using an interface
 
 Create an annotated interface (introduced in *rxjava-jdbc* 0.5.8):
 
@@ -377,7 +377,7 @@ Observable<Person> persons = db
 ```
 
 
-###Automap using a concrete class 
+### Automap using a concrete class 
 
 Given this class:
 ```java
@@ -416,7 +416,7 @@ Note that automappings do not occur to primitives so use ```Long``` instead of `
 Tuples
 ---------------
 Typed tuples can be returned in an ```Observable```:
-###Tuple2
+### Tuple2
 ```java
 Tuple2<String, Integer> tuple = db
 		.select("select name,score from person where name >? order by name")
@@ -427,7 +427,7 @@ assertEquals("MARMADUKE", tuple.value1());
 assertEquals(25, (int) tuple.value2());
 ```
 Similarly for ```Tuple3```, ```Tuple4```, ```Tuple5```, ```Tuple6```, ```Tuple7```, and finally 
-###TupleN
+### TupleN
 ```java
 TupleN<String> tuple = db
 		.select("select name, lower(name) from person order by name")
@@ -613,7 +613,7 @@ When you want a statement to participate in a transaction then either it should
 * depend on ```db.beginTransaction()``` 
 * be passed parameters or dependencies through ```db.beginTransactionOnNext()```
 
-###Transactions as dependency
+### Transactions as dependency
 ```java
 Observable<Boolean> begin = db.beginTransaction();
 Observable<Integer> updateCount = db
@@ -641,7 +641,7 @@ long count = db
 assertEquals(3, count);
 ```
 
-###onNext Transactions
+### onNext Transactions
 ```java
 List<Integer> mins = Observable
     // do 3 times
