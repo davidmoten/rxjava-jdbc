@@ -84,13 +84,13 @@
 		<dependency>
 			<groupId>io.reactivex</groupId>
 			<artifactId>rxjava</artifactId>
-			<version>1.2.7</version>
+			<version>1.2.10</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.github.davidmoten</groupId>
 			<artifactId>rxjava-extras</artifactId>
-			<version>0.8.0.4</version>
+			<version>0.8.0.7</version>
 		</dependency>
         
 		<dependency>
