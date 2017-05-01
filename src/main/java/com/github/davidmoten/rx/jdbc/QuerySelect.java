@@ -144,10 +144,13 @@ final public class QuerySelect implements Query {
      */
     public static final class Builder {
 
+        private static final int DEFAULT_FETCH_SIZE = 0;
+
         /**
          * Builds the standard stuff.
          */
         private final QueryBuilder builder;
+        private int fetchSize = DEFAULT_FETCH_SIZE;
 
         /**
          * The {@link ResultSet} is transformed before use.
@@ -219,6 +222,16 @@ final public class QuerySelect implements Query {
         }
 
         /**
+         * Sets the {@code FETCH_SIZE} to be used by the query.
+         *
+         * @param fetchSize The fetch size to be used. A non-positive value will be ignored.
+         */
+        public Builder fetchSize(int fetchSize) {
+            this.fetchSize = fetchSize;
+            return this;
+        }
+
+        /**
          * Appends a dependency to the dependencies that have to complete their
          * emitting before the query is executed.
          * 
@@ -266,10 +279,17 @@ final public class QuerySelect implements Query {
             return get(function, builder, resultSetTransform);
         }
 
-        static <T> Observable<T> get(ResultSetMapper<? extends T> function, QueryBuilder builder,
+        <T> Observable<T> get(ResultSetMapper<? extends T> function, QueryBuilder builder,
                 Func1<ResultSet, ? extends ResultSet> resultSetTransform) {
+            final QueryContext ctxt;
+            if (fetchSize > 1) {
+                ctxt = builder.context().fetchSize(fetchSize);
+            } else {
+                ctxt = builder.context();
+            }
+
             return new QuerySelect(builder.sql(), builder.parameters(), builder.depends(),
-                    builder.context(), resultSetTransform).execute(function);
+                ctxt, resultSetTransform).execute(function);
         }
 
         /**
@@ -306,7 +326,7 @@ final public class QuerySelect implements Query {
             return autoMap(cls, builder, resultSetTransform);
         }
 
-        static <T> Observable<T> autoMap(Class<T> cls, QueryBuilder builder,
+        <T> Observable<T> autoMap(Class<T> cls, QueryBuilder builder,
                 Func1<ResultSet, ? extends ResultSet> resultSetTransform) {
             Util.setSqlFromQueryAnnotation(cls, builder);
             return get(Util.autoMap(cls), builder, resultSetTransform);

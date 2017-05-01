@@ -107,6 +107,9 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
             log.debug("preparing statement,sql={}", query.sql());
             state.ps = state.con.prepareStatement(query.sql(), ResultSet.TYPE_FORWARD_ONLY,
                     ResultSet.CONCUR_READ_ONLY);
+            if (query.context().fetchSize() > 0) {
+                state.ps.setFetchSize(query.context().fetchSize());
+            }
             log.debug("setting parameters");
             Util.setParameters(state.ps, parameters, query.names());
         }
