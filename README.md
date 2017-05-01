@@ -762,9 +762,9 @@ The connection is wrapped in a ```ConnectionNonClosing``` which suppresses close
 
 Fetch Size
 ----------------------------
-The ```fetch size``` setting in [statements](https://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html#setFetchSize(int))
+The `fetch size` setting in [statements](https://docs.oracle.com/javase/8/docs/api/java/sql/Statement.html#setFetchSize(int))
 allows to specify how many rows should be fetched from the database at once. In other words, instead of fetching all
-data in the ```ResultSet``` at once, potentially consuming a lot of memory in the heap, the ```fetch size``` setting
+data in the `ResultSet` at once, potentially consuming a lot of memory in the heap, the `fetch size` setting
 allows to trade time, due to multiple round-trips to the database, in exchange for lower memory consumption.
 
 Example:
@@ -780,8 +780,8 @@ db
 	// log
 	.doOnEach(RxUtil.log());
 ```
-In this case, there JDBC driver will do two round trips, each time fetching 10 rows and transforming each in an instance
-of ```Person```. 
+In this case, the JDBC driver will do two round trips, each time fetching 10 rows and transforming each row to an instance
+of `Person`. 
 
 Note for SQLite Users
 ----------------------------
