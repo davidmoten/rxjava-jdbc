@@ -13,13 +13,13 @@ final class QueryContext {
 
     private final Database db;
     private final int batchSize;
-    private final int fetchSize;
+    private final Integer fetchSize;
 
     QueryContext(Database db) {
-        this(db, 1, 0);
+        this(db, 1, null);
     }
 
-    public QueryContext(Database db, int batchSize, int fetchSize) {
+    public QueryContext(Database db, int batchSize, Integer fetchSize) {
         this.db = db;
         this.batchSize = batchSize;
         this.fetchSize = fetchSize;
@@ -79,11 +79,11 @@ final class QueryContext {
         return batchSize;
     }
 
-    QueryContext fetchSize(int fetchSize) {
+    QueryContext fetchSize(Integer fetchSize) {
         return new QueryContext(db, batchSize, fetchSize);
     }
 
-    int fetchSize() {
+    Integer fetchSize() {
         return fetchSize;
     }
 
