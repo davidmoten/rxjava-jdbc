@@ -144,13 +144,11 @@ final public class QuerySelect implements Query {
      */
     public static final class Builder {
 
-        private static final int DEFAULT_FETCH_SIZE = 0;
-
         /**
          * Builds the standard stuff.
          */
         private final QueryBuilder builder;
-        private int fetchSize = DEFAULT_FETCH_SIZE;
+        private Integer fetchSize;
 
         /**
          * The {@link ResultSet} is transformed before use.
@@ -282,7 +280,7 @@ final public class QuerySelect implements Query {
         <T> Observable<T> get(ResultSetMapper<? extends T> function, QueryBuilder builder,
                 Func1<ResultSet, ? extends ResultSet> resultSetTransform) {
             final QueryContext ctxt;
-            if (fetchSize > 1) {
+            if (fetchSize != null) {
                 ctxt = builder.context().fetchSize(fetchSize);
             } else {
                 ctxt = builder.context();
