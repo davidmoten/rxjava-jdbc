@@ -9,7 +9,7 @@ using JDBC and [RxJava](https://github.com/Netflix/RxJava/wiki) [Observable](htt
 
 Status: Released to Maven Central
 
-See also [rxjava2-jdbc](https://github.com/davidmoten/rxjava2-jdbc) for RxJava 2.x!
+See also [rxjava2-jdbc](https://github.com/davidmoten/rxjava2-jdbc) for RxJava 2.x with non-blocking connection pools!
 
 [Release Notes](https://github.com/davidmoten/rxjava-jdbc/releases)
 
