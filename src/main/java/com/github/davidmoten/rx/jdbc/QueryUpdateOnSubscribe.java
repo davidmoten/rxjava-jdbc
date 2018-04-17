@@ -319,10 +319,7 @@ final class QueryUpdateOnSubscribe<T> implements OnSubscribe<T> {
         // ensure close happens once only to avoid race conditions
         if (state.closed.compareAndSet(false, true)) {
             Util.closeQuietly(state.ps);
-            if (isCommit() || isRollback())
-                Util.closeQuietly(state.con);
-            else
-                Util.closeQuietlyIfAutoCommit(state.con);
+            Util.closeQuietly(state.con);
         }
     }
 
