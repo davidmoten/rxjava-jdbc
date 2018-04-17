@@ -163,7 +163,7 @@ final class QuerySelectOnSubscribe<T> implements OnSubscribe<T> {
             log.debug("closing ps");
             Util.closeQuietly(state.ps);
             log.debug("closing con");
-            Util.closeQuietlyIfAutoCommit(state.con);
+            Util.closeQuietly(state.con);
             log.debug("closed");
         }
     }
