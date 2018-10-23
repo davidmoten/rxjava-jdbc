@@ -795,3 +795,8 @@ Observable<MyItem> = Observable.just(itemstoInsert)
 		.toList().concatMap(Observable::from)
 		.compose(selectAndAutoMap());
 ```
+
+License
+----------------------------
+
+RxJava follows the Apache License version 2.0 (http://www.apache.org/licenses/ ).  See LICENSE.txt included with the distribution for details.
