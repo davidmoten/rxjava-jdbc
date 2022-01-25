@@ -91,7 +91,7 @@ public final class RxUtil {
         private final AtomicLong count = new AtomicLong(0);
 
         public Observable<Long> count() {
-            return Observable.create(new OnSubscribe<Long>() {
+            return Observable.unsafeCreate(new OnSubscribe<Long>() {
 
                 @Override
                 public void call(Subscriber<? super Long> subscriber) {
