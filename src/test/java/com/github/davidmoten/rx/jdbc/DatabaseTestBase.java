@@ -1599,7 +1599,7 @@ public abstract class DatabaseTestBase {
                 .getAs(Integer.class)
                 //
                 .toList().toBlocking().single();
-        assertEquals(Arrays.asList(2), list);
+        assertEquals(Arrays.asList(1, 2), list);
     }
 
     @Test
