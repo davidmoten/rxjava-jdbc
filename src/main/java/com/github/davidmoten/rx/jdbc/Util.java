@@ -477,7 +477,7 @@ public final class Util {
         try {
             ResultSetMetaData md = rs.getMetaData();
             for (int i = 1; i <= md.getColumnCount(); i++) {
-                String name = md.getColumnName(i);
+                String name = md.getColumnLabel(i);
                 String type = md.getColumnClassName(i);
                 if (s.length() > 0)
                     s.append(", ");
