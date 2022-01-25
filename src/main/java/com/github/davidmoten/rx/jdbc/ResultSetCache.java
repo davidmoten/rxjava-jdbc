@@ -24,7 +24,7 @@ class ResultSetCache {
         try {
             ResultSetMetaData metadata = rs.getMetaData();
             for (int i = 1; i <= metadata.getColumnCount(); i++) {
-                map.put(metadata.getColumnName(i).toUpperCase(), i);
+                map.put(metadata.getColumnLabel(i).toUpperCase(), i);
             }
             return map;
         } catch (SQLException e) {

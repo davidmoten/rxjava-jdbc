@@ -1478,6 +1478,18 @@ public abstract class DatabaseTestBase {
         assertEquals("JOSEPH", list.get(1).name());
         assertEquals(34, list.get(1).score());
     }
+    
+    @Test
+    public void testAutoMapInterfaceUsingColumnLabel() {
+        // test dynamic proxying
+        List<NameScore> list = db().select("select name||'z' as name, score + 2 as score from person order by name")
+                .autoMap(NameScore.class).toList().toBlocking().single();
+        assertEquals(3, list.size());
+        assertEquals("FREDz", list.get(0).name());
+        assertEquals(23, list.get(0).score());
+        assertEquals("JOSEPHz", list.get(1).name());
+        assertEquals(36, list.get(1).score());
+    }
 
     static interface NameScore {
 
