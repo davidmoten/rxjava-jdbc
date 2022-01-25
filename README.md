@@ -1,6 +1,6 @@
 rxjava-jdbc
 ============
-<a href="https://travis-ci.com/davidmoten/rxjava-jdbc"><img src="https://travis-ci.com/davidmoten/rxjava-jdbc.svg"/></a><br/>
+<a href="https://github.com/davidmoten/rxjava-jdbc/actions/workflows/ci.yml"><img src="https://github.com/davidmoten/rxjava-jdbc/actions/workflows/ci.yml/badge.svg"/></a><br/>
 <a href="https://scan.coverity.com/projects/4834"><img src="https://scan.coverity.com/projects/4834/badge.svg?flat=1"/></a><br/>
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.davidmoten/rxjava-jdbc/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.github.davidmoten/rxjava-jdbc)
 
