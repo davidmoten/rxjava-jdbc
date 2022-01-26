@@ -24,7 +24,7 @@
         <rxjava.version>1.3.8</rxjava.version>
         <cobertura.version>2.7</cobertura.version>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <checkstyle.version>2.11</checkstyle.version>
+        <checkstyle.version>3.1.2</checkstyle.version>
         <findbugs.version>3.0.5</findbugs.version>
         <javadoc.version>2.10.3</javadoc.version>
         <pmd.version>3.0.1</pmd.version>
