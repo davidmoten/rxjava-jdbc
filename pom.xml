@@ -31,7 +31,7 @@
         <jdepend.version>2.0-beta-2</jdepend.version>
         <javancss.version>2.0</javancss.version>
         <project.info.version>2.4</project.info.version>
-        <jxr.version>2.4</jxr.version>
+        <jxr.version>3.1.1</jxr.version>
         <taglist.version>2.4</taglist.version>
         <m3.site.version>3.4</m3.site.version>
         <changelog.version>2.2</changelog.version>
