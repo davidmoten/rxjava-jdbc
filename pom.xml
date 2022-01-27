@@ -29,7 +29,7 @@
         <javadoc.version>2.10.3</javadoc.version>
         <pmd.version>3.0.1</pmd.version>
         <jdepend.version>2.0-beta-2</jdepend.version>
-        <javancss.version>2.0</javancss.version>
+        <javancss.version>2.1</javancss.version>
         <project.info.version>2.4</project.info.version>
         <jxr.version>3.1.1</jxr.version>
         <taglist.version>2.4</taglist.version>
