@@ -1,6 +1,5 @@
 package com.github.davidmoten.rx.jdbc;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 
 import java.sql.Connection;
@@ -11,6 +10,7 @@ import java.sql.SQLException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
 import rx.schedulers.Schedulers;
 
 public class FetchSizeTest {
@@ -92,7 +92,7 @@ public class FetchSizeTest {
         // go
         .subscribe();
 
-    verify(ps, Mockito.never()).setFetchSize(any(Integer.class));
+    verify(ps, Mockito.never()).setFetchSize(Mockito.any(Integer.class));
   }
 
   private static ConnectionProvider createConnectionProvider(final Connection con) {
