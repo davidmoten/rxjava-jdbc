@@ -67,9 +67,11 @@
         <property name="message" value="Line has trailing spaces."/>
     </module> -->
 
-    <module name="TreeWalker">
+    <module name="LineLength">
+    	<property name="max" value="100"/>
+    </module>
 
-        <property name="cacheFile" value="${checkstyle.cache.file}"/>
+    <module name="TreeWalker">
 
         <!-- Checks for Javadoc comments.                     -->
         <!-- See http://checkstyle.sf.net/config_javadoc.html -->
@@ -117,9 +119,7 @@
 
         <!-- Checks for Size Violations.                    -->
         <!-- See http://checkstyle.sf.net/config_sizes.html -->
-        <module name="LineLength">
-        	<property name="max" value="100"/>
-        </module>
+
         <module name="MethodLength"/>
         <module name="ParameterNumber"/>
 
@@ -162,7 +162,7 @@
         <module name="InnerAssignment"/>
         <module name="MagicNumber"/>
         <module name="MissingSwitchDefault"/>
-        <module name="RedundantThrows"/>
+        
         <module name="SimplifyBooleanExpression"/>
         <module name="SimplifyBooleanReturn"/>
 
