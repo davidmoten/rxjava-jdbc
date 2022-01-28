@@ -100,7 +100,10 @@ final public class QuerySelect implements Query {
      * Returns the results of running a select query with all sets of
      * parameters.
      * 
-     * @return
+     * @param function result set mapper function
+     * @param <T> type mapped to by function
+     * 
+     * @return the results of running a select query with all sets of parameters
      */
     public <T> Observable<T> execute(ResultSetMapper<? extends T> function) {
         return bufferedParameters(this)
@@ -113,7 +116,7 @@ final public class QuerySelect implements Query {
      * set of parameters through a select query.
      * 
      * @param query
-     * @return
+     * @return function to execute once from a set of parameters
      */
     private <T> Func1<List<Parameter>, Observable<T>> executeOnce(
             final ResultSetMapper<? extends T> function) {
@@ -213,6 +216,7 @@ final public class QuerySelect implements Query {
          *            the parameter name. Cannot be null.
          * @param value
          *            the parameter value
+         * @return this
          */
         public Builder parameter(String name, Object value) {
             builder.parameter(name, value);
@@ -223,6 +227,8 @@ final public class QuerySelect implements Query {
          * Sets the {@code FETCH_SIZE} to be used by the query.
          *
          * @param fetchSize The fetch size to be used. A non-positive value will be ignored.
+         * 
+         * @return this
          */
         public Builder fetchSize(int fetchSize) {
             this.fetchSize = fetchSize;
@@ -318,7 +324,7 @@ final public class QuerySelect implements Query {
          * </p>
          * 
          * @param cls
-         * @return
+         * @return mappped observables
          */
         public <T> Observable<T> autoMap(Class<T> cls) {
             return autoMap(cls, builder, resultSetTransform);
@@ -335,7 +341,7 @@ final public class QuerySelect implements Query {
          * <code>cls</code>.
          * 
          * @param cls
-         * @return
+         * @return observable of the given class
          */
         public <S> Observable<S> getAs(Class<S> cls) {
             return get(Tuples.single(cls));
@@ -346,7 +352,7 @@ final public class QuerySelect implements Query {
          * class <code>cls</code>. See {@link #autoMap(Class) autoMap()}.
          * 
          * @param cls
-         * @return
+         * @return observable of the given class
          */
         public <S> Observable<TupleN<S>> getTupleN(Class<S> cls) {
             return get(Tuples.tupleN(cls));
@@ -357,7 +363,7 @@ final public class QuerySelect implements Query {
          * . See {@link #autoMap(Class) autoMap()}.
          * 
          * @param cls
-         * @return
+         * @return observable of TupleN
          */
         public <S> Observable<TupleN<Object>> getTupleN() {
             return get(Tuples.tupleN(Object.class));
@@ -369,7 +375,7 @@ final public class QuerySelect implements Query {
          * 
          * @param cls1
          * @param cls2
-         * @return
+         * @return observable of Tuple2
          */
         public <T1, T2> Observable<Tuple2<T1, T2>> getAs(Class<T1> cls1, Class<T2> cls2) {
             return get(Tuples.tuple(cls1, cls2));
@@ -382,7 +388,7 @@ final public class QuerySelect implements Query {
          * @param cls1
          * @param cls2
          * @param cls3
-         * @return
+         * @return observable of Tuple3
          */
         public <T1, T2, T3> Observable<Tuple3<T1, T2, T3>> getAs(Class<T1> cls1, Class<T2> cls2,
                 Class<T3> cls3) {
@@ -397,7 +403,7 @@ final public class QuerySelect implements Query {
          * @param cls2
          * @param cls3
          * @param cls4
-         * @return
+         * @return observable of Tuple4
          */
         public <T1, T2, T3, T4> Observable<Tuple4<T1, T2, T3, T4>> getAs(Class<T1> cls1,
                 Class<T2> cls2, Class<T3> cls3, Class<T4> cls4) {
@@ -413,7 +419,7 @@ final public class QuerySelect implements Query {
          * @param cls3
          * @param cls4
          * @param cls5
-         * @return
+         * @return observable of Tuple5
          */
         public <T1, T2, T3, T4, T5> Observable<Tuple5<T1, T2, T3, T4, T5>> getAs(Class<T1> cls1,
                 Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5) {
@@ -430,7 +436,7 @@ final public class QuerySelect implements Query {
          * @param cls4
          * @param cls5
          * @param cls6
-         * @return
+         * @return observable of Tuple6
          */
         public <T1, T2, T3, T4, T5, T6> Observable<Tuple6<T1, T2, T3, T4, T5, T6>> getAs(
                 Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5,
@@ -449,7 +455,7 @@ final public class QuerySelect implements Query {
          * @param cls5
          * @param cls6
          * @param cls7
-         * @return
+         * @return observable of Tuple7
          */
         public <T1, T2, T3, T4, T5, T6, T7> Observable<Tuple7<T1, T2, T3, T4, T5, T6, T7>> getAs(
                 Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5,
@@ -485,7 +491,7 @@ final public class QuerySelect implements Query {
          * Returns an {@link Transformer} that runs a select query for each list
          * of parameter objects in the source observable.
          * 
-         * @return
+         * @return builder
          */
         public TransformerBuilder<Observable<Object>> parameterListTransformer() {
             return new TransformerBuilder<Observable<Object>>(this, OperatorType.PARAMETER_LIST);
@@ -495,6 +501,7 @@ final public class QuerySelect implements Query {
 
     /**
      * Builder pattern for select query {@link Transformer}.
+     * @param <R> from type
      */
     public static class TransformerBuilder<R> {
 
@@ -516,7 +523,7 @@ final public class QuerySelect implements Query {
          * Transforms the results using the given function.
          * 
          * @param function
-         * @return
+         * @return transformer
          */
         public <T> Transformer<R, T> get(ResultSetMapper<? extends T> function) {
             return new QuerySelectTransformer<T, R>(builder, function, operatorType);
@@ -526,7 +533,7 @@ final public class QuerySelect implements Query {
          * See {@link Builder#autoMap(Class)}.
          * 
          * @param cls
-         * @return
+         * @return transformer
          */
         public <S> Transformer<R, S> autoMap(Class<S> cls) {
             return get(Util.autoMap(cls));
@@ -537,7 +544,7 @@ final public class QuerySelect implements Query {
          * <code>cls</code>.
          * 
          * @param cls
-         * @return
+         * @return transformer
          */
         public <S> Transformer<R, S> getAs(Class<S> cls) {
             return get(Tuples.single(cls));
@@ -548,7 +555,7 @@ final public class QuerySelect implements Query {
          * class <code>cls</code>. See {@link #autoMap(Class) autoMap()}.
          * 
          * @param cls
-         * @return
+         * @return transformer
          */
         public <S> Transformer<R, TupleN<S>> getTupleN(Class<S> cls) {
             return get(Tuples.tupleN(cls));
@@ -559,7 +566,7 @@ final public class QuerySelect implements Query {
          * . See {@link #autoMap(Class) autoMap()}.
          * 
          * @param cls
-         * @return
+         * @return transformer
          */
         public <S> Transformer<R, TupleN<Object>> getTupleN() {
             return get(Tuples.tupleN(Object.class));
@@ -571,7 +578,7 @@ final public class QuerySelect implements Query {
          * 
          * @param cls1
          * @param cls2
-         * @return
+         * @return transformer
          */
         public <T1, T2> Transformer<R, Tuple2<T1, T2>> getAs(Class<T1> cls1, Class<T2> cls2) {
             return get(Tuples.tuple(cls1, cls2));
@@ -584,7 +591,7 @@ final public class QuerySelect implements Query {
          * @param cls1
          * @param cls2
          * @param cls3
-         * @return
+         * @return transformer
          */
         public <T1, T2, T3> Transformer<R, Tuple3<T1, T2, T3>> getAs(Class<T1> cls1, Class<T2> cls2,
                 Class<T3> cls3) {
@@ -599,7 +606,7 @@ final public class QuerySelect implements Query {
          * @param cls2
          * @param cls3
          * @param cls4
-         * @return
+         * @return transformer
          */
         public <T1, T2, T3, T4> Transformer<R, Tuple4<T1, T2, T3, T4>> getAs(Class<T1> cls1,
                 Class<T2> cls2, Class<T3> cls3, Class<T4> cls4) {
@@ -615,7 +622,7 @@ final public class QuerySelect implements Query {
          * @param cls3
          * @param cls4
          * @param cls5
-         * @return
+         * @return transformer
          */
         public <T1, T2, T3, T4, T5> Transformer<R, Tuple5<T1, T2, T3, T4, T5>> getAs(Class<T1> cls1,
                 Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5) {
@@ -632,7 +639,7 @@ final public class QuerySelect implements Query {
          * @param cls4
          * @param cls5
          * @param cls6
-         * @return
+         * @return transformer
          */
         public <T1, T2, T3, T4, T5, T6> Transformer<R, Tuple6<T1, T2, T3, T4, T5, T6>> getAs(
                 Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5,
@@ -651,7 +658,7 @@ final public class QuerySelect implements Query {
          * @param cls5
          * @param cls6
          * @param cls7
-         * @return
+         * @return transformer
          */
         public <T1, T2, T3, T4, T5, T6, T7> Transformer<R, Tuple7<T1, T2, T3, T4, T5, T6, T7>> getAs(
                 Class<T1> cls1, Class<T2> cls2, Class<T3> cls3, Class<T4> cls4, Class<T5> cls5,

@@ -32,7 +32,7 @@ public interface Query {
      * in the sql. May emit more than the number of parameters in one run of the
      * query in which case the query would be run multiple times.
      * 
-     * @return
+     * @return parameters observable
      */
     Observable<Parameter> parameters();
 
@@ -40,7 +40,7 @@ public interface Query {
      * Returns the Observables that have to complete before this query is
      * started.
      * 
-     * @return
+     * @return depends observable
      */
     Observable<?> depends();
 
@@ -48,7 +48,7 @@ public interface Query {
      * Returns the query context including {@link ConnectionProvider} and
      * {@link Scheduler}.
      * 
-     * @return
+     * @return query context
      */
     QueryContext context();
 

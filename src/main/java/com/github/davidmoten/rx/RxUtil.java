@@ -120,7 +120,7 @@ public final class RxUtil {
     /**
      * Returns a {@link Func1} that returns an empty {@link Observable}.
      * 
-     * @return
+     * @return toEmpty function
      */
     public static <T> Func1<T, Observable<Object>> toEmpty() {
         return Functions.constant(Observable.<Object> empty());
