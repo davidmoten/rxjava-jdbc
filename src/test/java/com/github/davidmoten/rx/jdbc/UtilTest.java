@@ -9,6 +9,7 @@ import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -360,7 +361,7 @@ public class UtilTest {
             }
         });
 
-        assertEquals(Util.mapObject(resultSet, String.class, 1), "test");
+        assertEquals("test", Util.mapObject(resultSet, String.class, 1));
 
     }
 
@@ -398,7 +399,7 @@ public class UtilTest {
             }
         });
 
-        assertEquals(Util.mapObject(resultSet, String.class, 1), null);
+        assertNull(Util.mapObject(resultSet, String.class, 1));
 
     }
 
