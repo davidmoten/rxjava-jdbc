@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy: 
      matrix:
-      java: ['8', '11'] 
+      java: ['8', '11', '17'] 
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK ${{ matrix.java }} 
@@ -37,7 +37,7 @@ jobs:
     permissions:
       pull-requests: write
       contents: write
-    if: ${{ github.actor == 'dependabot[bot]' }}
+    if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request' }}
     steps:
       - name: Dependabot metadata
         id: metadata
