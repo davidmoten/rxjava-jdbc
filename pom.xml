@@ -8,7 +8,7 @@
         <version>0.1</version>
     </parent>
     <artifactId>rxjava-jdbc</artifactId>
-    <version>0.7.19</version>
+    <version>0.7.20-SNAPSHOT</version>
 
     <name>${project.artifactId}</name>
     <description>rx-java Observables for jdbc</description>
@@ -76,7 +76,7 @@
         <connection>${scm.url}</connection>
         <developerConnection>${scm.url}</developerConnection>
         <url>${scm.url}</url>
-        <tag>0.7.19</tag>
+        <tag>0.6.8</tag>
     </scm>
 
     <dependencies>
