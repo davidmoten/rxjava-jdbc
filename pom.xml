@@ -25,7 +25,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <checkstyle.version>3.2.1</checkstyle.version>
         <findbugs.version>3.0.5</findbugs.version>
-        <javadoc.version>3.4.1</javadoc.version>
+        <javadoc.version>3.5.0</javadoc.version>
         <pmd.version>3.20.0</pmd.version>
         <jdepend.version>2.0</jdepend.version>
         <javancss.version>2.1</javancss.version>
