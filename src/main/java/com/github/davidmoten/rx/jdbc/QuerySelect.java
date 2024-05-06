@@ -136,9 +136,10 @@ final public class QuerySelect implements Query {
      *            one set of parameters to be run with the query
      * @return
      */
+    @SuppressWarnings("unchecked")
     private <T> Observable<T> executeOnce(final List<Parameter> params,
             ResultSetMapper<? extends T> function) {
-        return QuerySelectOnSubscribe.execute(this, params, function)
+        return (Observable<T>) QuerySelectOnSubscribe.execute(this, params, function)
                 .subscribeOn(context.scheduler());
     }
 
