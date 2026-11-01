@@ -331,35 +331,10 @@ public class UtilTest {
         });
 
         final ResultSetMetaData metaData = Mockito.mock(ResultSetMetaData.class);
-        Mockito.when(metaData.getColumnType(1)).thenAnswer(new Answer<Integer>() {
-            @Override
-            public Integer answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return Types.CLOB;
-            }
-        });
 
         ResultSet resultSet = Mockito.mock(ResultSet.class);
 
-        Mockito.when(resultSet.getObject(1)).thenAnswer(new Answer<Clob>() {
-            @Override
-            public Clob answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return mock;
-            }
-        });
-
-        Mockito.when(resultSet.getClob(1)).thenAnswer(new Answer<Clob>() {
-            @Override
-            public Clob answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return mock;
-            }
-        });
-
-        Mockito.when(resultSet.getMetaData()).thenAnswer(new Answer<ResultSetMetaData>() {
-            @Override
-            public ResultSetMetaData answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return metaData;
-            }
-        });
+        setupResultSetGetClobAndGetMetaDataAndGetColumnTypeAnd1MoreStubs(metaData, resultSet, mock);
 
         assertEquals("test", Util.mapObject(resultSet, String.class, 1));
 
@@ -369,35 +344,10 @@ public class UtilTest {
     public void testMapObjectNullClob() throws SQLException, IOException {
 
         final ResultSetMetaData metaData = Mockito.mock(ResultSetMetaData.class);
-        Mockito.when(metaData.getColumnType(1)).thenAnswer(new Answer<Integer>() {
-            @Override
-            public Integer answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return Types.CLOB;
-            }
-        });
 
         ResultSet resultSet = Mockito.mock(ResultSet.class);
 
-        Mockito.when(resultSet.getObject(1)).thenAnswer(new Answer<Clob>() {
-            @Override
-            public Clob answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return null;
-            }
-        });
-
-        Mockito.when(resultSet.getClob(1)).thenAnswer(new Answer<Clob>() {
-            @Override
-            public Clob answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return null;
-            }
-        });
-
-        Mockito.when(resultSet.getMetaData()).thenAnswer(new Answer<ResultSetMetaData>() {
-            @Override
-            public ResultSetMetaData answer(InvocationOnMock invocationOnMock) throws Throwable {
-                return metaData;
-            }
-        });
+        setupResultSetGetClobAndGetMetaDataAndGetColumnTypeAnd1MoreStubs(metaData, resultSet, null);
 
         assertNull(Util.mapObject(resultSet, String.class, 1));
 
@@ -459,5 +409,36 @@ public class UtilTest {
     public void testCountOfNoQuestionMarksSkipsNestedUnclosedQuotes() {
         assertEquals(1, Util.countQuestionMarkParameters(
                 "select name from person where name > '\"?' and name > ?"));
+    }
+
+    private void setupResultSetGetClobAndGetMetaDataAndGetColumnTypeAnd1MoreStubs(final ResultSetMetaData metaData, final ResultSet resultSet, final Clob getClobAnswerValue) throws SQLException {
+        Mockito.when(metaData.getColumnType(1)).thenAnswer(new Answer<Integer>() {
+
+            @Override
+            public Integer answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return Types.CLOB;
+            }
+        });
+        Mockito.when(resultSet.getObject(1)).thenAnswer(new Answer<Clob>() {
+
+            @Override
+            public Clob answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return getClobAnswerValue;
+            }
+        });
+        Mockito.when(resultSet.getClob(1)).thenAnswer(new Answer<Clob>() {
+
+            @Override
+            public Clob answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return getClobAnswerValue;
+            }
+        });
+        Mockito.when(resultSet.getMetaData()).thenAnswer(new Answer<ResultSetMetaData>() {
+
+            @Override
+            public ResultSetMetaData answer(InvocationOnMock invocationOnMock) throws Throwable {
+                return metaData;
+            }
+        });
     }
 }
